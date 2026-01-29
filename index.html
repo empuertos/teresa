@@ -1,19 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PH IPTV Universal Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root {
+      --bg: #0f111a;
+      --card: #1f233a;
+      --radius: 14px;
+      --shadow: 0 25px 60px -10px rgba(0,0,0,0.6);
+      --accent: rgba(0,150,255,0.9);
+      --text: #e8ebf9;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      min-height:100vh;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      background: linear-gradient(135deg,#0f111a 0%,#1f233a 80%);
+      color: var(--text);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:12px;
+    }
+    .container {
+      max-width: 1024px;
+      margin: 0 auto;
+      width:100%;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:16px;
+    }
+    @media(min-width:900px){
+      .container { grid-template-columns: 300px 1fr; }
+    }
+    .sidebar {
+      background: var(--card);
+      padding:12px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .search-input {
+      width:100%;
+      padding:8px 12px;
+      border-radius:8px;
+      border:none;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size:14px;
+    }
+    .channel-list {
+      overflow:auto;
+      flex:1;
+      margin-top:4px;
+    }
+    .channel-item {
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:4px;
+      background: rgba(255,255,255,0.03);
+      font-size:13px;
+    }
+    .channel-item.active { background: var(--accent); }
+    .player-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding:0;
+      position:relative;
+      box-shadow: var(--shadow);
+      display:flex;
+      flex-direction:column;
+    }
+    .video-wrapper {
+      position: relative;
+      width:100%;
+      aspect-ratio:16/9;
+      background:#000;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+      overflow:hidden;
+    }
+    video {
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      background:#000;
+    }
+    .controls {
+      display:flex;
+      flex-wrap: wrap;
+      gap:10px;
+      padding:10px 14px;
+      align-items:center;
+      font-size:14px;
+    }
+    .btn {
+      cursor:pointer;
+      padding:6px 12px;
+      background: rgba(255,255,255,0.08);
+      border:none;
+      border-radius:8px;
+      color: var(--text);
+      font-weight:600;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+    }
+    .progress {
+      flex:1;
+      position:relative;
+      height:6px;
+      background: rgba(255,255,255,0.15);
+      border-radius:4px;
+      overflow:hidden;
+      margin:0 8px;
+      cursor:pointer;
+    }
+    .progress-inner {
+      position:absolute;
+      left:0;
+      top:0;
+      height:100%;
+      width:0%;
+      background: var(--accent);
+      transition: width .1s linear;
+    }
+    .time {
+      min-width:100px;
+      text-align:center;
+      font-variant-numeric: tabular-nums;
+    }
+    .title-bar {
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap:8px;
+      flex-wrap: wrap;
+    }
+    .channel-title {
+      font-size:18px;
+      font-weight:700;
+      flex:1;
+      min-width:180px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .status {
+      font-size:12px;
+      opacity:.8;
+      margin-left:6px;
+    }
+    .fallback {
+      padding:14px;
+      text-align:center;
+      background: rgba(255,255,255,0.05);
+      border-radius:8px;
+      margin-top:6px;
+    }
+  </style>
+</head>
+<body>
 
-                </div>
-                <button id="playButton" onclick="playContent()" fdprocessedid="kuser" style="display: none;">Play Full Movie</button>
-                <div id="streamingSection" style="display: block; position: relative;">
-                    <h3>Watch Content</h3>
-                    <div class="provider-controls">
-                        <select id="seasonSelect" style="display: none;">
-                            <!-- Seasons populated dynamically -->
-                        </select>
-                        <select id="episodeSelect" style="display: none;">
-                            <!-- Episodes populated dynamically -->
-                        </select>
-                        <select id="providerSelect" fdprocessedid="dqowki"><option value="vidora">Vidora</option><option value="vidrockembed">Vidrockembed</option><option value="vidsrcpro">Vidsrcpro</option><option value="autoembedpro">Autoembedpro</option><option value="smashystream">Smashystream</option><option value="embedsoap">Embedsoap</option><option value="vidplus">Vidplus</option><option value="vidking">Vidking</option><option value="xprime">Xprime</option><option value="vixsrc">Vixsrc</option><option value="rivestream">Rivestream</option><option value="vidzee">Vidzee</option><option value="2embed">2embed</option><option value="moviekex">Moviekex</option><option value="vidpro">Vidpro</option><option value="primesrc">Primesrc</option><option value="moviesapi">Moviesapi</option><option value="frembed">Frembed</option><option value="uembed">Uembed</option><option value="warezcdn">Warezcdn</option><option value="videasy">Videasy</option><option value="moviemaze">Moviemaze</option><option value="123moviesfree">123moviesfree</option><option value="vidsrccc">Vidsrccc</option><option value="vidrock">Vidrock</option><option value="autoembedpro">Autoembedpro</option><option value="vidsrc">Vidsrc</option><option value="vidfast">Vidfast</option><option value="autoembed">Autoembed</option><option value="embedsu">Embedsu</option><option value="111movies">111movies</option><option value="vidlink">Vidlink</option><option value="videasy">Videasy</option><option value="vidsrcto">Vidsrcto</option><option value="solarmovies">Solarmovies</option><option value="freehdmovies">Freehdmovies</option></select>
-                        <button id="refreshButton" fdprocessedid="cu36d">Refresh</button>
-                    </div>
-                    <iframe id="streamingIframe" width="100%" height="500" frameborder="0" allowfullscreen="" src="https://vidrock.net/movie/tt39240269?ads=0&amp;disable_ads=1"></iframe>
-                <div id="translationOverlay" style="position: absolute; bottom: 50px; width: 100%; color: white; text-align: center; font-size: 18px; text-shadow: rgb(0, 0, 0) 2px 2px 4px; pointer-events: none; z-index: 1000;">The Conjuring: Last Rites</div></div>
-            </div>
+  <div class="container">
+    <!-- Sidebar: Channel list -->
+    <div class="sidebar" aria-label="Channel selector">
+      <div>
+        <input id="search" class="search-input" placeholder="Search channels..." aria-label="Search channels" />
+      </div>
+      <div class="channel-list" id="channelList" aria-label="Available channels">
+        Loading channels...
+      </div>
+    </div>
+
+    <!-- Player area -->
+    <div class="player-card" aria-label="Video player">
+      <div class="title-bar">
+        <div class="channel-title" id="currentTitle">Loading...</div>
+        <div class="status" id="statusText">No stream loaded</div>
+      </div>
+      <div class="video-wrapper">
+        <video id="video" playsinline webkit-playsinline preload="metadata" poster="" crossorigin="anonymous" tabindex="0">
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
+      <div class="controls" aria-label="Playback controls">
+        <button class="btn" id="playPauseBtn" aria-label="Play/Pause">Play ▶️</button>
+        <div class="progress" id="progressBar" aria-label="Playback progress" role="slider" tabindex="0">
+          <div class="progress-inner" id="progressInner"></div>
         </div>
+        <div class="time" id="timeDisplay">0:00 / 0:00</div>
+        <button class="btn" id="muteBtn" aria-label="Mute toggle">Mute 🔇</button>
+        <button class="btn" id="fsBtn" aria-label="Toggle fullscreen">⛶</button>
+      </div>
+      <div class="fallback" id="fallbackNotice" style="display:none;">
+        If stream fails, try refreshing or selecting another channel. Some streams may be offline or blocked due to CORS/network.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Playlist source
+    const playlistURL = 'https://iptv-org.github.io/iptv/countries/ph.m3u';
+
+    // DOM refs
+    const channelListEl = document.getElementById('channelList');
+    const searchInput = document.getElementById('search');
+    const video = document.getElementById('video');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const fsBtn = document.getElementById('fsBtn');
+    const progressInner = document.getElementById('progressInner');
+    const progressBar = document.getElementById('progressBar');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const currentTitle = document.getElementById('currentTitle');
+    const statusText = document.getElementById('statusText');
+    const fallbackNotice = document.getElementById('fallbackNotice');
+
+    let hlsInstance = null;
+    let channels = []; // {name, url, group, logo}
+    let filtered = [];
+    let currentChannel = null;
+    let userInteracted = false;
+
+    // Basic .m3u parser (handles EXTINF lines)
+    function parseM3U(content) {
+      const lines = content.split(/\r?\n/).map(l => l.trim());
+      const result = [];
+      let meta = null;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.startsWith('#EXTINF')) {
+          // parse metadata
+          // example: #EXTINF:-1 tvg-id="" tvg-name="GMA 7" tvg-logo="" group-title="Philippines",GMA 7
+          const info = {};
+          const rest = line.substring(8); // after EXTINF:
+          const parts = rest.split(',');
+          const metaPart = parts.slice(0, -1).join(',');
+          const displayName = parts.slice(-1)[0].trim();
+          info.displayName = displayName;
+
+          // extract attributes
+          const attrRegex = /([a-zA-Z0-9\-]+?)="(.*?)"/g;
+          let m;
+          while ((m = attrRegex.exec(metaPart)) !== null) {
+            info[m[1]] = m[2];
+          }
+          result.push({ meta: info, url: null });
+        } else if (line.startsWith('#')) {
+          continue;
+        } else {
+          // this is a URL; attach to last entry if exists
+          if (result.length > 0 && !result[result.length - 1].url) {
+            result[result.length - 1].url = line;
+          }
+        }
+      }
+      // map to cleaner objects
+      return result
+        .filter(e => e.url)
+        .map(e => ({
+          name: e.meta.displayName || e.meta['tvg-name'] || 'Unknown',
+          url: e.url,
+          group: e.meta['group-title'] || '',
+          logo: e.meta['tvg-logo'] || ''
+        }));
+    }
+
+    // Load and populate channels
+    async function loadPlaylist() {
+      channelListEl.textContent = 'Fetching playlist...';
+      try {
+        const res = await fetch(playlistURL);
+        if (!res.ok) throw new Error('Failed to fetch playlist');
+        const txt = await res.text();
+        channels = parseM3U(txt);
+        filtered = channels.slice();
+        if (channels.length === 0) {
+          channelListEl.textContent = 'No channels parsed.';
+          return;
+        }
+        renderChannelList();
+        selectChannel(filtered[0]);
+      } catch (e) {
+        console.error(e);
+        channelListEl.textContent = 'Error loading playlist.';
+        statusText.textContent = 'Playlist load error';
+        fallbackNotice.style.display = 'block';
+      }
+    }
+
+    function renderChannelList() {
+      channelListEl.innerHTML = '';
+      if (filtered.length === 0) {
+        channelListEl.textContent = 'No channels match search.';
+        return;
+      }
+      filtered.forEach((ch, idx) => {
+        const div = document.createElement('div');
+        div.className = 'channel-item' + (currentChannel === ch ? ' active' : '');
+        div.setAttribute('role','button');
+        div.setAttribute('tabindex','0');
+        div.innerHTML = `
+          <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${ch.name}</div>
+          ${ch.group? `<div style="opacity:.6; font-size:11px; margin-left:6px;">${ch.group}</div>`: ''}
+        `;
+        div.addEventListener('click', () => selectChannel(ch));
+        div.addEventListener('keydown', e => { if (e.key === 'Enter') selectChannel(ch); });
+        channelListEl.appendChild(div);
+      });
+    }
+
+    function filterChannels(term) {
+      const low = term.trim().toLowerCase();
+      filtered = channels.filter(c => c.name.toLowerCase().includes(low) || (c.group && c.group.toLowerCase().includes(low)));
+      renderChannelList();
+    }
+
+    // Switch stream
+    function selectChannel(ch) {
+      if (!ch || !ch.url) return;
+      currentChannel = ch;
+      updateActiveInList();
+      currentTitle.textContent = ch.name;
+      statusText.textContent = 'Loading...';
+      playStream(ch.url);
+    }
+
+    function updateActiveInList() {
+      Array.from(channelListEl.children).forEach(el => {
+        el.classList.remove('active');
+        if (el.textContent.trim().startsWith(currentChannel?.name)) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    function playStream(url) {
+      // clean existing
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      video.pause();
+      video.src = '';
+      video.removeAttribute('src');
+      video.load();
+
+      const attemptPlay = () => {
+        video.play()
+          .then(() => {
+            playPauseBtn.textContent = 'Pause ⏸️';
+            statusText.textContent = 'Playing';
+          })
+          .catch(() => {
+            playPauseBtn.textContent = 'Play ▶️';
+            statusText.textContent = 'Paused (interaction required)'; 
+          });
+      };
+
+      // decide HLS or native
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', () => {
+          attemptPlay();
+        }, { once: true });
+      } else if (window.Hls && Hls.isSupported()) {
+        hlsInstance = new Hls({ maxBufferLength: 30 });
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(video);
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          attemptPlay();
+        });
+        hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+          console.warn('HLS error', data);
+          statusText.textContent = 'Stream error'; 
+          fallbackNotice.style.display = 'block';
+        });
+      } else {
+        statusText.textContent = 'Unsupported format';
+        fallbackNotice.style.display = 'block';
+        video.innerHTML = 'HLS not supported in this browser.';
+      }
+    }
+
+    // UI & control wiring
+    playPauseBtn.addEventListener('click', async () => {
+      if (video.paused) {
+        try {
+          await video.play();
+          playPauseBtn.textContent = 'Pause ⏸️';
+          statusText.textContent = 'Playing';
+        } catch {
+          statusText.textContent = 'Interaction required';
+        }
+      } else {
+        video.pause();
+        playPauseBtn.textContent = 'Play ▶️';
+        statusText.textContent = 'Paused';
+      }
+    });
+
+    muteBtn.addEventListener('click', () => {
+      video.muted = !video.muted;
+      muteBtn.textContent = video.muted ? 'Unmute 🔈' : 'Mute 🔇';
+    });
+
+    fsBtn.addEventListener('click', () => {
+      const wrapper = document.documentElement;
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      } else {
+        if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+        else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+      }
+    });
+
+    // Progress bar update
+    function updateTimeUI() {
+      const current = video.currentTime;
+      const total = video.duration;
+      if (!isNaN(total) && total > 0) {
+        const pct = (current / total) * 100;
+        progressInner.style.width = pct + '%';
+        timeDisplay.textContent = `${formatTime(current)} / ${formatTime(total)}`;
+      }
+    }
+
+    function formatTime(sec) {
+      if (isNaN(sec)) return '0:00';
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    video.addEventListener('timeupdate', updateTimeUI);
+    video.addEventListener('durationchange', updateTimeUI);
+    video.addEventListener('loadedmetadata', updateTimeUI);
+    video.addEventListener('ended', () => {
+      playPauseBtn.textContent = 'Replay 🔁';
+      statusText.textContent = 'Ended';
+    });
+
+    progressBar.addEventListener('click', e => {
+      const rect = progressBar.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      if (!isNaN(video.duration)) {
+        video.currentTime = pct * video.duration;
+      }
+    });
+
+    progressBar.addEventListener('keydown', e => {
+      if (isNaN(video.duration)) return;
+      if (e.key === 'ArrowRight') {
+        video.currentTime = Math.min(video.duration, video.currentTime + 5);
+      } else if (e.key === 'ArrowLeft') {
+        video.currentTime = Math.max(0, video.currentTime - 5);
+      }
+    });
+
+    // Autoplay attempt on load (muted to satisfy policies)
+    window.addEventListener('load', async () => {
+      video.muted = true;
+      await loadPlaylist();
+      try {
+        await video.play();
+        playPauseBtn.textContent = 'Pause ⏸️';
+      } catch {}
+    });
+
+    // Search hook
+    searchInput.addEventListener('input', e => {
+      filterChannels(e.target.value);
+    });
+
+    // Visibility: resume if needed
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && currentChannel && !video.paused) {
+        video.play().catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>
