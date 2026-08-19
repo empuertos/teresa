@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global IPTV Player (By Country)</title>
+  <title>Global IPTV Player</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     * { box-sizing: border-box; }
@@ -23,7 +23,6 @@
   <h2>📺 Global IPTV Player</h2>
 
   <div class="controls">
-    <!-- Country Selector -->
     <select id="countrySelect" onchange="loadCountryPlaylist()">
       <option value="ph" selected>🇵🇭 Philippines</option>
       <option value="us">🇺🇸 United States</option>
@@ -32,7 +31,6 @@
       <option value="kr">🇰🇷 South Korea</option>
     </select>
 
-    <!-- Channel List (Auto-populated) -->
     <select id="channelSelect" onchange="playSelectedChannel()">
       <option value="">-- Loading Channels... --</option>
     </select>
@@ -46,7 +44,6 @@
 </div>
 
 <script>
-  // Cloudflare Worker Proxy
   const PROXY = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/?url=';
 
   const video = document.getElementById('video');
@@ -55,7 +52,6 @@
   const channelSelect = document.getElementById('channelSelect');
   let hls = null;
 
-  // 1. Fetch M3U Playlist per Country
   async function loadCountryPlaylist() {
     const code = countrySelect.value;
     const m3uUrl = `https://iptv-org.github.io/iptv/countries/${code}.m3u`;
@@ -71,7 +67,6 @@
     }
   }
 
-  // 2. Parse M3U Text into Dropdown Options
   function parseM3U(m3uText) {
     const lines = m3uText.split('\n');
     channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
@@ -96,29 +91,49 @@
     status.innerText = `Loaded ${channelSelect.options.length - 1} channels. Select one to play!`;
   }
 
-  // 3. Play Selected Channel via Cloudflare Proxy
   function playSelectedChannel() {
     const rawUrl = channelSelect.value;
     if (!rawUrl) return;
 
     const proxiedUrl = PROXY + encodeURIComponent(rawUrl);
-    status.innerText = 'Connecting to stream...';
+    status.innerText = 'Connecting & Bypass Blocking...';
 
     if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
-      hls = new Hls();
+      // Advanced config to bypass network drops & retry automatically
+      hls = new Hls({
+        manifestLoadingTimeOut: 15000,
+        manifestLoadingMaxRetry: 4,
+        levelLoadingMaxRetry: 4,
+        fragLoadingMaxRetry: 6,
+        enableWorker: true
+      });
+
       hls.loadSource(proxiedUrl);
       hls.attachMedia(video);
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        status.innerText = 'Playing stream!';
+        status.innerText = 'Playing live stream!';
         video.play().catch(() => status.innerText = 'Click play on the video player.');
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          status.innerText = 'Channel is currently offline or blocked by source.';
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              status.innerText = 'Network error. Attempting auto-recovery...';
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              status.innerText = 'Media error. Recovering stream...';
+              hls.recoverMediaError();
+              break;
+            default:
+              status.innerText = 'Stream offline or geo-restricted by provider.';
+              hls.destroy();
+              break;
+          }
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -127,7 +142,6 @@
     }
   }
 
-  // Initial Load (Philippines)
   loadCountryPlaylist();
 </script>
 
