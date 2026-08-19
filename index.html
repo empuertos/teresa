@@ -2,145 +2,952 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global IPTV Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Steve's Professional Live Hub - Unified dashboard for weather and streaming">
+  <meta name="keywords" content="live weather, Philippines, streaming, dashboard">
+  <meta name="author" content="Steve">
+  <meta name="theme-color" content="#1e3c72">
+  
+  <!-- Progressive Web App Manifest -->
+  <link rel="manifest" href="data:application/manifest+json,{"name":"Steve's Live Hub","short_name":"Steve's Hub","start_url":"/","display":"standalone","background_color":"#1e3c72","theme_color":"#1e3c72","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%2364b5f6' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200z'/%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}">
+  
+  <title>Steve's Unified Live Hub</title>
+  
+  <meta http-equiv="Permissions-Policy" content="autoplay=(), encrypted-media=(), picture-in-picture=()">
+  
+  <!-- HLS Library for Global IPTV Player -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <!-- Unified CSS Framework -->
   <style>
-    * { box-sizing: border-box; }
-    body { background-color: #121212; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-    .container { width: 100%; max-width: 900px; }
-    h2 { text-align: center; }
-    .controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    select, button { padding: 12px; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 6px; font-size: 15px; }
-    select { flex: 1; min-width: 180px; }
-    button { cursor: pointer; background: #2a2a2a; }
-    .player-box { width: 100%; background: #000; border-radius: 8px; overflow: hidden; }
-    video { width: 100%; aspect-ratio: 16/9; display: block; }
-    .status { margin-top: 10px; font-size: 14px; color: #00ff88; text-align: center; min-height: 20px; }
+    /* Unified Design System Variables */
+    :root {
+      --primary-bg: linear-gradient(135deg, #1e3c72, #2a5298);
+      --secondary-bg: rgba(255, 255, 255, 0.1);
+      --accent-color: #64b5f6;
+      --text-primary: #ffffff;
+      --text-secondary: #bbdefb;
+      --border-color: rgba(255, 255, 255, 0.18);
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --font-primary: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Consolas', 'Courier New', monospace;
+      --spacing-xs: 0.5rem;
+      --spacing-sm: 1rem;
+      --spacing-md: 1.5rem;
+      --spacing-lg: 2rem;
+      --spacing-xl: 3rem;
+      --radius-sm: 0.5rem;
+      --radius-md: 1rem;
+      --radius-lg: 1.5rem;
+      --transition-fast: 0.2s ease;
+      --transition-normal: 0.3s ease;
+      --transition-slow: 0.5s ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-primary); background: var(--primary-bg); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
+
+    .header {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      padding: var(--spacing-md) var(--spacing-sm);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .header h1 {
+      color: var(--accent-color);
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(100, 181, 246, 0.5);
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--spacing-md); }
+    .grid { display: grid; gap: var(--spacing-md); }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+    .card {
+      background: var(--secondary-bg);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: 0 8px 32px var(--shadow-color);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+      margin-bottom: var(--spacing-md);
+    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
+    .card-header { margin-bottom: var(--spacing-md); }
+    .card-title { font-size: 1.5rem; color: var(--accent-color); margin-bottom: var(--spacing-xs); }
+    .card-subtitle { color: var(--text-secondary); font-size: 0.9rem; opacity: 0.8; }
+
+    .widget { padding: var(--spacing-lg); border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.5); }
+    .widget-title { font-size: 1.2rem; color: var(--accent-color); margin-bottom: var(--spacing-sm); }
+    .widget-content { color: var(--text-secondary); }
+
+    .form-group { margin-bottom: var(--spacing-md); }
+    .form-select, .form-input {
+      width: 100%;
+      padding: var(--spacing-sm);
+      background: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: border-color var(--transition-fast);
+    }
+    .form-select:focus, .form-input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2); }
+
+    .btn {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color var(--transition-fast);
+    }
+    .btn:hover { background: #4fa3e0; }
+    .btn:active { transform: translateY(1px); }
+
+    .youtube-player { width: 100%; aspect-ratio: 16 / 9; border: none; border-radius: var(--radius-sm); }
+
+    .security-section {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-sm);
+      word-break: break-all;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fadeIn 0.6s ease-out; }
+
+    .loading { display: inline-block; position: relative; width: 20px; height: 20px; }
+    .loading::after {
+      content: ''; position: absolute; width: 20px; height: 20px;
+      border: 2px solid var(--border-color); border-top: 2px solid var(--accent-color);
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .footer { text-align: center; padding: var(--spacing-xl); color: var(--text-secondary); font-size: 0.9rem; }
+
+    /* IPTV Player Styling */
+    .iptv-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    .iptv-player-box { width: 100%; background: #000; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+    .iptv-video { width: 100%; aspect-ratio: 16/9; display: block; }
+    .iptv-status { margin-top: 10px; font-size: 14px; color: #00ff88; text-align: center; min-height: 20px; }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .header h1 { font-size: 2rem; }
+      .container { padding: var(--spacing-sm); }
+      .card { padding: var(--spacing-md); }
+      .responsive-table { display: block; width: 100% !important; border: none !important; box-shadow: none !important; }
+      .responsive-table thead, .responsive-table tbody, .responsive-table th, .responsive-table td, .responsive-table tr { display: block; }
+      .responsive-table thead tr { position: absolute; top: -9999px; left: -9999px; }
+      .responsive-table tr { margin-bottom: 1rem; border-bottom: 2px solid var(--border-color); }
+      .responsive-table td { display: block; border: none; border-bottom: 1px solid var(--border-color); padding: 0.5rem; text-align: left; word-wrap: break-word; }
+      .responsive-table td:before { content: attr(data-label) ": "; font-weight: 600; color: var(--accent-color); }
+    }
+
+    /* Lotto Section Styles */
+    .lotto-card { background: #1f2435; border-radius: 1rem; padding: 1rem 1.25rem; box-shadow: 0 24px 60px -10px rgba(0,0,0,.25); width: 100%; overflow: auto; }
+    .lotto-h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
+    .lotto-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: .5rem; }
+    .lotto-thead tr { background: #2f3045; }
+    .lotto-th, .lotto-td { padding: 8px 12px; border: 1px solid #272a48; text-align: left; white-space: nowrap; }
+    .lotto-th { position: sticky; top: 0; font-weight: 600; }
+    .lotto-tr:nth-child(odd) { background: rgba(255,255,255,.02); }
+    .lotto-small { font-size: .7rem; opacity: .75; }
+    .lotto-error { background: #7a1f1f; padding: .75rem 1rem; border-radius: .5rem; color: #ffe3e3; margin-top: .5rem; }
+    .lotto-loading { display: inline-block; font-size: .9rem; margin-left: .5rem; vertical-align: middle; }
+    .lotto-refresh { background: #6366f1; border: none; color: white; padding: .45rem .9rem; border-radius: .5rem; cursor: pointer; font-size: .8rem; margin-left: .5rem; }
+    .lotto-timestamp { margin-top: .5rem; font-size: .65rem; opacity: .8; }
+
+    @media (max-width: 768px) {
+      .lotto-th, .lotto-td { white-space: normal; word-wrap: break-word; }
+      .lotto-card { padding: 0.5rem; }
+      .lotto-table { display: block; width: 100% !important; border: none !important; box-shadow: none !important; }
+      .lotto-table thead, .lotto-table tbody, .lotto-table th, .lotto-table td, .lotto-table tr { display: block; }
+      .lotto-table thead tr { position: absolute; top: -9999px; left: -9999px; }
+      .lotto-table tr { margin-bottom: 1rem; border-bottom: 2px solid var(--border-color); }
+      .lotto-table td { display: block; border: none; border-bottom: 1px solid var(--border-color); padding: 0.5rem; text-align: left; word-wrap: break-word; }
+      .lotto-table td:before { content: attr(data-label) ": "; font-weight: 600; color: var(--accent-color); }
+    }
+
+    .link-list { list-style: none; padding: 0; margin: 0; }
+    .link-list li { margin-bottom: var(--spacing-xs); }
+    .link-list a { color: var(--text-secondary); text-decoration: none; padding: var(--spacing-xs) var(--spacing-sm); display: block; border-radius: var(--radius-sm); transition: all var(--transition-fast); border: 1px solid transparent; }
+    .link-list a:hover, .link-list a:focus { background: rgba(255, 255, 255, 0.1); color: var(--accent-color); border-color: var(--accent-color); transform: translateX(5px); }
   </style>
 </head>
 <body>
+  <header class="header">
+    <h1>Steve's Unified Live Hub</h1>
+  </header>
 
-<div class="container">
-  <h2>📺 Global IPTV Player</h2>
+  <main class="container">
+    <!-- Date/Time Widget -->
+    <section class="card animate-fade-in">
+      <div class="widget">
+        <div class="widget-title">Philippines Time</div>
+        <div class="widget-content">
+          <div id="date">Loading date...</div>
+          <div id="ph-time" style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">Loading time...</div>
+        </div>
+      </div>
+    </section>
 
-  <div class="controls">
-    <select id="countrySelect" onchange="loadChannels()">
-      <option value="ph" selected>🇵🇭 Philippines</option>
-      <option value="us">🇺🇸 United States</option>
-      <option value="gb">🇬🇧 United Kingdom</option>
-      <option value="jp">🇯🇵 Japan</option>
-    </select>
+    <!-- Weather Dashboard -->
+    <section class="card animate-fade-in">
+      <div class="card-header">
+        <h2 class="card-title">Philippines Weather Dashboard</h2>
+        <p class="card-subtitle">Real-time weather across major cities</p>
+      </div>
+      <div id="weatherContainer" class="grid grid-2">
+        <div class="loading" id="weatherLoading">Loading weather data...</div>
+      </div>
+    </section>
 
-    <select id="channelSelect" onchange="playChannel()">
-      <option value="">-- Select Channel --</option>
-    </select>
+    <!-- PHIVOLCS Latest Earthquakes -->
+    <section class="card animate-fade-in">
+      <div class="lotto-card" aria-label="PHIVOLCS earthquake data">
+        <div style="display:flex; align-items:center; justify-content: space-between; flex-wrap: wrap; gap:8px;">
+          <div>
+            <h1 class="lotto-h1">🌋 PHIVOLCS Latest Earthquakes</h1>
+            <div class="lotto-small">Refreshes every 10 seconds.</div>
+          </div>
+          <div>
+            <button class="lotto-refresh" id="phivolcsRefresh">Refresh now</button>
+            <span id="phivolcsStatus" class="lotto-small"></span>
+          </div>
+        </div>
+        <div id="phivolcsContainer" aria-live="polite">
+          <div class="lotto-loading" id="phivolcsLoading">Loading earthquake data…</div>
+        </div>
+        <div class="lotto-timestamp" id="phivolcsUpdated"></div>
+        <div id="phivolcsError" class="lotto-error" style="display:none;"></div>
+      </div>
+    </section>
 
-    <button onclick="loadChannels()">🔄 Refresh</button>
-  </div>
+    <!-- 3D Lotto Results -->
+    <section class="card animate-fade-in">
+      <div class="lotto-card" aria-label="Live spreadsheet data">
+        <div style="display:flex; align-items:center; justify-content: space-between; flex-wrap: wrap; gap:8px;">
+          <div>
+            <h1 class="lotto-h1">🎲 3D Lotto Results</h1>
+            <div class="lotto-small">Automatically refreshed every 30 seconds.</div>
+          </div>
+          <div>
+            <button class="lotto-refresh" id="manualRefresh">Refresh now</button>
+            <span id="lottoStatus" class="lotto-small"></span>
+          </div>
+        </div>
+        <div id="tableContainer" aria-live="polite">
+          <div class="lotto-loading" id="loadingText">Loading data…</div>
+        </div>
+        <div class="lotto-timestamp" id="lastUpdated"></div>
+        <div id="errorMsg" class="lotto-error" style="display:none;"></div>
+      </div>
+    </section>
 
-  <div class="player-box">
-    <video id="video" controls autoplay playsinline muted></video>
-  </div>
-  
-  <div id="status" class="status">Loading channels...</div>
-</div>
+    <!-- Global IPTV Player -->
+    <section class="card animate-fade-in">
+      <div class="card-header">
+        <h2 class="card-title">📺 Global IPTV Player</h2>
+        <p class="card-subtitle">Watch international live channels</p>
+      </div>
 
-<script>
-  const WORKER_BASE = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev';
+      <div class="iptv-controls">
+        <select id="countrySelect" class="form-select" style="flex: 1; min-width: 180px;" onchange="loadChannels()">
+          <option value="ph" selected>🇵🇭 Philippines</option>
+          <option value="us">🇺🇸 United States</option>
+          <option value="gb">🇬🇧 United Kingdom</option>
+          <option value="jp">🇯🇵 Japan</option>
+        </select>
 
-  const video = document.getElementById('video');
-  const status = document.getElementById('status');
-  const countrySelect = document.getElementById('countrySelect');
-  const channelSelect = document.getElementById('channelSelect');
-  let hls = null;
-  let retryCount = 0;
-  const MAX_RETRIES = 3;
+        <select id="iptvChannelSelect" class="form-select" style="flex: 1; min-width: 180px;" onchange="playChannel()">
+          <option value="">-- Select Channel --</option>
+        </select>
 
-  async function loadChannels() {
-    const code = countrySelect.value;
-    status.innerText = `Fetching channels...`;
-    channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
+        <button class="btn" onclick="loadChannels()">🔄 Refresh</button>
+      </div>
 
-    try {
-      const res = await fetch(`${WORKER_BASE}/?mode=get_channels&country=${code}`);
-      const channels = await res.json();
+      <div class="iptv-player-box">
+        <video id="iptvVideo" class="iptv-video" controls autoplay playsinline muted></video>
+      </div>
 
-      channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
-      channels.forEach(ch => {
-        const opt = document.createElement('option');
-        opt.value = ch.id;
-        opt.innerText = ch.title;
-        channelSelect.appendChild(opt);
-      });
+      <div id="iptvStatus" class="iptv-status">Loading channels...</div>
+    </section>
 
-      status.innerText = `Channels Loaded!`;
-    } catch (e) {
-      status.innerText = `Error loading channels.`;
-    }
-  }
-
-  function playChannel() {
-    const streamId = channelSelect.value;
-    if (!streamId) return;
-
-    retryCount = 0; // Reset retry counter
-    const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
-    status.innerText = 'Connecting...';
-
-    if (hls) {
-      hls.destroy();
-    }
-
-    if (Hls.isSupported()) {
-      hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-        maxBufferLength: 5,
-        manifestLoadingTimeOut: 8000,
-        fragLoadingTimeOut: 8000
-      });
-
-      hls.loadSource(proxiedUrl);
-      hls.attachMedia(video);
+    <!-- Live Media Hub -->
+    <section class="card animate-fade-in">
+      <div class="card-header">
+        <h2 class="card-title">📺 Live Media Hub</h2>
+        <p class="card-subtitle">YouTube channels and audio streaming</p>
+      </div>
+      <div class="form-group">
+        <select class="form-select" id="channelSelect">
+          <option value="">-- Select Channel --</option>
+          <option value="UCnf8Ejd3y2RboWNcOqHS24A">ATTY. RUPHIL F BAÑOC</option>
+          <option value="UCPTddoHsUattFCXD8u4p7Eg">ATTY. JURIL BROKA PATIÑO</option>
+          <option value="UC1S4Kg8_N5-1Rp6miCKEpsQ">XFM Cebu 88.3 | Official Channel</option>
+          <option value="UCstEtN0pgOmCf02EdXsGChw">KAPAMILYA CHANNEL</option>
+          <option value="UCKL5hAuzgFQsyrsQKgU0Qng">GMA NETWORK</option>
+          <option value="UCiFx0kZFjR29u0uJxTSq5MQ">TV5 Philippines</option>
+          <option value="UCJCUbMaY593_4SN1QPG7NFQ">PTV Philippines</option>
+          <option value="UCIxIecbM8okv6hI7iqGJm2A">RMN NETWORK</option>
+          <option value="UCpOm2kv1upnIFoOT7rSp6hg">PCSO GOV</option>
+          <option value="UCupvZG-5ko_eiXAupbDfxWw">CNN</option>
+          <option value="UCDgW7mEUuVJuU-yRyZslrbw">ALL TV2</option>
+          <option value="UC7941bBpZFenu_58hHnBkGQ">CCTN 47 OFFICIAL</option>
+          <option value="UCeY0bbntWzzVIaj2z3QigXg">NBC News</option>
+          <option value="UCYFgnkDYr-G5L_iy6DZdvSA">Super Radyo DZBB 594khz</option>
+          <option value="UCs_VNu-FQ0WcJnD4QkmIL5w">DZMM Teleradyo</option>
+          <option value="UCnYlMfpbCIg54cEyUiE42vw">NET25 News and Information</option>
+          <option value="UCi-D5IxBR2HahDyfJfqy7jA">One PH</option>
+          <option value="UCkw9o4FxDfJJiEHpq5JzDrQ">DYTR Bohol TV</option>
+          <option value="UCVVw9u0pZ3nnWxx7WyE8YkQ">Bombo Radyo Philippines</option>
+          <option value="UCetMicrNjXa_Pev2pjl-Vjw">Leo Lastimosa</option>
+        </select>
+      </div>
+      <div id="playerContainer" style="display: none; margin-top: 1rem;">
+        <iframe class="youtube-player" id="livePlayer" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      </div>
       
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        status.innerText = 'Playing!';
-        video.play().then(() => {
-          video.muted = false;
-        }).catch(() => {
-          video.play();
-        });
-      });
+      <!-- Audio Streaming Section -->
+      <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+        <h3 style="color: var(--accent-color); margin-bottom: 0.5rem;">🎵 Live Audio Stream - RMN Cebu</h3>
+        <audio id="audioPlayer" controls style="width: 100%; margin-top: 0.5rem;">
+          <source src="https://audiostreaming-worker.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>
+        <div id="audioStatus" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          <span id="streamStatus">Connecting to RMN Cebu...</span>
+          <span id="volumeInfo" style="margin-left: 1rem;"></span>
+        </div>
+        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center;">
+          <button id="refreshAudio" class="btn" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Refresh Stream</button>
+          <span class="loading" id="audioLoading" style="display: none;"></span>
+        </div>
+      </div>
+    </section>
 
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            if (retryCount < MAX_RETRIES) {
-              retryCount++;
-              status.innerText = `Connection weak, retrying (${retryCount}/${MAX_RETRIES})...`;
-              hls.startLoad();
+    <!-- Entertainment Portal -->
+    <section class="card animate-fade-in">
+      <div class="card-header">
+        <h2 class="card-title">🎬 Entertainment Portal</h2>
+        <p class="card-subtitle">Premium streaming services</p>
+      </div>
+      <ul class="link-list">
+        <li><a href="https://yarrlist.net" target="_blank" rel="noopener noreferrer">Yarrlist</a></li>
+        <li><a href="http://vid-us.vercel.app" target="_blank" rel="noopener noreferrer">NeroFlix</a></li>
+        <li><a href="https://kisskh.co" target="_blank" rel="noopener noreferrer">Kisskh</a></li>
+        <li><a href="https://itcaretv.top" target="_blank" rel="noopener noreferrer">ItcaretvTop</a></li>
+        <li><a href="https://www.lookmovie2.to" target="_blank" rel="noopener noreferrer">LookMovie Premium</a></li>
+        <li><a href="https://ww7.123moviesfree.net/home" target="_blank" rel="noopener noreferrer">123Movies Free</a></li>
+        <li><a href="https://fluxtv.cc/" target="_blank" rel="noopener noreferrer">Fluxtv</a></li>
+        <li><a href="https://film-haven.vercel.app" target="_blank" rel="noopener noreferrer">Film Haven</a></li>
+        <li><a href="https://stream4fun.net/" target="_blank" rel="noopener noreferrer">Stream4fun</a></li>
+        <li><a href="https://onlyflix.to/" target="_blank" rel="noopener noreferrer">OnlyflixTo</a></li>
+        <li><a href="https://www.1flex.org/" target="_blank" rel="noopener noreferrer">1FlexOrg</a></li>
+        <li><a href="https://www.cineby.at/" target="_blank" rel="noopener noreferrer">CinevibeTo</a></li>
+        <li><a href="https://heartivetv.pages.dev/" target="_blank" rel="noopener noreferrer">Heartivetv</a></li>
+        <li><a href="https://braflix.watch" target="_blank" rel="noopener noreferrer">Braflix</a></li>
+        <li><a href="https://watchluna.com/" target="_blank" rel="noopener noreferrer">WatchLuna</a></li>
+        <li><a href="https://www.cineby.gd/" target="_blank" rel="noopener noreferrer">Cineby</a></li>
+        <li><a href="https://zstream.mov/" target="_blank" rel="noopener noreferrer">ZstreamMov</a></li>
+        <li><a href="https://streamex.sh/" target="_blank" rel="noopener noreferrer">Streamex</a></li>
+        <li><a href="https://apexmovies.net/" target="_blank" rel="noopener noreferrer">Apexmovies</a></li>
+        <li><a href="https://anikoto.cz/home" target="_blank" rel="noopener noreferrer">Anikoto</a></li>
+        <li><a href="https://animesalt.top/" target="_blank" rel="noopener noreferrer">Animesalt</a></li>
+        <li><a href="https://www.wcoflix.tv/" target="_blank" rel="noopener noreferrer">Wcoflix-cartoon</a></li>
+        <li><a href="https://pinoymoviepedia.ru/" target="_blank" rel="noopener noreferrer">Pinoymoviepedia</a></li>
+      </ul>
+    </section>
+
+    <!-- Security Section -->
+    <section class="card animate-fade-in">
+      <div class="card-header">
+        <h2 class="card-title">Security Access</h2>
+        <p class="card-subtitle">Encrypted access tokens</p>
+      </div>
+      <div class="security-section">
+        <p><strong>G1st:</strong> 85551540X61863676X32342190X26286952X24740530X46010457X45940327X12473689X06767958X77048925</p>
+        <p><strong>G2nd:</strong> 87930868X79693801X28198839X10787943X01642065X43405314X05831064X58539749X93700422X50207461</p>
+        <p><strong>F-Sec:</strong> 24317591X41352780X53072337X66958056</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 Steve's Unified Live Hub. All rights reserved.</p>
+    <p>Built with modern web technologies for optimal performance and accessibility.</p>
+  </footer>
+
+  <script>
+    /* Global IPTV Player Script */
+    const WORKER_BASE = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev';
+    const iptvVideo = document.getElementById('iptvVideo');
+    const iptvStatus = document.getElementById('iptvStatus');
+    const countrySelect = document.getElementById('countrySelect');
+    const iptvChannelSelect = document.getElementById('iptvChannelSelect');
+    let hls = null;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+
+    async function loadChannels() {
+      const code = countrySelect.value;
+      iptvStatus.innerText = `Fetching channels...`;
+      iptvChannelSelect.innerHTML = '<option value="">-- Loading... --</option>';
+
+      try {
+        const res = await fetch(`${WORKER_BASE}/?mode=get_channels&country=${code}`);
+        const channels = await res.json();
+
+        iptvChannelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
+        channels.forEach(ch => {
+          const opt = document.createElement('option');
+          opt.value = ch.id;
+          opt.innerText = ch.title;
+          iptvChannelSelect.appendChild(opt);
+        });
+
+        iptvStatus.innerText = `Channels Loaded!`;
+      } catch (e) {
+        iptvStatus.innerText = `Error loading channels.`;
+      }
+    }
+
+    function playChannel() {
+      const streamId = iptvChannelSelect.value;
+      if (!streamId) return;
+
+      retryCount = 0;
+      const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
+      iptvStatus.innerText = 'Connecting...';
+
+      if (hls) {
+        hls.destroy();
+      }
+
+      if (Hls.isSupported()) {
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          maxBufferLength: 5,
+          manifestLoadingTimeOut: 8000,
+          fragLoadingTimeOut: 8000
+        });
+
+        hls.loadSource(proxiedUrl);
+        hls.attachMedia(iptvVideo);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          iptvStatus.innerText = 'Playing!';
+          iptvVideo.play().then(() => {
+            iptvVideo.muted = false;
+          }).catch(() => {
+            iptvVideo.play();
+          });
+        });
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                iptvStatus.innerText = `Connection weak, retrying (${retryCount}/${MAX_RETRIES})...`;
+                hls.startLoad();
+              } else {
+                iptvStatus.innerText = '⚠️ Channel is offline or unavailable.';
+                hls.destroy();
+              }
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              iptvStatus.innerText = 'Recovering video...';
+              hls.recoverMediaError();
             } else {
-              status.innerText = '⚠️ Channel is offline or unavailable.';
+              iptvStatus.innerText = '⚠️ Stream error or unsupported format.';
               hls.destroy();
             }
-          } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-            status.innerText = 'Recovering video...';
-            hls.recoverMediaError();
-          } else {
-            status.innerText = '⚠️ Stream error or unsupported format.';
-            hls.destroy();
           }
-        }
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = proxiedUrl;
-      video.play();
+        });
+      } else if (iptvVideo.canPlayType('application/vnd.apple.mpegurl')) {
+        iptvVideo.src = proxiedUrl;
+        iptvVideo.play();
+      }
     }
-  }
 
-  window.onload = loadChannels;
-</script>
+    /* Unified Application Controller */
+    class UnifiedLiveHub {
+      constructor() {
+        this.config = {
+          weatherWorkerURL: 'https://weather-worker.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/',
+          cities: [
+            { name: 'Manila', query: 'Manila,PH', color: '#ff4d4d' },
+            { name: 'Talisay City Cebu', query: 'Talisay,Cebu,PH', color: '#4dffff' },
+            { name: 'Cebu City', query: 'Cebu City,PH', color: '#4dff4d' },
+            { name: 'Cagayan de Oro', query: 'Cagayan de Oro,PH', color: '#ffff4d' },
+            { name: 'Zamboanga', query: 'Zamboanga,PH', color: '#ff4dff' },
+            { name: 'Davao City', query: 'Davao City,PH', color: '#ffb84d' }
+          ]
+        };
 
+        this.init();
+      }
+
+      init() {
+        this.setupDateTime();
+        this.setupWeather();
+        this.setupMedia();
+        this.setupAccessibility();
+      }
+
+      setupDateTime() {
+        const updateDateTime = () => {
+          const now = new Date();
+          const dateOptions = { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric' };
+          const timeOptions = { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+          
+          document.getElementById('date').textContent = new Intl.DateTimeFormat('en-US', dateOptions).format(now);
+          document.getElementById('ph-time').textContent = new Intl.DateTimeFormat('en-US', timeOptions).format(now);
+        };
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+      }
+
+      async setupWeather() {
+        const container = document.getElementById('weatherContainer');
+
+        try {
+          const weatherPromises = this.config.cities.map(async (city) => {
+            const response = await fetch(`${this.config.weatherWorkerURL}?q=${encodeURIComponent(city.query)}`);
+            const data = await response.json();
+
+            return `
+              <div class="widget">
+                <div class="widget-title" style="color: ${city.color}">${city.name}</div>
+                <div class="widget-content">
+                  <div style="font-size: 1.5rem; font-weight: bold;">${data.main.temp.toFixed(1)}°C</div>
+                  <div>${data.weather[0].description}</div>
+                  <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png"
+                       alt="${data.weather[0].description}" style="width: 50px; height: 50px;">
+                </div>
+              </div>
+            `;
+          });
+
+          const weatherHTML = await Promise.all(weatherPromises);
+          container.innerHTML = weatherHTML.join('');
+        } catch (error) {
+          container.innerHTML = '<div class="widget">Failed to load weather data</div>';
+        }
+      }
+
+      setupMedia() {
+        const select = document.getElementById('channelSelect');
+        const player = document.getElementById('livePlayer');
+        const container = document.getElementById('playerContainer');
+        
+        select.addEventListener('change', (e) => {
+          const channelId = e.target.value;
+          if (channelId) {
+            player.src = `https://www.youtube.com/embed/live_stream?channel=${channelId}&autoplay=1&mute=1&playsinline=1`;
+            container.style.display = 'block';
+          } else {
+            player.src = '';
+            container.style.display = 'none';
+          }
+        });
+
+        this.setupAudioStream();
+      }
+
+      setupAudioStream() {
+        const audioPlayer = document.getElementById('audioPlayer');
+        const streamStatus = document.getElementById('streamStatus');
+        const volumeInfo = document.getElementById('volumeInfo');
+        const refreshAudio = document.getElementById('refreshAudio');
+        const audioLoading = document.getElementById('audioLoading');
+
+        audioPlayer.addEventListener('loadstart', () => {
+          streamStatus.textContent = 'Loading RMN Cebu stream...';
+          audioLoading.style.display = 'inline-block';
+        });
+
+        audioPlayer.addEventListener('canplay', () => {
+          streamStatus.textContent = 'RMN Cebu - Ready to play';
+          audioLoading.style.display = 'none';
+        });
+
+        audioPlayer.addEventListener('playing', () => {
+          streamStatus.textContent = 'RMN Cebu - Now playing';
+          audioLoading.style.display = 'none';
+        });
+
+        audioPlayer.addEventListener('pause', () => {
+          streamStatus.textContent = 'RMN Cebu - Paused';
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+          streamStatus.textContent = 'RMN Cebu - Stream ended';
+        });
+
+        audioPlayer.addEventListener('error', (e) => {
+          streamStatus.textContent = 'Error: Could not load stream';
+          audioLoading.style.display = 'none';
+          console.error('Audio stream error:', e);
+        });
+
+        audioPlayer.addEventListener('volumechange', () => {
+          const volume = Math.round(audioPlayer.volume * 100);
+          volumeInfo.textContent = `Volume: ${volume}%`;
+        });
+
+        refreshAudio.addEventListener('click', () => {
+          streamStatus.textContent = 'Refreshing stream...';
+          audioLoading.style.display = 'inline-block';
+          
+          const currentTime = audioPlayer.currentTime;
+          const currentVolume = audioPlayer.volume;
+          const wasPaused = audioPlayer.paused;
+          
+          audioPlayer.src = audioPlayer.src;
+          audioPlayer.load();
+          
+          setTimeout(() => {
+            audioPlayer.currentTime = currentTime;
+            audioPlayer.volume = currentVolume;
+            if (!wasPaused) {
+              audioPlayer.play().catch(e => {
+                console.log('Auto-play prevented:', e);
+                streamStatus.textContent = 'Click play to start listening';
+              });
+            }
+            audioLoading.style.display = 'none';
+          }, 100);
+        });
+
+        setTimeout(() => {
+          if (audioPlayer.paused) {
+            audioPlayer.play().catch(e => {
+              console.log('Auto-play prevented, waiting for user interaction');
+              streamStatus.textContent = 'Click play to start listening';
+            });
+          }
+        }, 2000);
+      }
+
+      setupAccessibility() {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('animate-fade-in');
+            }
+          });
+        });
+
+        document.querySelectorAll('.card').forEach(card => {
+          observer.observe(card);
+        });
+      }
+    }
+
+    /* 3D Lotto Reader Functions */
+    const CSV_URL = "https://sheets-worker.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/";
+    const tableContainer = document.getElementById("tableContainer");
+    const errorMsg = document.getElementById("errorMsg");
+    const lastUpdated = document.getElementById("lastUpdated");
+    const lottoStatus = document.getElementById("lottoStatus");
+    const loadingText = document.getElementById("loadingText");
+    const manualRefresh = document.getElementById("manualRefresh");
+
+    function parseCSV(text) {
+      return text.trim().split("\n").map(r => r.split(",").map(c => c.replace(/^"|"$/g, "")));
+    }
+
+    function buildTable(data, container = tableContainer) {
+      if (!data || data.length === 0) {
+        container.innerHTML = "<div class='lotto-small'>No data available.</div>";
+        return;
+      }
+      const thead = data[0];
+      const bodyRows = data.slice(1);
+
+      const table = document.createElement("table");
+      table.className = "lotto-table";
+      const trHead = document.createElement("tr");
+      thead.forEach(h => {
+        const th = document.createElement("th");
+        th.className = "lotto-th";
+        th.textContent = h;
+        trHead.appendChild(th);
+      });
+      const theadEl = document.createElement("thead");
+      theadEl.className = "lotto-thead";
+      theadEl.appendChild(trHead);
+      table.appendChild(theadEl);
+
+      const tbody = document.createElement("tbody");
+      bodyRows.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.className = "lotto-tr";
+        row.forEach((cell, index) => {
+          const td = document.createElement("td");
+          td.className = "lotto-td";
+          td.textContent = cell;
+          td.setAttribute('data-label', thead[index]);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      container.innerHTML = "";
+      container.appendChild(table);
+    }
+
+    async function fetchAndRender() {
+      lottoStatus.textContent = "Fetching…";
+      errorMsg.style.display = "none";
+      loadingText.style.display = "inline-block";
+      try {
+        const resp = await fetch(CSV_URL, { cache: "no-cache" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const text = await resp.text();
+        const parsed = parseCSV(text);
+        buildTable(parsed);
+        const now = new Date();
+        lastUpdated.textContent = "Last updated: " + now.toLocaleString("en-US", { hour12: true });
+        lottoStatus.textContent = "";
+      } catch (err) {
+        errorMsg.textContent = "Failed to load spreadsheet: " + err.message;
+        errorMsg.style.display = "block";
+        lottoStatus.textContent = "Error";
+      } finally {
+        loadingText.style.display = "none";
+      }
+    }
+
+    manualRefresh.addEventListener("click", fetchAndRender);
+
+    /* PHIVOLCS Manager Class */
+    class PhivolcsManager {
+      constructor() {
+        this.url = "https://phivolcs.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/";
+        this.container = document.getElementById("phivolcsContainer");
+        this.errorEl = document.getElementById("phivolcsError");
+        this.updatedEl = document.getElementById("phivolcsUpdated");
+        this.statusEl = document.getElementById("phivolcsStatus");
+        this.loadingEl = document.getElementById("phivolcsLoading");
+        this.refreshBtn = document.getElementById("phivolcsRefresh");
+        this.maxRows = 10;
+        this.refreshInterval = 10000;
+        this.retryAttempts = 3;
+        this.retryDelay = 2000;
+
+        this.init();
+      }
+
+      init() {
+        this.refreshBtn.addEventListener("click", () => this.fetchData());
+        this.fetchData();
+        this.startAutoRefresh();
+      }
+
+      calculateDirection(lat, long) {
+        const refLat = 14.5995;
+        const refLong = 120.9842;
+        const dLat = (lat - refLat) * Math.PI / 180;
+        const dLong = (long - refLong) * Math.PI / 180;
+        const y = Math.sin(dLong) * Math.cos(lat * Math.PI / 180);
+        const x = Math.cos(refLat * Math.PI / 180) * Math.sin(lat * Math.PI / 180) -
+                  Math.sin(refLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.cos(dLong);
+        const bearing = Math.atan2(y, x) * 180 / Math.PI;
+        const normalizedBearing = (bearing + 360) % 360;
+        const deg = Math.round(normalizedBearing);
+        const ns = deg > 180 ? 'S' : 'N';
+        const ew = (deg > 90 && deg < 270) ? 'W' : 'E';
+        return `${ns} ${deg}° ${ew}`;
+      }
+
+      async fetchData(attempt = 1) {
+        this.setStatus("Fetching…");
+        this.hideError();
+        this.showLoading();
+
+        try {
+          const response = await fetch(this.url, { cache: "no-cache" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const text = await response.text();
+          const data = this.parseAndProcessData(text);
+          this.renderTable(data);
+          this.updateTimestamp();
+          this.setStatus("");
+          this.cacheData(data);
+        } catch (error) {
+          if (attempt < this.retryAttempts) {
+            this.setStatus(`Retrying... (${attempt}/${this.retryAttempts})`);
+            setTimeout(() => this.fetchData(attempt + 1), this.retryDelay);
+          } else {
+            this.showError("Failed to load PHIVOLCS data: " + error.message);
+            this.setStatus("Error");
+            const cached = this.getCachedData();
+            if (cached) {
+              this.renderTable(cached);
+              this.setStatus("Using cached data");
+            }
+          }
+        } finally {
+          this.hideLoading();
+        }
+      }
+
+      parseAndProcessData(csvText) {
+        let parsed = this.parseCSV(csvText).slice(0, this.maxRows + 1);
+        if (parsed.length > 0) {
+          parsed[0] = parsed[0].map(h => h.replace(/\s*\([^)]*\)/g, ''));
+          const headers = parsed[0];
+          const latIndex = headers.indexOf('Latitude');
+          const longIndex = headers.indexOf('Longitude');
+          const depthIndex = headers.indexOf('Depth');
+          const locIndex = headers.indexOf('Location');
+          if (latIndex !== -1 && longIndex !== -1 && depthIndex !== -1 && locIndex !== -1) {
+            parsed.slice(1).forEach(row => {
+              const lat = parseFloat(row[latIndex]);
+              const long = parseFloat(row[longIndex]);
+              const depth = row[depthIndex] || '000';
+              const loc = row[locIndex] || 'Unknown';
+              const direction = this.calculateDirection(lat, long);
+              row[locIndex] = `${depth.toString().padStart(3, '0')}km ${direction} of ${loc}`;
+            });
+          }
+          const columnsToHide = ['Latitude', 'Longitude', 'Depth'];
+          const indicesToHide = headers.map((h, i) => columnsToHide.includes(h) ? i : -1).filter(i => i !== -1);
+          parsed = parsed.map(row => row.filter((_, i) => !indicesToHide.includes(i)));
+        }
+        return parsed;
+      }
+
+      parseCSV(text) {
+        const rows = [];
+        const lines = text.trim().split("\n");
+        for (let line of lines) {
+          const row = [];
+          let current = '';
+          let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              row.push(current.replace(/^"|"$/g, ''));
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          row.push(current.replace(/^"|"$/g, ''));
+          rows.push(row);
+        }
+        return rows;
+      }
+
+      renderTable(data) {
+        if (!data || data.length === 0) {
+          this.container.innerHTML = "<div class='lotto-small'>No data available.</div>";
+          return;
+        }
+        const thead = data[0];
+        const bodyRows = data.slice(1);
+
+        const table = document.createElement("table");
+        table.className = "lotto-table responsive-table";
+        table.setAttribute('role', 'table');
+        table.setAttribute('aria-label', 'PHIVOLCS Latest Earthquakes');
+
+        const theadEl = document.createElement("thead");
+        const trHead = document.createElement("tr");
+        thead.forEach(h => {
+          const th = document.createElement("th");
+          th.className = "lotto-th";
+          th.innerHTML = `<strong>${h}</strong>`;
+          th.setAttribute('scope', 'col');
+          trHead.appendChild(th);
+        });
+        theadEl.appendChild(trHead);
+        table.appendChild(theadEl);
+
+        const tbody = document.createElement("tbody");
+        bodyRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.className = "lotto-tr";
+          tr.setAttribute('role', 'row');
+          row.forEach((cell, index) => {
+            const td = document.createElement("td");
+            td.className = "lotto-td";
+            td.textContent = cell;
+            td.setAttribute('data-label', thead[index]);
+            td.setAttribute('role', 'cell');
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+
+        this.container.innerHTML = "";
+        this.container.appendChild(table);
+      }
+
+      updateTimestamp() {
+        const now = new Date();
+        this.updatedEl.textContent = "Last updated: " + now.toLocaleString("en-US", { hour12: true });
+      }
+
+      setStatus(text) { this.statusEl.textContent = text; }
+      showError(message) { this.errorEl.textContent = message; this.errorEl.style.display = "block"; }
+      hideError() { this.errorEl.style.display = "none"; }
+      showLoading() { this.loadingEl.style.display = "inline-block"; }
+      hideLoading() { this.loadingEl.style.display = "none"; }
+      startAutoRefresh() { this.interval = setInterval(() => this.fetchData(), this.refreshInterval); }
+
+      cacheData(data) {
+        try {
+          localStorage.setItem('phivolcs_cache', JSON.stringify({ data, timestamp: Date.now() }));
+        } catch (e) {}
+      }
+
+      getCachedData() {
+        try {
+          const cached = localStorage.getItem('phivolcs_cache');
+          if (!cached) return null;
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < 1800000) return data;
+        } catch (e) {}
+        return null;
+      }
+    }
+
+    // Page Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      new UnifiedLiveHub();
+      new PhivolcsManager();
+      loadChannels(); // Load IPTV initial channels
+      fetchAndRender(); // Initial lotto fetch
+      setInterval(fetchAndRender, 30000); // 30s auto-refresh for Lotto
+    });
+  </script>
 </body>
 </html>
