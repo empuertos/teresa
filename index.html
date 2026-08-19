@@ -43,7 +43,7 @@
     <video id="video" controls autoplay playsinline></video>
   </div>
   
-  <div id="status" class="status">Loading hidden streams...</div>
+  <div id="status" class="status">Loading channels...</div>
 </div>
 
 <script>
@@ -57,7 +57,7 @@
 
   async function loadChannels() {
     const code = countrySelect.value;
-    status.innerText = `Fetching protected channels...`;
+    status.innerText = `Fetching channel list...`;
     channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
 
     try {
@@ -74,7 +74,7 @@
 
       status.innerText = `Channels Loaded!`;
     } catch (e) {
-      status.innerText = `Error loading channel list.`;
+      status.innerText = `Error loading channels.`;
     }
   }
 
@@ -83,14 +83,17 @@
     if (!streamId) return;
 
     const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
-    status.innerText = 'Connecting via Proxy...';
+    status.innerText = 'Connecting...';
 
-    if (hls) hls.destroy();
+    if (hls) {
+      hls.destroy();
+    }
 
     if (Hls.isSupported()) {
       hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: true
+        lowLatencyMode: true,
+        backBufferLength: 30
       });
 
       hls.loadSource(proxiedUrl);
@@ -101,9 +104,23 @@
         video.play().catch(() => {});
       });
 
+      // Automatic Recovery Handler para hindi mag-crash ang playback
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          status.innerText = 'Stream error. Make sure your device supports H.265 hardware decoding.';
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              status.innerText = 'Network error, reconnecting...';
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              status.innerText = 'Media error, recovering...';
+              hls.recoverMediaError();
+              break;
+            default:
+              status.innerText = 'Stream offline or unsupported codec.';
+              hls.destroy();
+              break;
+          }
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
