@@ -17,8 +17,6 @@
     .player-box { width: 100%; background: #000; border-radius: 8px; overflow: hidden; }
     video { width: 100%; aspect-ratio: 16/9; display: block; }
     .status { margin-top: 10px; font-size: 14px; color: #00ff88; text-align: center; }
-    .vlc-container { margin-top: 15px; text-align: center; display: none; }
-    .vlc-btn { display: inline-block; padding: 14px 24px; background: #ff9800; color: #fff; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 16px; box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4); }
   </style>
 </head>
 <body>
@@ -46,11 +44,6 @@
   </div>
   
   <div id="status" class="status">Loading hidden streams...</div>
-  
-  <div id="vlcBox" class="vlc-container">
-    <p style="color: #ffcc00; margin-bottom: 8px;">⚠️ H.265 Stream: Kailangan buksan sa VLC Player</p>
-    <a id="vlcBtn" href="#" class="vlc-btn">▶️ Open CCTN 47 in VLC</a>
-  </div>
 </div>
 
 <script>
@@ -60,15 +53,12 @@
   const status = document.getElementById('status');
   const countrySelect = document.getElementById('countrySelect');
   const channelSelect = document.getElementById('channelSelect');
-  const vlcBox = document.getElementById('vlcBox');
-  const vlcBtn = document.getElementById('vlcBtn');
   let hls = null;
 
   async function loadChannels() {
     const code = countrySelect.value;
     status.innerText = `Fetching protected channels...`;
     channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
-    vlcBox.style.display = 'none';
 
     try {
       const res = await fetch(`${WORKER_BASE}/?mode=get_channels&country=${code}`);
@@ -92,32 +82,17 @@
     const streamId = channelSelect.value;
     if (!streamId) return;
 
-    const selectedOptionText = channelSelect.options[channelSelect.selectedIndex].text.toLowerCase();
-    vlcBox.style.display = 'none';
-
-    // Kapag CCTN 47 ang napili (H.265 stream)
-    if (selectedOptionText.includes('cctn')) {
-      try {
-        const rawUrl = atob(streamId);
-        
-        // Paggamit ng Direct VLC Protocol (vlc://)
-        vlcBtn.href = `vlc://${rawUrl}`;
-        vlcBox.style.display = 'block';
-        
-        status.innerText = 'H.265 format detected. Click the Orange Button below to start VLC!';
-        if (hls) hls.destroy();
-        return;
-      } catch(e) {}
-    }
-
-    // Normal player para sa ibang channels
     const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
-    status.innerText = 'Connecting via Optimized Proxy...';
+    status.innerText = 'Connecting via Proxy...';
 
     if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
-      hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true
+      });
+
       hls.loadSource(proxiedUrl);
       hls.attachMedia(video);
       
@@ -126,8 +101,10 @@
         video.play().catch(() => {});
       });
 
-      hls.on(Hls.Events.ERROR, () => {
-        status.innerText = 'Stream offline or format not supported by browser.';
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          status.innerText = 'Stream error. Make sure your device supports H.265 hardware decoding.';
+        }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = proxiedUrl;
