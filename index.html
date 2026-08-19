@@ -14,7 +14,6 @@
     select, button { padding: 12px; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 6px; font-size: 15px; }
     select { flex: 1; min-width: 180px; }
     button { cursor: pointer; background: #2a2a2a; }
-    button:active { background: #444; }
     .player-box { width: 100%; background: #000; border-radius: 8px; overflow: hidden; }
     video { width: 100%; aspect-ratio: 16/9; display: block; }
     .status { margin-top: 10px; font-size: 14px; color: #00ff88; text-align: center; }
@@ -26,30 +25,30 @@
   <h2>📺 Global IPTV Player</h2>
 
   <div class="controls">
-    <select id="countrySelect" onchange="loadCountryPlaylist()">
+    <select id="countrySelect" onchange="loadChannels()">
       <option value="ph" selected>🇵🇭 Philippines</option>
       <option value="us">🇺🇸 United States</option>
       <option value="gb">🇬🇧 United Kingdom</option>
       <option value="jp">🇯🇵 Japan</option>
-      <option value="kr">🇰🇷 South Korea</option>
     </select>
 
-    <select id="channelSelect" onchange="playSelectedChannel()">
-      <option value="">-- Loading Channels... --</option>
+    <select id="channelSelect" onchange="playChannel()">
+      <option value="">-- Select Channel --</option>
     </select>
 
-    <button onclick="loadCountryPlaylist()" title="Refresh Playlist">🔄 Refresh</button>
+    <button onclick="loadChannels()">🔄 Refresh</button>
   </div>
 
   <div class="player-box">
     <video id="video" controls autoplay playsinline></video>
   </div>
   
-  <div id="status" class="status">Auto-fetching latest channels...</div>
+  <div id="status" class="status">Loading hidden streams...</div>
 </div>
 
 <script>
-  const PROXY = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/?url=';
+  // Ang iyong Cloudflare Worker URL
+  const WORKER_BASE = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev';
 
   const video = document.getElementById('video');
   const status = document.getElementById('status');
@@ -57,107 +56,52 @@
   const channelSelect = document.getElementById('channelSelect');
   let hls = null;
 
-  async function loadCountryPlaylist() {
+  async function loadChannels() {
     const code = countrySelect.value;
-    const cacheBuster = new Date().getTime(); 
-    const m3uUrl = `https://iptv-org.github.io/iptv/countries/${code}.m3u?t=${cacheBuster}`;
-    
-    status.innerText = `Refreshing ${code.toUpperCase()} channel list...`;
-    channelSelect.innerHTML = '<option value="">-- Fetching latest list... --</option>';
+    status.innerText = `Fetching protected channels...`;
+    channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
 
     try {
-      const response = await fetch(m3uUrl, { cache: "no-store" });
-      const text = await response.text();
-      parseM3U(text);
-    } catch (err) {
-      status.innerText = 'Failed to load playlist for this country.';
+      // Hihingi lang tayo ng listahan mula sa Worker (Hidden Sources)
+      const res = await fetch(`${WORKER_BASE}/?mode=get_channels&country=${code}`);
+      const channels = await res.json();
+
+      channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
+      channels.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = ch.id; // Base64 ID lang ang nakalagay, walang URL!
+        opt.innerText = ch.title;
+        channelSelect.appendChild(opt);
+      });
+
+      status.innerText = `Channels Loaded (Sources Hidden)!`;
+    } catch (e) {
+      status.innerText = `Error loading channel list.`;
     }
   }
 
-  function parseM3U(m3uText) {
-    const lines = m3uText.split('\n');
-    channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
+  function playChannel() {
+    const streamId = channelSelect.value;
+    if (!streamId) return;
 
-    // Pinned working channels for Philippines
-    if (countrySelect.value === 'ph') {
-      const pinnedGroup = document.createElement('optgroup');
-      pinnedGroup.label = '⭐ Working / Custom Channels';
-      
-      const cctnOpt = document.createElement('option');
-      cctnOpt.value = 'http://122.55.252.134:8443/live/bba5b536faeacb9b56a3239f1ee8e3b3/1.m3u8';
-      cctnOpt.innerText = 'CCTN 47 (Direct Stream)';
-      pinnedGroup.appendChild(cctnOpt);
-
-      channelSelect.appendChild(pinnedGroup);
-    }
-
-    const autoGroup = document.createElement('optgroup');
-    autoGroup.label = '🌐 Auto-Fetched Channels';
-
-    let currentName = '';
-    lines.forEach(line => {
-      line = line.trim();
-      if (line.startsWith('#EXTINF:')) {
-        const parts = line.split(',');
-        currentName = parts[parts.length - 1] || 'Unknown Channel';
-      } else if (line.startsWith('http')) {
-        if (currentName) {
-          const opt = document.createElement('option');
-          opt.value = line;
-          opt.innerText = currentName;
-          autoGroup.appendChild(opt);
-          currentName = '';
-        }
-      }
-    });
-
-    channelSelect.appendChild(autoGroup);
-    status.innerText = `Updated! Loaded channels successfully.`;
-  }
-
-  function playSelectedChannel() {
-    const rawUrl = channelSelect.value;
-    if (!rawUrl) return;
-
-    const proxiedUrl = PROXY + encodeURIComponent(rawUrl);
-    status.innerText = 'Connecting to stream...';
+    // Ang URL na tatawagin ng HTML5 video ay nakaturo LANG sa Worker ID
+    const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
+    status.innerText = 'Connecting via Cloudflare Proxy...';
 
     if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
-      hls = new Hls({
-        manifestLoadingTimeOut: 15000,
-        manifestLoadingMaxRetry: 4,
-        levelLoadingMaxRetry: 4,
-        fragLoadingMaxRetry: 6,
-        enableWorker: true
-      });
-
+      hls = new Hls({ enableWorker: true });
       hls.loadSource(proxiedUrl);
       hls.attachMedia(video);
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         status.innerText = 'Playing stream!';
-        video.play().catch(() => status.innerText = 'Click play on the video player.');
+        video.play().catch(() => {});
       });
 
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              status.innerText = 'Network error. Retrying...';
-              hls.startLoad();
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              status.innerText = 'Media error. Recovering...';
-              hls.recoverMediaError();
-              break;
-            default:
-              status.innerText = 'Stream offline or geo-restricted by source.';
-              hls.destroy();
-              break;
-          }
-        }
+      hls.on(Hls.Events.ERROR, () => {
+        status.innerText = 'Stream offline or unreachable.';
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = proxiedUrl;
@@ -165,9 +109,7 @@
     }
   }
 
-  window.onload = () => {
-    loadCountryPlaylist();
-  };
+  window.onload = loadChannels;
 </script>
 
 </body>
