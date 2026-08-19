@@ -3,82 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Philippine Live IPTV Player</title>
+  <title>Global IPTV Player (By Country)</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     * { box-sizing: border-box; }
-    body {
-      background-color: #121212;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 900px;
-    }
-    h2 { text-align: center; margin-bottom: 15px; }
-    
-    .controls {
-      margin-bottom: 15px;
-      display: flex;
-      gap: 10px;
-    }
-    select {
-      flex: 1;
-      padding: 12px;
-      background: #1e1e1e;
-      color: #fff;
-      border: 1px solid #333;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-
-    .player-box {
-      width: 100%;
-      background: #000;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    }
-    video {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      display: block;
-    }
-
-    .status {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #00ff88;
-      text-align: center;
-    }
+    body { background-color: #121212; color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+    .container { width: 100%; max-width: 900px; }
+    h2 { text-align: center; }
+    .controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    select { flex: 1; min-width: 200px; padding: 12px; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 6px; font-size: 15px; }
+    .player-box { width: 100%; background: #000; border-radius: 8px; overflow: hidden; }
+    video { width: 100%; aspect-ratio: 16/9; display: block; }
+    .status { margin-top: 10px; font-size: 14px; color: #00ff88; text-align: center; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>🇵🇭 Philippine Live TV</h2>
+  <h2>📺 Global IPTV Player</h2>
 
-  <!-- Philippine Channels Selection -->
   <div class="controls">
+    <!-- Country Selector -->
+    <select id="countrySelect" onchange="loadCountryPlaylist()">
+      <option value="ph" selected>🇵🇭 Philippines</option>
+      <option value="us">🇺🇸 United States</option>
+      <option value="gb">🇬🇧 United Kingdom</option>
+      <option value="jp">🇯🇵 Japan</option>
+      <option value="kr">🇰🇷 South Korea</option>
+    </select>
+
+    <!-- Channel List (Auto-populated) -->
     <select id="channelSelect" onchange="playSelectedChannel()">
-      <option value="">-- Pumili ng PH Channel --</option>
-      <optgroup label="Local Channels">
-        <option value="http://stream.cctn47.com/live/stream.m3u8">CCTN 47 (Cebu)</option>
-        <option value="https://ebs-ebs.telepasion.tv/live/ebs/playlist.m3u8">EBS PH</option>
-        <option value="https://untv.com.ph/live-stream/index.m3u8">UNTV News and Rescue</option>
-        <option value="https://pTV.gov.ph/stream/live.m3u8">PTV 4 (Government)</option>
-      </optgroup>
-      <optgroup label="News & Sports">
-        <option value="https://live.abs-cbn.com/hls/news/anc.m3u8">ANC (ABS-CBN News Channel)</option>
-        <option value="https://dzrh.com.ph/live/stream.m3u8">DZRH News TV</option>
-        <option value="https://oneph.com/stream/index.m3u8">One PH</option>
-      </optgroup>
+      <option value="">-- Loading Channels... --</option>
     </select>
   </div>
 
@@ -86,29 +42,69 @@
     <video id="video" controls autoplay playsinline></video>
   </div>
   
-  <div id="status" class="status">Pumili ng channel para mag-start ang broadcast.</div>
+  <div id="status" class="status">Loading Philippines playlist...</div>
 </div>
 
 <script>
-  // Cloudflare Worker Proxy URL
+  // Cloudflare Worker Proxy
   const PROXY = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/?url=';
 
   const video = document.getElementById('video');
   const status = document.getElementById('status');
-  const select = document.getElementById('channelSelect');
+  const countrySelect = document.getElementById('countrySelect');
+  const channelSelect = document.getElementById('channelSelect');
   let hls = null;
 
+  // 1. Fetch M3U Playlist per Country
+  async function loadCountryPlaylist() {
+    const code = countrySelect.value;
+    const m3uUrl = `https://iptv-org.github.io/iptv/countries/${code}.m3u`;
+    status.innerText = `Fetching ${code.toUpperCase()} channels...`;
+    channelSelect.innerHTML = '<option value="">-- Loading Channels... --</option>';
+
+    try {
+      const response = await fetch(m3uUrl);
+      const text = await response.text();
+      parseM3U(text);
+    } catch (err) {
+      status.innerText = 'Failed to load playlist for this country.';
+    }
+  }
+
+  // 2. Parse M3U Text into Dropdown Options
+  function parseM3U(m3uText) {
+    const lines = m3uText.split('\n');
+    channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
+    let currentName = '';
+
+    lines.forEach(line => {
+      line = line.trim();
+      if (line.startsWith('#EXTINF:')) {
+        const parts = line.split(',');
+        currentName = parts[parts.length - 1] || 'Unknown Channel';
+      } else if (line.startsWith('http')) {
+        if (currentName) {
+          const opt = document.createElement('option');
+          opt.value = line;
+          opt.innerText = currentName;
+          channelSelect.appendChild(opt);
+          currentName = '';
+        }
+      }
+    });
+
+    status.innerText = `Loaded ${channelSelect.options.length - 1} channels. Select one to play!`;
+  }
+
+  // 3. Play Selected Channel via Cloudflare Proxy
   function playSelectedChannel() {
-    const rawUrl = select.value;
+    const rawUrl = channelSelect.value;
     if (!rawUrl) return;
 
-    // Route target stream through Cloudflare Proxy
     const proxiedUrl = PROXY + encodeURIComponent(rawUrl);
-    status.innerText = 'Kumokonekta sa channel...';
+    status.innerText = 'Connecting to stream...';
 
-    if (hls) {
-      hls.destroy();
-    }
+    if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
       hls = new Hls();
@@ -116,15 +112,13 @@
       hls.attachMedia(video);
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        status.innerText = 'Gumagana na ang stream!';
-        video.play().catch(() => {
-          status.innerText = 'Pindutin ang Play button sa player.';
-        });
+        status.innerText = 'Playing stream!';
+        video.play().catch(() => status.innerText = 'Click play on the video player.');
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          status.innerText = 'Offline o Down ang napiling channel. Subukan ang iba.';
+          status.innerText = 'Channel is currently offline or blocked by source.';
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -132,6 +126,9 @@
       video.play();
     }
   }
+
+  // Initial Load (Philippines)
+  loadCountryPlaylist();
 </script>
 
 </body>
