@@ -43,7 +43,7 @@
     <video id="video" controls autoplay playsinline></video>
   </div>
   
-  <div id="status" class="status">Loading channels...</div>
+  <div id="status" class="status">Loading hidden streams...</div>
 </div>
 
 <script>
@@ -57,7 +57,7 @@
 
   async function loadChannels() {
     const code = countrySelect.value;
-    status.innerText = `Fetching channel list...`;
+    status.innerText = `Fetching protected channels...`;
     channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
 
     try {
@@ -72,9 +72,9 @@
         channelSelect.appendChild(opt);
       });
 
-      status.innerText = `Channels Loaded!`;
+      status.innerText = `Channels Loaded (Sources Hidden)!`;
     } catch (e) {
-      status.innerText = `Error loading channels.`;
+      status.innerText = `Error loading channel list.`;
     }
   }
 
@@ -82,18 +82,36 @@
     const streamId = channelSelect.value;
     if (!streamId) return;
 
-    const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
-    status.innerText = 'Connecting...';
+    const selectedOptionText = channelSelect.options[channelSelect.selectedIndex].text.toLowerCase();
 
-    if (hls) {
-      hls.destroy();
+    // Direct redirect sa VLC para sa CCTN 47 (H.265 stream)
+    if (selectedOptionText.includes('cctn')) {
+      try {
+        const rawUrl = atob(streamId);
+        const intentUrl = `intent:${rawUrl.replace(/^https?:\/\//, '')}#Intent;scheme=http;type=video/*;package=org.videolan.vlc;end`;
+        
+        status.innerText = 'Opening CCTN 47 in VLC App...';
+        window.location.href = intentUrl;
+        return;
+      } catch(e) {
+        console.error('Error launching VLC', e);
+      }
     }
+
+    // Standard web player logic para sa ibang channels
+    const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
+    status.innerText = 'Connecting via Optimized Proxy...';
+
+    if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
       hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
-        backBufferLength: 30
+        maxBufferLength: 10,
+        maxMaxBufferLength: 20,
+        liveSyncDurationCount: 3,
+        manifestLoadingTimeOut: 10000
       });
 
       hls.loadSource(proxiedUrl);
@@ -104,23 +122,10 @@
         video.play().catch(() => {});
       });
 
-      // Automatic Recovery Handler para hindi mag-crash ang playback
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              status.innerText = 'Network error, reconnecting...';
-              hls.startLoad();
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              status.innerText = 'Media error, recovering...';
-              hls.recoverMediaError();
-              break;
-            default:
-              status.innerText = 'Stream offline or unsupported codec.';
-              hls.destroy();
-              break;
-          }
+          status.innerText = 'Stream offline or cannot decode.';
+          hls.startLoad();
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
