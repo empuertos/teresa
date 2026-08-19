@@ -62,14 +62,14 @@
     channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
 
     try {
-      // Hihingi lang tayo ng listahan mula sa Worker (Hidden Sources)
+      // Hihingi lang ng channel list mula sa Worker (Hidden Sources)
       const res = await fetch(`${WORKER_BASE}/?mode=get_channels&country=${code}`);
       const channels = await res.json();
 
       channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
       channels.forEach(ch => {
         const opt = document.createElement('option');
-        opt.value = ch.id; // Base64 ID lang ang nakalagay, walang URL!
+        opt.value = ch.id; // Base64 ID lang, walang raw URL
         opt.innerText = ch.title;
         channelSelect.appendChild(opt);
       });
@@ -84,14 +84,22 @@
     const streamId = channelSelect.value;
     if (!streamId) return;
 
-    // Ang URL na tatawagin ng HTML5 video ay nakaturo LANG sa Worker ID
     const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
-    status.innerText = 'Connecting via Cloudflare Proxy...';
+    status.innerText = 'Connecting via Optimized Proxy...';
 
     if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
-      hls = new Hls({ enableWorker: true });
+      // Fast Loading Optimization Configs
+      hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        maxBufferLength: 10,       // Maliit na buffer para mag-play agad (10s lang)
+        maxMaxBufferLength: 20,
+        liveSyncDurationCount: 3,  // Mas malapit sa real-time live broadcast
+        manifestLoadingTimeOut: 10000
+      });
+
       hls.loadSource(proxiedUrl);
       hls.attachMedia(video);
       
@@ -100,8 +108,11 @@
         video.play().catch(() => {});
       });
 
-      hls.on(Hls.Events.ERROR, () => {
-        status.innerText = 'Stream offline or unreachable.';
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          status.innerText = 'Buffering error. Retrying...';
+          hls.startLoad();
+        }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = proxiedUrl;
