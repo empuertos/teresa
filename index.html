@@ -3,89 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV Player (CORS Proxied)</title>
-  <!-- HLS.js Library for streaming .m3u8 files -->
+  <title>Philippine Live IPTV Player</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
+    * { box-sizing: border-box; }
     body {
       background-color: #121212;
       color: #ffffff;
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
     }
-    .player-container {
-      width: 90%;
-      max-width: 800px;
-      text-align: center;
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+    h2 { text-align: center; margin-bottom: 15px; }
+    
+    .controls {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    select {
+      flex: 1;
+      padding: 12px;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .player-box {
+      width: 100%;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     video {
       width: 100%;
-      border-radius: 8px;
-      background: #000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      aspect-ratio: 16 / 9;
+      display: block;
     }
+
     .status {
-      margin-top: 15px;
+      margin-top: 10px;
       font-size: 14px;
       color: #00ff88;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <div class="player-container">
-    <h2>Live IPTV Player</h2>
-    <video id="videoControls" controls autoplay playsinline></video>
-    <div id="statusMessage" class="status">Loading stream through Cloudflare Worker...</div>
+<div class="container">
+  <h2>🇵🇭 Philippine Live TV</h2>
+
+  <!-- Philippine Channels Selection -->
+  <div class="controls">
+    <select id="channelSelect" onchange="playSelectedChannel()">
+      <option value="">-- Pumili ng PH Channel --</option>
+      <optgroup label="Local Channels">
+        <option value="http://stream.cctn47.com/live/stream.m3u8">CCTN 47 (Cebu)</option>
+        <option value="https://ebs-ebs.telepasion.tv/live/ebs/playlist.m3u8">EBS PH</option>
+        <option value="https://untv.com.ph/live-stream/index.m3u8">UNTV News and Rescue</option>
+        <option value="https://pTV.gov.ph/stream/live.m3u8">PTV 4 (Government)</option>
+      </optgroup>
+      <optgroup label="News & Sports">
+        <option value="https://live.abs-cbn.com/hls/news/anc.m3u8">ANC (ABS-CBN News Channel)</option>
+        <option value="https://dzrh.com.ph/live/stream.m3u8">DZRH News TV</option>
+        <option value="https://oneph.com/stream/index.m3u8">One PH</option>
+      </optgroup>
+    </select>
   </div>
 
-  <script>
-    // Your Cloudflare Worker URL
-    const PROXY_BASE = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/?url=';
+  <div class="player-box">
+    <video id="video" controls autoplay playsinline></video>
+  </div>
+  
+  <div id="status" class="status">Pumili ng channel para mag-start ang broadcast.</div>
+</div>
 
-    // Stream URL to play (Replace with any .m3u8 link if needed)
-    const RAW_STREAM_URL = 'http://stream.cctn47.com/live/stream.m3u8';
+<script>
+  // Cloudflare Worker Proxy URL
+  const PROXY = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev/?url=';
 
-    // Helper to format proxied stream URL
-    function getProxiedUrl(url) {
-      return PROXY_BASE + encodeURIComponent(url);
+  const video = document.getElementById('video');
+  const status = document.getElementById('status');
+  const select = document.getElementById('channelSelect');
+  let hls = null;
+
+  function playSelectedChannel() {
+    const rawUrl = select.value;
+    if (!rawUrl) return;
+
+    // Route target stream through Cloudflare Proxy
+    const proxiedUrl = PROXY + encodeURIComponent(rawUrl);
+    status.innerText = 'Kumokonekta sa channel...';
+
+    if (hls) {
+      hls.destroy();
     }
 
-    const video = document.getElementById('videoControls');
-    const statusMsg = document.getElementById('statusMessage');
-    const finalStreamUrl = getProxiedUrl(RAW_STREAM_URL);
-
     if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(finalStreamUrl);
+      hls = new Hls();
+      hls.loadSource(proxiedUrl);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        statusMsg.innerText = 'Stream connected successfully! Playing live broadcast.';
+      
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        status.innerText = 'Gumagana na ang stream!';
         video.play().catch(() => {
-          statusMsg.innerText = 'Click the play button on the video player to start.';
+          status.innerText = 'Pindutin ang Play button sa player.';
         });
       });
-      hls.on(Hls.Events.ERROR, function (event, data) {
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          statusMsg.innerText = 'Error loading stream. Check if the stream source is online.';
+          status.innerText = 'Offline o Down ang napiling channel. Subukan ang iba.';
         }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native iOS/Safari support
-      video.src = finalStreamUrl;
-      video.addEventListener('loadedmetadata', function() {
-        video.play();
-        statusMsg.innerText = 'Stream connected via Safari native player!';
-      });
-    } else {
-      statusMsg.innerText = 'HLS streaming is not supported in this browser.';
+      video.src = proxiedUrl;
+      video.play();
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
