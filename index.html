@@ -11,7 +11,10 @@
     .container { width: 100%; max-width: 900px; }
     h2 { text-align: center; }
     .controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
-    select { flex: 1; min-width: 200px; padding: 12px; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 6px; font-size: 15px; }
+    select, button { padding: 12px; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 6px; font-size: 15px; }
+    select { flex: 1; min-width: 180px; }
+    button { cursor: pointer; background: #2a2a2a; }
+    button:active { background: #444; }
     .player-box { width: 100%; background: #000; border-radius: 8px; overflow: hidden; }
     video { width: 100%; aspect-ratio: 16/9; display: block; }
     .status { margin-top: 10px; font-size: 14px; color: #00ff88; text-align: center; }
@@ -34,13 +37,16 @@
     <select id="channelSelect" onchange="playSelectedChannel()">
       <option value="">-- Loading Channels... --</option>
     </select>
+
+    <!-- Manual Refresh Button -->
+    <button onclick="loadCountryPlaylist()" title="Refresh Playlist">🔄 Refresh</button>
   </div>
 
   <div class="player-box">
     <video id="video" controls autoplay playsinline></video>
   </div>
   
-  <div id="status" class="status">Loading Philippines playlist...</div>
+  <div id="status" class="status">Auto-fetching latest channels...</div>
 </div>
 
 <script>
@@ -52,14 +58,17 @@
   const channelSelect = document.getElementById('channelSelect');
   let hls = null;
 
+  // Fetch playlist directly with cache-busting (?t=timestamp)
   async function loadCountryPlaylist() {
     const code = countrySelect.value;
-    const m3uUrl = `https://iptv-org.github.io/iptv/countries/${code}.m3u`;
-    status.innerText = `Fetching ${code.toUpperCase()} channels...`;
-    channelSelect.innerHTML = '<option value="">-- Loading Channels... --</option>';
+    const cacheBuster = new Date().getTime(); 
+    const m3uUrl = `https://iptv-org.github.io/iptv/countries/${code}.m3u?t=${cacheBuster}`;
+    
+    status.innerText = `Refreshing ${code.toUpperCase()} channel list...`;
+    channelSelect.innerHTML = '<option value="">-- Fetching latest list... --</option>';
 
     try {
-      const response = await fetch(m3uUrl);
+      const response = await fetch(m3uUrl, { cache: "no-store" });
       const text = await response.text();
       parseM3U(text);
     } catch (err) {
@@ -88,7 +97,7 @@
       }
     });
 
-    status.innerText = `Loaded ${channelSelect.options.length - 1} channels. Select one to play!`;
+    status.innerText = `Updated! Loaded ${channelSelect.options.length - 1} active channels.`;
   }
 
   function playSelectedChannel() {
@@ -96,12 +105,11 @@
     if (!rawUrl) return;
 
     const proxiedUrl = PROXY + encodeURIComponent(rawUrl);
-    status.innerText = 'Connecting & Bypass Blocking...';
+    status.innerText = 'Connecting to stream...';
 
     if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
-      // Advanced config to bypass network drops & retry automatically
       hls = new Hls({
         manifestLoadingTimeOut: 15000,
         manifestLoadingMaxRetry: 4,
@@ -114,7 +122,7 @@
       hls.attachMedia(video);
       
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        status.innerText = 'Playing live stream!';
+        status.innerText = 'Playing stream!';
         video.play().catch(() => status.innerText = 'Click play on the video player.');
       });
 
@@ -122,15 +130,15 @@
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              status.innerText = 'Network error. Attempting auto-recovery...';
+              status.innerText = 'Network error. Retrying...';
               hls.startLoad();
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
-              status.innerText = 'Media error. Recovering stream...';
+              status.innerText = 'Media error. Recovering...';
               hls.recoverMediaError();
               break;
             default:
-              status.innerText = 'Stream offline or geo-restricted by provider.';
+              status.innerText = 'Stream offline or geo-restricted by source.';
               hls.destroy();
               break;
           }
@@ -142,7 +150,10 @@
     }
   }
 
-  loadCountryPlaylist();
+  // Automatic refresh on page load
+  window.onload = () => {
+    loadCountryPlaylist();
+  };
 </script>
 
 </body>
