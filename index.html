@@ -38,7 +38,6 @@
       <option value="">-- Loading Channels... --</option>
     </select>
 
-    <!-- Manual Refresh Button -->
     <button onclick="loadCountryPlaylist()" title="Refresh Playlist">🔄 Refresh</button>
   </div>
 
@@ -58,7 +57,6 @@
   const channelSelect = document.getElementById('channelSelect');
   let hls = null;
 
-  // Fetch playlist directly with cache-busting (?t=timestamp)
   async function loadCountryPlaylist() {
     const code = countrySelect.value;
     const cacheBuster = new Date().getTime(); 
@@ -79,8 +77,24 @@
   function parseM3U(m3uText) {
     const lines = m3uText.split('\n');
     channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
-    let currentName = '';
 
+    // Pinned working channels for Philippines
+    if (countrySelect.value === 'ph') {
+      const pinnedGroup = document.createElement('optgroup');
+      pinnedGroup.label = '⭐ Working / Custom Channels';
+      
+      const cctnOpt = document.createElement('option');
+      cctnOpt.value = 'http://122.55.252.134:8443/live/bba5b536faeacb9b56a3239f1ee8e3b3/1.m3u8';
+      cctnOpt.innerText = 'CCTN 47 (Direct Stream)';
+      pinnedGroup.appendChild(cctnOpt);
+
+      channelSelect.appendChild(pinnedGroup);
+    }
+
+    const autoGroup = document.createElement('optgroup');
+    autoGroup.label = '🌐 Auto-Fetched Channels';
+
+    let currentName = '';
     lines.forEach(line => {
       line = line.trim();
       if (line.startsWith('#EXTINF:')) {
@@ -91,13 +105,14 @@
           const opt = document.createElement('option');
           opt.value = line;
           opt.innerText = currentName;
-          channelSelect.appendChild(opt);
+          autoGroup.appendChild(opt);
           currentName = '';
         }
       }
     });
 
-    status.innerText = `Updated! Loaded ${channelSelect.options.length - 1} active channels.`;
+    channelSelect.appendChild(autoGroup);
+    status.innerText = `Updated! Loaded channels successfully.`;
   }
 
   function playSelectedChannel() {
@@ -150,7 +165,6 @@
     }
   }
 
-  // Automatic refresh on page load
   window.onload = () => {
     loadCountryPlaylist();
   };
