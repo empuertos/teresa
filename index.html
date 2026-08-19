@@ -2,118 +2,289 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Universal IPTV Player</title>
-  <!-- HLS.js for .m3u8 streams -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cinema Overlay IPTV Player</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- mpegts.js for raw MPEG-TS (.ts) and FLV live streams -->
   <script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.js"></script>
   <style>
-    body { background: #0b0d14; color: #fff; font-family: system-ui, sans-serif; margin: 0; padding: 20px; }
-    .player-container { max-width: 900px; margin: 0 auto; background: #161922; border-radius: 12px; overflow: hidden; }
-    .video-wrapper { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
-    video { width: 100%; height: 100%; }
-    .controls { padding: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    input, button { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #222531; color: #fff; }
-    input { flex: 1; min-width: 250px; }
-    button { cursor: pointer; background: #0075ff; border: none; font-weight: bold; }
-    .status { margin-top: 10px; font-size: 13px; color: #8a94a6; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body, html { width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; color: #fff; }
+
+    /* Fullscreen Video Container */
+    .player-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Floating Transparent Channel Overlay (Inside Video) */
+    .channel-drawer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      bottom: 20px;
+      width: 320px;
+      background: rgba(15, 18, 28, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+    }
+
+    /* Auto-Hide Offscreen State */
+    .channel-drawer.hidden {
+      transform: translateX(-360px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .drawer-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .channel-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .channel-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+
+    .channel-item:hover, .channel-item.active {
+      background: #0075ff;
+    }
+
+    /* On-Screen Toggle Trigger Indicator */
+    .toggle-hint {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.8;
+    }
+
+    /* Loader Overlay */
+    .status-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      z-index: 5;
+    }
   </style>
 </head>
 <body>
 
-<div class="player-container">
-  <div class="video-wrapper">
-    <video id="universalVideo" controls playsinline></video>
+<div class="player-container" id="playerContainer">
+  <video id="video" playsinline autoplay></video>
+  
+  <div class="toggle-hint" id="toggleHint">Click screen / Swipe right to open channels</div>
+  <div class="status-overlay" id="statusOverlay">Loading Playlist...</div>
+
+  <!-- In-Video Overlay Drawer -->
+  <div class="channel-drawer" id="channelDrawer">
+    <div class="drawer-header">
+      <div style="font-weight:700; font-size:15px;">Live Channels</div>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search channel..." />
+    </div>
+    <div class="channel-list" id="channelList"></div>
   </div>
-  <div class="controls">
-    <input type="text" id="streamUrl" placeholder="Paste stream URL (.m3u8, .ts, http/https)..." />
-    <button id="loadBtn">Play Stream</button>
-  </div>
-  <div class="status" id="statusMessage">Ready. Enter stream URL.</div>
 </div>
 
 <script>
-  const video = document.getElementById('universalVideo');
-  const streamUrlInput = document.getElementById('streamUrl');
-  const loadBtn = document.getElementById('loadBtn');
-  const statusMsg = document.getElementById('statusMessage');
-
-  let hlsEngine = null;
-  let tsPlayer = null;
-
-  // CORS Proxy service for streams blocked by origin headers
+  // High availability multi-fallback stream playlist
+  const PLAYLIST_URL = 'https://iptv-org.github.io/iptv/countries/ph.m3u';
   const CORS_PROXY = 'https://corsproxy.io/?';
 
-  function resetPlayers() {
-    if (hlsEngine) { hlsEngine.destroy(); hlsEngine = null; }
-    if (tsPlayer) { tsPlayer.destroy(); tsPlayer = null; }
-    video.pause();
-    video.removeAttribute('src');
-    video.load();
+  const video = document.getElementById('video');
+  const channelDrawer = document.getElementById('channelDrawer');
+  const channelList = document.getElementById('channelList');
+  const searchInput = document.getElementById('searchInput');
+  const statusOverlay = document.getElementById('statusOverlay');
+  const playerContainer = document.getElementById('playerContainer');
+
+  let channels = [];
+  let hls = null;
+  let autoHideTimer = null;
+
+  // Auto-hide Timer Logic (Hides drawer after 3 seconds of inactivity)
+  function resetAutoHideTimer() {
+    showDrawer();
+    clearTimeout(autoHideTimer);
+    autoHideTimer = setTimeout(() => {
+      hideDrawer();
+    }, 3500);
   }
 
-  function playUniversalStream(rawUrl, useProxy = false) {
-    resetPlayers();
+  function hideDrawer() {
+    channelDrawer.classList.add('hidden');
+  }
 
-    const targetUrl = useProxy ? CORS_PROXY + encodeURIComponent(rawUrl) : rawUrl;
-    statusMsg.textContent = `Loading: ${targetUrl}`;
+  function showDrawer() {
+    channelDrawer.classList.remove('hidden');
+  }
 
-    // 1. Detect MPEG-TS (.ts) or FLV Streams
-    if (rawUrl.includes('.ts') || rawUrl.includes('.flv') || mpegts.isSupported()) {
-      if (mpegts.isSupported()) {
-        tsPlayer = mpegts.createPlayer({
-          type: rawUrl.includes('.flv') ? 'flv' : 'mse',
-          isLive: true,
-          url: targetUrl
-        });
-        tsPlayer.attachMediaElement(video);
-        tsPlayer.load();
-        tsPlayer.play().then(() => {
-          statusMsg.textContent = 'Playing via MPEG-TS Engine';
-        }).catch(() => tryFallback(rawUrl, useProxy));
-        return;
+  // Touch Gesture Swipe Logic
+  let touchStartX = 0;
+  playerContainer.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, {passive: true});
+
+  playerContainer.addEventListener('touchend', e => {
+    let touchEndX = e.changedTouches[0].screenX;
+    if (touchEndX - touchStartX > 50) showDrawer(); // Swipe Right -> Show
+    if (touchStartX - touchEndX > 50) hideDrawer(); // Swipe Left -> Hide
+  }, {passive: true});
+
+  // Toggle drawer on screen tap
+  playerContainer.addEventListener('click', (e) => {
+    if (e.target === video || e.target === playerContainer) {
+      if (channelDrawer.classList.contains('hidden')) {
+        resetAutoHideTimer();
+      } else {
+        hideDrawer();
       }
     }
+  });
 
-    // 2. Detect HLS (.m3u8) Streams
+  // Prevent auto-hide while typing search
+  searchInput.addEventListener('click', (e) => e.stopPropagation());
+  searchInput.addEventListener('input', () => {
+    clearTimeout(autoHideTimer);
+    renderChannels(searchInput.value);
+  });
+
+  async function loadPlaylist() {
+    try {
+      const res = await fetch(PLAYLIST_URL);
+      const text = await res.text();
+      channels = parseM3U(text);
+      statusOverlay.style.display = 'none';
+      renderChannels('');
+      if(channels.length > 0) playChannel(channels[0]);
+      resetAutoHideTimer();
+    } catch(e) {
+      statusOverlay.textContent = 'Failed to load playlist. Check internet connection.';
+    }
+  }
+
+  function parseM3U(content) {
+    const lines = content.split(/\r?\n/);
+    const result = [];
+    let current = null;
+    for (let line of lines) {
+      line = line.trim();
+      if (line.startsWith('#EXTINF:')) {
+        const comma = line.lastIndexOf(',');
+        current = { name: comma !== -1 ? line.substring(comma + 1) : 'Channel', url: '' };
+      } else if (line && !line.startsWith('#') && current) {
+        current.url = line;
+        result.push(current);
+        current = null;
+      }
+    }
+    return result;
+  }
+
+  function renderChannels(filter) {
+    channelList.innerHTML = '';
+    const filtered = channels.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()));
+    
+    filtered.forEach(ch => {
+      const item = document.createElement('div');
+      item.className = 'channel-item';
+      item.textContent = ch.name;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        playChannel(ch);
+        resetAutoHideTimer();
+      };
+      channelList.appendChild(item);
+    });
+  }
+
+  function playChannel(ch) {
+    statusOverlay.style.display = 'flex';
+    statusOverlay.textContent = 'Connecting to ' + ch.name + '...';
+
+    if (hls) { hls.destroy(); hls = null; }
+    video.pause();
+
+    // HLS Playback Engine
     if (Hls.isSupported()) {
-      hlsEngine = new Hls({ enableWorker: true, lowLatencyMode: true });
-      hlsEngine.loadSource(targetUrl);
-      hlsEngine.attachMedia(video);
-      hlsEngine.on(Hls.Events.MANIFEST_PARSED, () => {
+      hls = new Hls({ enableWorker: true });
+      hls.loadSource(ch.url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play();
-        statusMsg.textContent = 'Playing via HLS Engine';
+        statusOverlay.style.display = 'none';
       });
-      hlsEngine.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal && !useProxy) {
-          statusMsg.textContent = 'Direct connection blocked by CORS. Retrying via Proxy...';
-          tryFallback(rawUrl, useProxy);
+      hls.on(Hls.Events.ERROR, (e, data) => {
+        if (data.fatal) {
+          // CORS Fallback Proxy Attempt
+          hls.loadSource(CORS_PROXY + encodeURIComponent(ch.url));
         }
       });
-      return;
-    }
-
-    // 3. Native MP4 / Safari HLS Fallback
-    if (video.canPlayType('application/vnd.apple.mpegurl') || video.canPlayType('video/mp4')) {
-      video.src = targetUrl;
-      video.play().catch(() => tryFallback(rawUrl, useProxy));
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = ch.url;
+      video.play();
+      statusOverlay.style.display = 'none';
     }
   }
 
-  function tryFallback(rawUrl, currentlyUsingProxy) {
-    if (!currentlyUsingProxy) {
-      playUniversalStream(rawUrl, true);
-    } else {
-      statusMsg.textContent = 'Failed to load stream. Server may be offline or strictly blocking web clients.';
-    }
-  }
-
-  loadBtn.onclick = () => {
-    const url = streamUrlInput.value.trim();
-    if (url) playUniversalStream(url);
-  };
+  window.onload = loadPlaylist;
 </script>
-
 </body>
 </html>
