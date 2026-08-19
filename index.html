@@ -47,7 +47,6 @@
 </div>
 
 <script>
-  // Ang iyong Cloudflare Worker URL
   const WORKER_BASE = 'https://iptv-proxy.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev';
 
   const video = document.getElementById('video');
@@ -62,14 +61,13 @@
     channelSelect.innerHTML = '<option value="">-- Loading... --</option>';
 
     try {
-      // Hihingi lang ng channel list mula sa Worker (Hidden Sources)
       const res = await fetch(`${WORKER_BASE}/?mode=get_channels&country=${code}`);
       const channels = await res.json();
 
       channelSelect.innerHTML = '<option value="">-- Select Channel --</option>';
       channels.forEach(ch => {
         const opt = document.createElement('option');
-        opt.value = ch.id; // Base64 ID lang, walang raw URL
+        opt.value = ch.id;
         opt.innerText = ch.title;
         channelSelect.appendChild(opt);
       });
@@ -84,19 +82,35 @@
     const streamId = channelSelect.value;
     if (!streamId) return;
 
+    const selectedOptionText = channelSelect.options[channelSelect.selectedIndex].text.toLowerCase();
+
+    // Direct redirect sa VLC para sa CCTN 47 (H.265 stream)
+    if (selectedOptionText.includes('cctn')) {
+      try {
+        const rawUrl = atob(streamId);
+        const intentUrl = `intent:${rawUrl.replace(/^https?:\/\//, '')}#Intent;scheme=http;type=video/*;package=org.videolan.vlc;end`;
+        
+        status.innerText = 'Opening CCTN 47 in VLC App...';
+        window.location.href = intentUrl;
+        return;
+      } catch(e) {
+        console.error('Error launching VLC', e);
+      }
+    }
+
+    // Standard web player logic para sa ibang channels
     const proxiedUrl = `${WORKER_BASE}/?id=${encodeURIComponent(streamId)}`;
     status.innerText = 'Connecting via Optimized Proxy...';
 
     if (hls) hls.destroy();
 
     if (Hls.isSupported()) {
-      // Fast Loading Optimization Configs
       hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
-        maxBufferLength: 10,       // Maliit na buffer para mag-play agad (10s lang)
+        maxBufferLength: 10,
         maxMaxBufferLength: 20,
-        liveSyncDurationCount: 3,  // Mas malapit sa real-time live broadcast
+        liveSyncDurationCount: 3,
         manifestLoadingTimeOut: 10000
       });
 
@@ -110,7 +124,7 @@
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          status.innerText = 'Buffering error. Retrying...';
+          status.innerText = 'Stream offline or cannot decode.';
           hls.startLoad();
         }
       });
