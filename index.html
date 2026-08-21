@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#00FF9D">
+    <title>StreamFlix - Movies & TV Shows</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00FF9D;
+            --primary-hover: #00cc7a;
+            --secondary: #1a1a2e;
+            --dark: #16213e;
+            --light: #f0f0f0;
+            --text: #e6e6e6;
+            --accent: #ff2e63;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--dark), var(--secondary));
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, var(--primary), var(--primary-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-box {
+            padding: 0.7rem 1rem;
+            border-radius: 30px;
+            border: 2px solid var(--dark);
+            background-color: var(--dark);
+            color: var(--text);
+            width: 100%;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-btn {
+            background-color: var(--primary);
+            color: var(--secondary);
+            border: none;
+            border-radius: 30px;
+            padding: 0.7rem 1.2rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)),
+                        url('https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vREc0547VKqEv.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 60vh;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        .hero-content {
+            max-width: 650px;
+        }
+
+        .hero h2 {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .hero p {
+            font-size: clamp(0.95rem, 2vw, 1.15rem);
+            margin-bottom: 1.5rem;
+            color: var(--light);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-toggle {
+            display: flex;
+            background-color: var(--dark);
+            border-radius: 30px;
+            padding: 4px;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+        }
+
+        .mode-btn {
+            padding: 0.6rem 1.4rem;
+            border-radius: 30px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .mode-btn.active {
+            background-color: var(--primary);
+            color: var(--secondary);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .content-card {
+            background-color: var(--dark);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-img-wrapper {
+            width: 100%;
+            aspect-ratio: 2 / 3;
+            background-color: #0d1322;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 0.6rem;
+        }
+
+        .card-rating {
+            color: gold;
+        }
+
+        .watch-btn-card {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 45px;
+            height: 45px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal Styles */
+        .modal, .video-modal, .trailer-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            overflow-y: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-card {
+            background: var(--dark);
+            width: 100%;
+            max-width: 850px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 1.5rem;
+        }
+
+        .modal-poster {
+            width: 100%;
+            border-radius: 10px;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+        }
+
+        /* Streaming Player View */
+        .video-modal-content {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+
+        .video-header {
+            padding: 0.8rem 1rem;
+            background: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .provider-buttons {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 0;
+            max-width: 100%;
+        }
+
+        .provider-btn-small {
+            background: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--primary);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .provider-btn-small.active {
+            background: var(--primary);
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .stream-iframe {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            header { padding: 1rem; }
+            .navbar { flex-direction: column; gap: 0.8rem; }
+            .search-container { max-width: 100%; }
+            .hero { padding: 1.5rem; min-height: 40vh; }
+            .modal-body { grid-template-columns: 1fr; }
+            .modal-poster { max-width: 200px; justify-self: center; }
+            .content-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-play-circle"></i>
+                <h1>StreamFlix</h1>
+            </div>
+            <div class="search-container">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search movies, TV shows...">
+                <button class="search-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero" id="heroSection">
+            <div class="hero-content">
+                <h2 id="heroTitle">Unlimited Entertainment</h2>
+                <p id="heroDesc">Stream thousands of movies and TV shows in HD quality instantly.</p>
+                <div class="hero-btns">
+                    <button class="btn btn-primary" id="startWatchingBtn"><i class="fas fa-play"></i> Watch Now</button>
+                    <button class="btn btn-secondary" id="moreInfoBtn"><i class="fas fa-info-circle"></i> More Info</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="movieMode">Movies</button>
+            <button class="mode-btn" id="tvMode">TV Shows</button>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-fire"></i> Popular Now</h2>
+        <div class="content-grid" id="contentGrid"></div>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Fetching content...</p>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="btn btn-secondary" id="loadMore" style="display: none;">Load More</button>
+        </div>
+    </main>
+
+    <!-- Content Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content-wrapper">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 id="modalTitle" style="color: var(--primary);">Title</h3>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <img src="" alt="Poster" class="modal-poster" id="modalPoster">
+                    <div>
+                        <p style="margin-bottom: 0.5rem;"><strong>Release:</strong> <span id="modalDate"></span> | <strong>Rating:</strong> <span id="modalRating"></span></p>
+                        <p style="margin-bottom: 0.5rem;"><strong>Genres:</strong> <span id="modalGenres"></span></p>
+                        <p style="margin-bottom: 1rem;" id="modalOverview"></p>
+                        <button class="btn btn-primary" id="watchBtn"><i class="fas fa-play"></i> Start Streaming</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-modal-content">
+            <div class="video-header">
+                <span id="videoTitle" style="font-weight: bold; color: var(--primary);">Now Playing</span>
+                <div class="provider-buttons" id="providerButtons">
+                    <button class="provider-btn-small active" data-provider="vidsrc">Alpha</button>
+                    <button class="provider-btn-small" data-provider="vidsrc.to">Bravo</button>
+                    <button class="provider-btn-small" data-provider="vidlink">Charlie</button>
+                    <button class="provider-btn-small" data-provider="vidplus.to">Delta</button>
+                </div>
+                <button class="close-modal" id="closeVideo">&times;</button>
+            </div>
+            <iframe class="stream-iframe" id="streamIframe" allowfullscreen allow="autoplay"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://streamflix.22afed28-f0b2-46d0-8804-c90e25c90bd4.workers.dev';
+        const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+
+        let currentPage = 1;
+        let currentQuery = '';
+        let currentMode = 'movie';
+        let currentItem = null;
+        let heroItem = null;
+
+        const contentGrid = document.getElementById('contentGrid');
+        const loading = document.getElementById('loading');
+        const loadMoreBtn = document.getElementById('loadMore');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchContent();
+            fetchHero();
+            setupEvents();
+        });
+
+        function setupEvents() {
+            document.getElementById('searchBtn').addEventListener('click', handleSearch);
+            document.getElementById('searchInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleSearch(); });
+            document.getElementById('movieMode').addEventListener('click', () => switchMode('movie'));
+            document.getElementById('tvMode').addEventListener('click', () => switchMode('tv'));
+            loadMoreBtn.addEventListener('click', () => { currentPage++; fetchContent(); });
+            
+            document.getElementById('closeModal').addEventListener('click', () => toggleModal('detailModal', false));
+            document.getElementById('closeVideo').addEventListener('click', () => {
+                toggleModal('videoModal', false);
+                document.getElementById('streamIframe').src = '';
+            });
+
+            document.getElementById('startWatchingBtn').addEventListener('click', () => { if(heroItem) playStream(heroItem); });
+            document.getElementById('moreInfoBtn').addEventListener('click', () => { if(heroItem) showDetails(heroItem.id); });
+            document.getElementById('watchBtn').addEventListener('click', () => {
+                toggleModal('detailModal', false);
+                playStream(currentItem);
+            });
+        }
+
+        function toggleModal(id, show) {
+            document.getElementById(id).style.display = show ? 'block' : 'none';
+            document.body.classList.toggle('modal-open', show);
+        }
+
+        async function fetchContent() {
+            loading.style.display = 'block';
+            try {
+                let url = currentQuery 
+                    ? `${API_URL}/search/${currentMode}?query=${encodeURIComponent(currentQuery)}&page=${currentPage}`
+                    : `${API_URL}/${currentMode}/popular?page=${currentPage}`;
+                
+                const res = await fetch(url);
+                const data = await res.json();
+                displayGrid(data.results);
+                loadMoreBtn.style.display = data.page < data.total_pages ? 'inline-block' : 'none';
+            } catch (err) {
+                console.error(err);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function fetchHero() {
+            try {
+                const res = await fetch(`${API_URL}/movie/popular?page=1`);
+                const data = await res.json();
+                if(data.results.length) {
+                    heroItem = data.results[0];
+                    document.getElementById('heroTitle').textContent = heroItem.title;
+                    document.getElementById('heroDesc').textContent = heroItem.overview;
+                    if(heroItem.backdrop_path) {
+                        document.getElementById('heroSection').style.backgroundImage = 
+                            `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('https://image.tmdb.org/t/p/original${heroItem.backdrop_path}')`;
+                    }
+                }
+            } catch(e) {}
+        }
+
+        function displayGrid(items) {
+            items.forEach(item => {
+                const title = currentMode === 'movie' ? item.title : item.name;
+      
