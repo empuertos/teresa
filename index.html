@@ -43,6 +43,10 @@
             font-size: 1rem;
             outline: none;
         }
+        .input-field::placeholder {
+            color: #55555c;
+            font-size: 0.9rem;
+        }
         .input-field:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px var(--accent-soft);
@@ -168,7 +172,7 @@
             <!-- kWh Panel -->
             <div id="panelKwh">
                 <label>Monthly Consumption (kWh)</label>
-                <input type="number" id="kwhInput" value="200" min="0" class="input-field">
+                <input type="number" id="kwhInput" placeholder="I-type ang kWh (halimbawa: 200)" min="0" class="input-field">
                 <div class="flex flex-wrap -mx-1 mt-2">
                     <button class="btn-preset" onclick="setKwh(100)">100 kWh</button>
                     <button class="btn-preset" onclick="setKwh(200)">200 kWh</button>
@@ -183,23 +187,23 @@
                 <div class="grid-2">
                     <div>
                         <label>Previous Reading</label>
-                        <input type="number" id="prevReading" value="3200" min="0" class="input-field" oninput="updateDiff()">
+                        <input type="number" id="prevReading" placeholder="Lumang reading (halimbawa: 3200)" min="0" class="input-field" oninput="updateDiff()">
                     </div>
                     <div>
                         <label>Current Reading</label>
-                        <input type="number" id="currReading" value="3400" min="0" class="input-field" oninput="updateDiff()">
+                        <input type="number" id="currReading" placeholder="Bagong reading (halimbawa: 3400)" min="0" class="input-field" oninput="updateDiff()">
                     </div>
                 </div>
                 <div class="mt-3 p-3 rounded-lg" style="background: var(--accent-soft); font-size: 0.9rem;">
-                    Consumption: <strong id="diffText">200 kWh</strong>
+                    Consumption: <strong id="diffText">0 kWh</strong>
                 </div>
             </div>
 
             <label>Rate per kWh (₱)</label>
-            <input type="number" id="rateInput" value="14.96" step="0.01" class="input-field">
+            <input type="number" id="rateInput" placeholder="Lagay ang rate (default: 14.96)" step="0.01" class="input-field">
 
             <label>Billing Period (days)</label>
-            <input type="number" id="daysInput" value="30" min="1" max="60" class="input-field">
+            <input type="number" id="daysInput" placeholder="Ilang araw (default: 30)" min="1" max="60" class="input-field">
 
             <div class="grid-2 mt-5">
                 <button class="btn-primary" onclick="calculate()">
@@ -217,34 +221,34 @@
 
             <div class="total-display">
                 <p class="text-sm uppercase tracking-wider" style="color: var(--muted);">Estimated Total</p>
-                <p class="amount mt-1" id="totalBill">₱2,992.00</p>
-                <p class="text-sm mt-1" style="color: var(--muted);" id="perDay">≈ ₱99.73 / day</p>
+                <p class="amount mt-1" id="totalBill">₱0.00</p>
+                <p class="text-sm mt-1" style="color: var(--muted);" id="perDay">≈ ₱0.00 / day</p>
             </div>
 
             <div id="breakdownRows">
                 <div class="breakdown-row">
                     <span style="color: var(--muted);">Consumption</span>
-                    <span id="resKwh">200 kWh</span>
+                    <span id="resKwh">0 kWh</span>
                 </div>
                 <div class="breakdown-row">
                     <span style="color: var(--muted);">Generation Charge (52%)</span>
-                    <span id="resGen">₱1,555.84</span>
+                    <span id="resGen">₱0.00</span>
                 </div>
                 <div class="breakdown-row">
                     <span style="color: var(--muted);">Transmission Charge (8%)</span>
-                    <span id="resTrans">₱239.36</span>
+                    <span id="resTrans">₱0.00</span>
                 </div>
                 <div class="breakdown-row">
                     <span style="color: var(--muted);">Distribution Charge (12%)</span>
-                    <span id="resDist">₱359.04</span>
+                    <span id="resDist">₱0.00</span>
                 </div>
                 <div class="breakdown-row">
                     <span style="color: var(--muted);">System Loss (5%)</span>
-                    <span id="resLoss">₱149.60</span>
+                    <span id="resLoss">₱0.00</span>
                 </div>
                 <div class="breakdown-row" style="border-bottom: none;">
                     <span style="color: var(--muted);">Taxes & VAT (23%)</span>
-                    <span id="resTax">₱688.16</span>
+                    <span id="resTax">₱0.00</span>
                 </div>
             </div>
         </div>
@@ -355,8 +359,8 @@ function resetForm() {
     document.getElementById('kwhInput').value = '';
     document.getElementById('prevReading').value = '';
     document.getElementById('currReading').value = '';
-    document.getElementById('rateInput').value = '14.96';
-    document.getElementById('daysInput').value = '30';
+    document.getElementById('rateInput').value = '';
+    document.getElementById('daysInput').value = '';
     localStorage.removeItem('veco_calculator_data');
     updateDiff();
     calculate();
@@ -364,8 +368,11 @@ function resetForm() {
 
 function calculate() {
     const kwh = getKwh();
-    const rate = parseFloat(document.getElementById('rateInput').value) || 0;
-    const days = parseFloat(document.getElementById('daysInput').value) || 30;
+    const rateVal = document.getElementById('rateInput').value;
+    const rate = rateVal !== '' ? parseFloat(rateVal) : 14.96; // gamitin ang 14.96 pag walang laman
+    const daysVal = document.getElementById('daysInput').value;
+    const days = daysVal !== '' ? parseFloat(daysVal) : 30; // gamitin ang 30 pag walang laman
+
     const total = kwh * rate;
 
     const gen = total * 0.52;
