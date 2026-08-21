@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VECO Electric Bill Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --bg: #1f1f23;
+            --card: #27272b;
+            --text: #e5e5e7;
+            --muted: #86868b;
+            --accent: #d47c49;
+            --accent-soft: rgba(212, 124, 73, 0.15);
+            --accent2: #6aa8b8;
+            --border: rgba(255,255,255,0.08);
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        @media (min-width: 768px) {
+            .card { padding: 1.75rem; }
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary {
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-secondary:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+        .btn-preset {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin: 0.25rem;
+        }
+        .btn-preset:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .tab {
+            padding: 0.6rem 1rem;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .tab.active {
+            border-bottom-color: var(--accent);
+            color: var(--text);
+        }
+        .total-display {
+            background: linear-gradient(135deg, var(--accent-soft), rgba(106,168,184,0.1));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .amount {
+            font-size: clamp(1.8rem, 6vw, 2.8rem);
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0.25rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+        .chart-container {
+            height: 280px;
+            width: 100%;
+        }
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (min-width: 1024px) {
+            .grid-lg-2 {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="max-w-5xl mx-auto px-4 py-6">
+
+    <!-- Header -->
+    <header class="mb-6">
+        <h1 class="text-2xl md:text-3xl font-bold">⚡ VECO Bill Calculator</h1>
+        <p class="text-sm" style="color: var(--muted)">Visayan Electric Company — Residential Rate: ₱14.96/kWh (Aug 2026)</p>
+    </header>
+
+    <div class="grid-lg-2">
+        <!-- Input Card -->
+        <div class="card">
+            <h2 class="text-lg font-semibold mb-4">📊 Enter Your Consumption</h2>
+
+            <!-- Tabs -->
+            <div class="flex border-b border-opacity-50" style="border-color: var(--border); margin-bottom: 1rem;">
+                <button class="tab active" id="tabKwh" onclick="switchTab('kwh')">By kWh</button>
+                <button class="tab" id="tabMeter" onclick="switchTab('meter')">By Meter Reading</button>
+            </div>
+
+            <!-- kWh Panel -->
+            <div id="panelKwh">
+                <label>Monthly Consumption (kWh)</label>
+                <input type="number" id="kwhInput" value="200" min="0" class="input-field">
+                <div class="flex flex-wrap -mx-1 mt-2">
+                    <button class="btn-preset" onclick="setKwh(100)">100 kWh</button>
+                    <button class="btn-preset" onclick="setKwh(200)">200 kWh</button>
+                    <button class="btn-preset" onclick="setKwh(300)">300 kWh</button>
+                    <button class="btn-preset" onclick="setKwh(400)">400 kWh</button>
+                    <button class="btn-preset" onclick="setKwh(500)">500 kWh</button>
+                </div>
+            </div>
+
+            <!-- Meter Panel -->
+            <div id="panelMeter" style="display: none;">
+                <div class="grid-2">
+                    <div>
+                        <label>Previous Reading</label>
+                        <input type="number" id="prevReading" value="3200" min="0" class="input-field" oninput="updateDiff()">
+                    </div>
+                    <div>
+                        <label>Current Reading</label>
+                        <input type="number" id="currReading" value="3400" min="0" class="input-field" oninput="updateDiff()">
+                    </div>
+                </div>
+                <div class="mt-3 p-3 rounded-lg" style="background: var(--accent-soft); font-size: 0.9rem;">
+                    Consumption: <strong id="diffText">200 kWh</strong>
+                </div>
+            </div>
+
+            <label>Rate per kWh (₱)</label>
+            <input type="number" id="rateInput" value="14.96" step="0.01" class="input-field">
+
+            <label>Billing Period (days)</label>
+            <input type="number" id="daysInput" value="30" min="1" max="60" class="input-field">
+
+            <div class="grid-2 mt-5">
+                <button class="btn-primary" onclick="calculate()">
+                    🔢 CALCULATE
+                </button>
+                <button class="btn-secondary" onclick="resetForm()">
+                    🔄 RESET
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card">
+            <h2 class="text-lg font-semibold mb-4">💰 Bill Summary</h2>
+
+            <div class="total-display">
+                <p class="text-sm uppercase tracking-wider" style="color: var(--muted);">Estimated Total</p>
+                <p class="amount mt-1" id="totalBill">₱2,992.00</p>
+                <p class="text-sm mt-1" style="color: var(--muted);" id="perDay">≈ ₱99.73 / day</p>
+            </div>
+
+            <div id="breakdownRows">
+                <div class="breakdown-row">
+                    <span style="color: var(--muted);">Consumption</span>
+                    <span id="resKwh">200 kWh</span>
+                </div>
+                <div class="breakdown-row">
+                    <span style="color: var(--muted);">Generation Charge (52%)</span>
+                    <span id="resGen">₱1,555.84</span>
+                </div>
+                <div class="breakdown-row">
+                    <span style="color: var(--muted);">Transmission Charge (8%)</span>
+                    <span id="resTrans">₱239.36</span>
+                </div>
+                <div class="breakdown-row">
+                    <span style="color: var(--muted);">Distribution Charge (12%)</span>
+                    <span id="resDist">₱359.04</span>
+                </div>
+                <div class="breakdown-row">
+                    <span style="color: var(--muted);">System Loss (5%)</span>
+                    <span id="resLoss">₱149.60</span>
+                </div>
+                <div class="breakdown-row" style="border-bottom: none;">
+                    <span style="color: var(--muted);">Taxes & VAT (23%)</span>
+                    <span id="resTax">₱688.16</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid-lg-2">
+        <div class="card">
+            <h3 class="text-lg font-semibold mb-4">📈 Charge Breakdown</h3>
+            <div id="pieChart" class="chart-container"></div>
+        </div>
+        <div class="card">
+            <h3 class="text-lg font-semibold mb-4">📊 VECO Rate Trend 2026</h3>
+            <div id="barChart" class="chart-container"></div>
+        </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card">
+        <h3 class="text-lg font-semibold mb-4">💡 Energy Saving Tips</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="p-3 rounded-lg" style="background: var(--bg);">
+                <p class="font-medium text-sm">Aircon at 24-26°C</p>
+                <p class="text-xs mt-1" style="color: var(--muted);">Every degree lower = +6% bill</p>
+            </div>
+            <div class="p-3 rounded-lg" style="background: var(--bg);">
+                <p class="font-medium text-sm">Switch to LED bulbs</p>
+                <p class="text-xs mt-1" style="color: var(--muted);">Uses 75% less energy</p>
+            </div>
+            <div class="p-3 rounded-lg" style="background: var(--bg);">
+                <p class="font-medium text-sm">Unplug idle devices</p>
+                <p class="text-xs mt-1" style="color: var(--muted);">Phantom load = 5-10% loss</p>
+            </div>
+        </div>
+        <p class="text-xs mt-4" style="color: var(--muted);">
+            ⚠️ This is an estimate only. Actual bill may differ. Rates based on VECO advisory Aug 13–Sep 12, 2026.
+        </p>
+    </div>
+
+<script>
+// Tab switching
+let activeTab = 'kwh';
+function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('tabKwh').classList.toggle('active', tab === 'kwh');
+    document.getElementById('tabMeter').classList.toggle('active', tab === 'meter');
+    document.getElementById('panelKwh').style.display = tab === 'kwh' ? 'block' : 'none';
+    document.getElementById('panelMeter').style.display = tab === 'meter' ? 'block' : 'none';
+    calculate();
+}
+
+function setKwh(val) {
+    document.getElementById('kwhInput').value = val;
+    calculate();
+}
+
+function updateDiff() {
+    const p = parseFloat(document.getElementById('prevReading').value) || 0;
+    const c = parseFloat(document.getElementById('currReading').value) || 0;
+    document.getElementById('diffText').textContent = Math.max(0, c - p) + ' kWh';
+    calculate();
+}
+
+function getKwh() {
+    if (activeTab === 'kwh') {
+        return parseFloat(document.getElementById('kwhInput').value) || 0;
+    } else {
+        const p = parseFloat(document.getElementById('prevReading').value) || 0;
+        const c = parseFloat(document.getElementById('currReading').value) || 0;
+        return Math.max(0, c - p);
+    }
+}
+
+function formatPeso(n) {
+    return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function saveState() {
+    const state = {
+        activeTab: activeTab,
+        kwhInput: document.getElementById('kwhInput').value,
+        prevReading: document.getElementById('prevReading').value,
+        currReading: document.getElementById('currReading').value,
+        rateInput: document.getElementById('rateInput').value,
+        daysInput: document.getElementById('daysInput').value
+    };
+    localStorage.setItem('veco_calculator_data', JSON.stringify(state));
+}
+
+function loadSavedState() {
+    const saved = localStorage.getItem('veco_calculator_data');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (data.kwhInput !== undefined) document.getElementById('kwhInput').value = data.kwhInput;
+            if (data.prevReading !== undefined) document.getElementById('prevReading').value = data.prevReading;
+            if (data.currReading !== undefined) document.getElementById('currReading').value = data.currReading;
+            if (data.rateInput !== undefined) document.getElementById('rateInput').value = data.rateInput;
+            if (data.daysInput !== undefined) document.getElementById('daysInput').value = data.daysInput;
+            if (data.activeTab) switchTab(data.activeTab);
+        } catch (e) {
+            console.error('Failed to load saved state', e);
+        }
+    }
+}
+
+function resetForm() {
+    document.getElementById('kwhInput').value = '';
+    document.getElementById('prevReading').value = '';
+    document.getElementById('currReading').value = '';
+    document.getElementById('rateInput').value = '14.96';
+    document.getElementById('daysInput').value = '30';
+    localStorage.removeItem('veco_calculator_data');
+    updateDiff();
+    calculate();
+}
+
+function calculate() {
+    const kwh = getKwh();
+    const rate = parseFloat(document.getElementById('rateInput').value) || 0;
+    const days = parseFloat(document.getElementById('daysInput').value) || 30;
+    const total = kwh * rate;
+
+    const gen = total * 0.52;
+    const trans = total * 0.08;
+    const dist = total * 0.12;
+    const loss = total * 0.05;
+    const tax = total * 0.23;
+
+    document.getElementById('totalBill').textContent = formatPeso(total);
+    document.getElementById('perDay').textContent = '≈ ' + formatPeso(days > 0 ? total / days : 0) + ' / day';
+    document.getElementById('resKwh').textContent = kwh.toFixed(0) + ' kWh';
+    document.getElementById('resGen').textContent = formatPeso(gen);
+    document.getElementById('resTrans').textContent = formatPeso(trans);
+    document.getElementById('resDist').textContent = formatPeso(dist);
+    document.getElementById('resLoss').textContent = formatPeso(loss);
+    document.getElementById('resTax').textContent = formatPeso(tax);
+
+    updatePieChart(gen, trans, dist, loss, tax);
+    saveState();
+}
+
+// Charts
+let pieChart, barChart;
+function initCharts() {
+    const pieEl = document.getElementById('pieChart');
+    const barEl = document.getElementById('barChart');
+    if (!window.echarts || !pieEl || !barEl) return;
+
+    pieChart = echarts.init(pieEl);
+    barChart = echarts.init(barEl);
+
+    const textColor = '#e5e5e7';
+    const mutedColor = '#86868b';
+    const borderColor = 'rgba(255,255,255,0.08)';
+
+    pieChart.setOption({
+        tooltip: { trigger: 'item', textStyle: { color: '#111' } },
+        legend: { bottom: 0, textStyle: { color: mutedColor }, itemWidth: 12 },
+        series: [{
+            type: 'pie',
+            radius: ['40%', '65%'],
+            center: ['50%', '45%'],
+            data: [
+                { value: 52, name: 'Generation', itemStyle: { color: '#d47c49' } },
+                { value: 23, name: 'Taxes & VAT', itemStyle: { color: '#6aa8b8' } },
+                { value: 12, name: 'Distribution', itemStyle: { color: '#d4a373' } },
+                { value: 8, name: 'Transmission', itemStyle: { color: '#8fbc8f' } },
+                { value: 5, name: 'System Loss', itemStyle: { color: '#b08968' } }
+            ],
+            label: { color: mutedColor, fontSize: 11, formatter: '{d}%' }
+        }]
+    });
+
+    barChart.setOption({
+        tooltip: { trigger: 'axis', textStyle: { color: '#111' } },
+        grid: { left: '3%', right: '4%', bottom: '10%', top: '10%', containLabel: true },
+        xAxis: {
+            type: 'category',
+            data: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'],
+            axisLabel: { color: mutedColor, fontSize: 11 },
+            axisLine: { lineStyle: { color: borderColor } }
+        },
+        yAxis: {
+            type: 'value',
+            name: '₱/kWh',
+            nameTextStyle: { color: mutedColor },
+            axisLabel: { color: mutedColor, formatter: '₱{value}' },
+            splitLine: { lineStyle: { color: borderColor } },
+            min: 11, max: 16
+        },
+        series: [{
+            type: 'bar',
+            data: [12.79, 12.58, 12.36, 12.57, 12.88, 13.74, 14.90, 14.96],
+            itemStyle: { borderRadius: [4,4,0,0], color: '#d47c49' },
+            label: { show: true, position: 'top', color: textColor, fontSize: 10, formatter: '₱{c}' }
+        }]
+    });
+
+    window.addEventListener('resize', () => {
+        pieChart.resize();
+        barChart.resize();
+    });
+}
+
+function updatePieChart(gen, trans, dist, loss, tax) {
+    if (!pieChart) return;
+    pieChart.setOption({
+        series: [{
+            data: [
+                { value: gen.toFixed(0), name: 'Generation', itemStyle: { color: '#d47c49' } },
+                { value: tax.toFixed(0), name: 'Taxes & VAT', itemStyle: { color: '#6aa8b8' } },
+                { value: dist.toFixed(0), name: 'Distribution', itemStyle: { color: '#d4a373' } },
+                { value: trans.toFixed(0), name: 'Transmission', itemStyle: { color: '#8fbc8f' } },
+                { value: loss.toFixed(0), name: 'System Loss', itemStyle: { color: '#b08968' } }
+            ]
+        }]
+    });
+}
+
+// Initialize
+window.addEventListener('load', () => {
+    loadSavedState();
+    setTimeout(() => {
+        initCharts();
+        calculate();
+    }, 100);
+});
+
+['kwhInput','prevReading','currReading','rateInput','daysInput'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', calculate);
+});
+</script>
+</body>
+</html>
