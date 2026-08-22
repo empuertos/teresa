@@ -20,11 +20,7 @@
             --palawan: #f59e0b;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -38,10 +34,7 @@
             background-attachment: fixed;
         }
 
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-        }
+        .container { max-width: 400px; margin: 0 auto; }
 
         .profile {
             text-align: center;
@@ -63,23 +56,24 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        .profile h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
+        .profile h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
 
         .profile p {
             font-size: 14px;
             color: var(--text-secondary);
-            line-height: 1.6;
+            line-height: 1.7;
+        }
+
+        .profile .bio-quote {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-pink);
+            font-style: italic;
+            color: #ddd;
         }
 
         .socials {
@@ -106,10 +100,7 @@
             transition: all 0.2s ease;
         }
 
-        .social-link:hover {
-            background: var(--bg-card-hover);
-            transform: translateY(-2px);
-        }
+        .social-link:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
 
         .btn-card {
             display: flex;
@@ -128,10 +119,7 @@
             transform: translateY(12px);
         }
 
-        .btn-card:hover {
-            background: var(--bg-card-hover);
-            transform: translateY(-2px);
-        }
+        .btn-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
 
         .icon-box {
             width: 44px;
@@ -143,16 +131,8 @@
             flex-shrink: 0;
         }
 
-        .btn-text h2 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .btn-text p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
+        .btn-text h2 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .btn-text p { font-size: 13px; color: var(--text-secondary); }
 
         .ml-card {
             padding: 20px;
@@ -218,11 +198,7 @@
             transform: translateY(12px);
         }
 
-        .payment-card h3 {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
+        .payment-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
 
         .ewallet-logos {
             display: flex;
@@ -253,10 +229,7 @@
         .maya-icon { background: rgba(0, 148, 255, 0.15); color: var(--maya); }
         .palawan-icon { background: rgba(245, 158, 11, 0.15); color: var(--palawan); }
 
-        .ewallet-name {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
+        .ewallet-name { font-size: 11px; color: var(--text-secondary); }
 
         .account-row {
             display: flex;
@@ -271,16 +244,8 @@
             flex-wrap: wrap;
         }
 
-        .account-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .account-number {
-            font-size: 16px;
-            font-weight: 700;
-            font-family: monospace;
-        }
+        .account-label { font-size: 13px; color: var(--text-secondary); }
+        .account-number { font-size: 16px; font-weight: 700; font-family: monospace; }
 
         .copy-btn {
             padding: 6px 14px;
@@ -294,10 +259,7 @@
             transition: all 0.15s ease;
         }
 
-        .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-        }
-
+        .copy-btn:hover { background: rgba(255, 255, 255, 0.12); }
         .copy-btn.copied {
             background: rgba(34, 197, 94, 0.15);
             color: #86efac;
@@ -316,9 +278,7 @@
             transition: transform 0.2s ease;
         }
 
-        .qr-item:active {
-            transform: scale(0.96);
-        }
+        .qr-item:active { transform: scale(0.96); }
 
         .qr-img {
             width: 100%;
@@ -331,20 +291,11 @@
             margin-bottom: 6px;
         }
 
-        .qr-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
+        .qr-label { font-size: 11px; color: var(--text-secondary); }
 
         .gcash-border { border-color: rgba(34, 197, 94, 0.5); }
         .maya-border { border-color: rgba(0, 148, 255, 0.5); }
         .palawan-border { border-color: rgba(245, 158, 11, 0.5); }
-
-        .qr-note {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 8px;
-        }
 
         .qr-tap-hint {
             font-size: 12px;
@@ -352,7 +303,6 @@
             margin-top: 12px;
         }
 
-        /* ========== FIXED QR FULLSCREEN MODAL ========== */
         #qrModalOverlay {
             position: fixed;
             top: 0;
@@ -422,9 +372,7 @@
             transition: background 0.2s ease;
         }
 
-        #qrCloseBtn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        #qrCloseBtn:hover { background: rgba(255, 255, 255, 0.2); }
 
         .footer {
             text-align: center;
@@ -436,22 +384,11 @@
             transform: translateY(12px);
         }
 
-        .footer p {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .footer .domain {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 6px;
-        }
+        .footer p { font-size: 12px; color: var(--text-secondary); }
+        .footer .domain { font-size: 11px; color: rgba(255, 255, 255, 0.3); margin-top: 6px; }
 
         @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 360px) {
@@ -462,13 +399,16 @@
 </head>
 <body>
     <div class="container">
-        <!-- Profile -->
+        <!-- Profile Section with your Bio -->
         <div class="profile">
             <div class="avatar">
                 <img src="profile.jpg" alt="steve.ey">
             </div>
             <h1>@steve.ey</h1>
-            <p>📍 Cebu, Philippines 🇵🇭<br>Creator • Gamer • Good vibes only ✨</p>
+            <p>📍 Cebu, Philippines 🇵🇭</p>
+            <p class="bio-quote">
+                "Hindi Niya pinangakuan na walang bagyo, pero pinangakuan Niya na hindi ka Niya iiwan sa gitna ng bagyo. Kaya kapit lang, kasama mo Siya. 🙏❤️"
+            </p>
         </div>
 
         <!-- Social Icons -->
@@ -551,7 +491,7 @@
                 <button class="copy-btn" onclick="copyText('accNum', this)">Copy</button>
             </div>
 
-            <!-- QR Codes — ✅ FIXED TAP FUNCTIONS -->
+            <!-- QR Codes with Fullscreen Zoom -->
             <div class="qr-grid">
                 <div class="qr-item" onclick="openQrModal('gcash-qr.jpg', 'GCash QR')">
                     <img src="gcash-qr.jpg" alt="GCash QR" class="qr-img gcash-border" loading="lazy">
@@ -568,17 +508,16 @@
             </div>
 
             <p class="qr-tap-hint">👆 Tap QR code to zoom / fullscreen</p>
-            <p class="qr-note">Salamat sa suporta! 🙏❤️ Parehas lang ang number sa lahat ng e-wallet</p>
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Made with ❤️ from Cebu, Philippines 🇵🇭</p>
-            <p class="domain">bio-links.netlify.app</p>
+            <p>Made with ❤️ and faith 🙏</p>
+            <p class="domain">bio-links.netlify.app | steveweb.free.nf</p>
         </div>
     </div>
 
-    <!-- ✅ FIXED QR FULLSCREEN MODAL -->
+    <!-- QR Fullscreen Modal -->
     <div id="qrModalOverlay" onclick="closeQrModal()">
         <div id="qrModalContent" onclick="event.stopPropagation()">
             <button id="qrCloseBtn" onclick="closeQrModal()">×</button>
@@ -621,7 +560,7 @@
             }, 2000);
         }
 
-        // ========== ✅ FIXED QR FULLSCREEN FUNCTIONS ==========
+        // QR Fullscreen Functions
         function openQrModal(imageSrc, titleText) {
             const overlay = document.getElementById('qrModalOverlay');
             const image = document.getElementById('qrModalImage');
@@ -630,13 +569,13 @@
             image.src = imageSrc;
             title.textContent = titleText;
             overlay.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Lock scroll
+            document.body.style.overflow = 'hidden';
         }
 
         function closeQrModal() {
             const overlay = document.getElementById('qrModalOverlay');
             overlay.classList.remove('active');
-            document.body.style.overflow = ''; // Unlock scroll
+            document.body.style.overflow = '';
         }
 
         // Close with Escape key
