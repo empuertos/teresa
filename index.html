@@ -319,6 +319,12 @@
 
         .qr-item {
             text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .qr-item:active {
+            transform: scale(0.97);
         }
 
         .qr-img {
@@ -330,6 +336,11 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             background: #ffffff;
             margin-bottom: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .qr-item:hover .qr-img {
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
         }
 
         .qr-label {
@@ -344,6 +355,87 @@
         .qr-note {
             font-size: 12px;
             color: var(--text-secondary);
+            margin-top: 16px;
+        }
+
+        /* ========== FULLSCREEN QR MODAL ========== */
+        .qr-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .qr-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .qr-modal-content {
+            position: relative;
+            max-width: 320px;
+            width: 100%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .qr-modal-overlay.active .qr-modal-content {
+            transform: scale(1);
+        }
+
+        .qr-modal-img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: contain;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .qr-modal-title {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .qr-close-btn {
+            position: absolute;
+            top: -48px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .qr-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .qr-tap-hint {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
             margin-top: 16px;
         }
 
@@ -403,7 +495,7 @@
             </a>
         </div>
 
-        <!-- 🎮 Mobile Legends — Una na! -->
+        <!-- 🎮 Mobile Legends -->
         <div class="ml-card">
             <h3>🎮 Mobile Legends — Add Me First!</h3>
             <div class="ml-grid">
@@ -473,21 +565,23 @@
                 <button class="copy-btn" onclick="copyText('accNum', this)">Copy</button>
             </div>
 
+            <!-- QR Codes — Tappable for Fullscreen -->
             <div class="qr-grid">
-                <div class="qr-item">
+                <div class="qr-item" onclick="openQrModal('gcash-qr.jpg', 'GCash QR')">
                     <img src="gcash-qr.jpg" alt="GCash QR" class="qr-img gcash-border" loading="lazy">
                     <span class="qr-label">GCash QR</span>
                 </div>
-                <div class="qr-item">
+                <div class="qr-item" onclick="openQrModal('maya-qr.jpg', 'Maya QR')">
                     <img src="maya-qr.jpg" alt="Maya QR" class="qr-img maya-border" loading="lazy">
                     <span class="qr-label">Maya QR</span>
                 </div>
-                <div class="qr-item">
+                <div class="qr-item" onclick="openQrModal('palawanpay-qr.jpg', 'PalawanPay QR')">
                     <img src="palawanpay-qr.jpg" alt="PalawanPay QR" class="qr-img palawan-border" loading="lazy">
                     <span class="qr-label">PalawanPay QR</span>
                 </div>
             </div>
 
+            <p class="qr-tap-hint">👆 Tap QR code to zoom / fullscreen</p>
             <p class="qr-note">Salamat sa suporta! 🙏❤️ Parehas lang ang number sa lahat ng e-wallet</p>
         </div>
 
@@ -498,37 +592,9 @@
         </div>
     </div>
 
-    <script>
-        function copyText(elementId, btn) {
-            const text = document.getElementById(elementId).textContent.trim();
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => showCopied(btn)).catch(() => fallbackCopy(text, btn));
-            } else {
-                fallbackCopy(text, btn);
-            }
-        }
-
-        function fallbackCopy(text, btn) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            try { document.execCommand('copy'); showCopied(btn); }
-            catch(e) { alert('Copy: ' + text); }
-            document.body.removeChild(ta);
-        }
-
-        function showCopied(btn) {
-            const original = btn.textContent;
-            btn.textContent = '✓ Copied!';
-            btn.classList.add('copied');
-            setTimeout(() => {
-                btn.textContent = original;
-                btn.classList.remove('copied');
-            }, 2000);
-        }
-    </script>
-</body>
-</html>
+    <!-- 🖼️ QR Fullscreen Modal -->
+    <div id="qrModalOverlay" class="qr-modal-overlay" onclick="closeQrModal(event)">
+        <div class="qr-modal-content" onclick="event.stopPropagation()">
+            <button class="qr-close-btn" onclick="closeQrModal()">×</button>
+            <h3 id="qrModalTitle" class="qr-modal-title"></h3>
+            <img id="qrModalImage" class
