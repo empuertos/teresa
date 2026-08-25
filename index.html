@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HD Complete Derby Matchmaker System</title>
+  <title>HD Complete Derby Matchmaker System with Core Engine</title>
   <!-- SheetJS for Direct Excel Upload -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -110,24 +110,36 @@
   <!-- SETUP PAGE -->
   <div id="setupPage" class="page-view active card no-print">
     <h2>1. Header Info</h2>
-    <div class="form-group"><label>Arena Name</label><input type="text" id="eventArena" value="GRAND TEJERO ARENA"></div>
-    <div class="form-group"><label>Arena Address</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
-    <div class="form-group"><label>Promoter Header</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
-    <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="4-COCK/STAG COMBO DERBY"></div>
-    <div class="form-group"><label>Event Date</label><input type="text" id="eventDate" value="AUGUST 22, 2026 ( Saturday )"></div>
-
-    <h2 style="margin-top: 1rem;">2. Match Settings</h2>
-    <div class="form-group">
-      <label>Derby Format</label>
-      <select id="derbyFormat">
-        <option value="2">2-Cock Derby</option>
-        <option value="3">3-Cock Derby</option>
-        <option value="4" selected>4-Cock Derby</option>
-        <option value="5">5-Cock Derby</option>
-        <option value="6">6-Cock / Stag Derby</option>
-      </select>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+      <div class="form-group"><label>Arena Name</label><input type="text" id="eventArena" value="GRAND TEJERO ARENA"></div>
+      <div class="form-group"><label>Arena Address</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
+      <div class="form-group"><label>Promoter Header</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
+      <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="4-COCK/STAG COMBO DERBY"></div>
+      <div class="form-group"><label>Event Date</label><input type="text" id="eventDate" value="AUGUST 22, 2026 ( Saturday )"></div>
     </div>
-    <div class="form-group"><label>Max Weight Gap (g)</label><input type="number" id="maxDiff" value="40"></div>
+
+    <h2 style="margin-top: 1rem;">2. Core Matching Settings</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+      <div class="form-group">
+        <label>Derby Format</label>
+        <select id="derbyFormat">
+          <option value="2">2-Cock Derby</option>
+          <option value="3">3-Cock Derby</option>
+          <option value="4" selected>4-Cock Derby</option>
+          <option value="5">5-Cock Derby</option>
+          <option value="6">6-Cock / Stag Derby</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Max Weight Gap / Tolerance (grams)</label><input type="number" id="maxDiff" value="40"></div>
+      <div class="form-group"><label>Rest Interval (Min. fights before same team fights again)</label><input type="number" id="restBuffer" value="5"></div>
+      <div class="form-group">
+        <label>Elimination Filter (No-Bearing Rule)</label>
+        <select id="elimFilter">
+          <option value="none">Disabled (Include All Teams)</option>
+          <option value="strict">Strict (Drop Teams with 2 Losses)</option>
+        </select>
+      </div>
+    </div>
 
     <!-- ENTRY METHODS -->
     <h2 style="margin-top: 1rem;">3. Add Entry Data</h2>
@@ -152,7 +164,7 @@
         <label>Select Excel File (.xlsx, .xls, .csv)</label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
       </div>
-      <p style="font-size:0.75rem; color:#94a3b8;">* Make sure Column order in Excel: [Entry Name, Owner, Weight, LegBand, WingBand]</p>
+      <p style="font-size:0.75rem; color:#94a3b8;">* Column order: [Entry Name, Owner, Weight, LegBand, WingBand]</p>
     </div>
 
     <!-- METHOD C: MANUAL TYPING -->
@@ -168,7 +180,7 @@
     </div>
 
     <div class="btn-group" style="margin-top:1.5rem;">
-      <button id="generateBtn" class="btn btn-action" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">Generate Matches</button>
+      <button id="generateBtn" class="btn btn-action" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">Generate Core Matches</button>
     </div>
   </div>
 
@@ -256,7 +268,7 @@
     e.target.classList.add('active');
   }
 
-  // 1. Copy Paste Input
+  // Data Imports
   document.getElementById('importTextBtn').addEventListener('click', () => {
     const raw = document.getElementById('bulkInput').value.trim();
     if (!raw) return;
@@ -277,7 +289,6 @@
     renderRoster();
   });
 
-  // 2. Direct Excel Upload
   document.getElementById('excelFileInput').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -290,7 +301,7 @@
       const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       rows.forEach((row, idx) => {
-        if (idx === 0 && isNaN(parseInt(row[2]))) return; // skip header row if text
+        if (idx === 0 && isNaN(parseInt(row[2]))) return; 
         if (row.length >= 3) {
           const entryName = String(row[0] || '').trim();
           const owner = String(row[1] || '').trim();
@@ -308,7 +319,6 @@
     reader.readAsArrayBuffer(file);
   });
 
-  // 3. Manual Typing Mode
   document.getElementById('manualAddBtn').addEventListener('click', () => {
     const entryName = document.getElementById('mEntry').value.trim();
     const owner = document.getElementById('mOwner').value.trim();
@@ -353,6 +363,7 @@
     renderRoster();
   }
 
+  // --- CORE MATCHING ENGINE IMPLEMENTATION ---
   document.getElementById('generateBtn').addEventListener('click', () => {
     document.querySelectorAll('.dispArena').forEach(el => el.textContent = document.getElementById('eventArena').value);
     document.querySelectorAll('.dispAddress').forEach(el => el.textContent = document.getElementById('eventAddress').value);
@@ -362,25 +373,29 @@
 
     const roundsCount = parseInt(document.getElementById('derbyFormat').value);
     const maxDiff = parseInt(document.getElementById('maxDiff').value) || 40;
+    const restBuffer = parseInt(document.getElementById('restBuffer').value) || 5;
 
+    // 1. Group by Entry Name (Owner Check)
     const entryGroups = {};
     entries.forEach(e => {
-      if (!entryGroups[e.entryName]) entryGroups[e.entryName] = [];
-      entryGroups[e.entryName].push(e);
+      const key = e.entryName.toLowerCase();
+      if (!entryGroups[key]) entryGroups[key] = [];
+      entryGroups[key].push(e);
     });
 
+    // 2. Distribute to Round Pools
     const roundPools = Array.from({ length: roundsCount }, () => []);
-    Object.keys(entryGroups).forEach(group => {
-      const groupCocks = entryGroups[group].sort((a,b) => a.weight - b.weight);
+    Object.keys(entryGroups).forEach(groupKey => {
+      const groupCocks = entryGroups[groupKey].sort((a,b) => a.weight - b.weight);
       groupCocks.forEach((cock, index) => {
         roundPools[index % roundsCount].push(cock);
       });
     });
 
-    const allMatches = [];
-    let globalFightNum = 1;
+    const rawMatches = [];
     const history = [];
 
+    // 3. Match Pairs per Round (Weight Gap & Unique Fights & No Same Owner)
     roundPools.forEach((rPool) => {
       let pool = [...rPool].sort((a, b) => a.weight - b.weight);
 
@@ -391,13 +406,17 @@
 
         for (let i = 0; i < pool.length; i++) {
           const candidate = pool[i];
+
+          // Rule: No Same Owner/Team
           if (current.entryName.toLowerCase() === candidate.entryName.toLowerCase()) continue;
 
+          // Rule: Unique Matchups
           const matchKey = [current.entryName.toLowerCase(), candidate.entryName.toLowerCase()].sort().join(' VS ');
           if (history.includes(matchKey)) continue;
 
+          // Rule: Weight Tolerance
           const diff = Math.abs(current.weight - candidate.weight);
-          if (diff > maxDiff) break;
+          if (diff > maxDiff) break; 
 
           if (diff < minDiff) {
             minDiff = diff;
@@ -409,15 +428,53 @@
           const opponent = pool.splice(bestIdx, 1)[0];
           const matchKey = [current.entryName.toLowerCase(), opponent.entryName.toLowerCase()].sort().join(' VS ');
           history.push(matchKey);
-
-          allMatches.push({ num: globalFightNum++, meron: current, wala: opponent });
+          rawMatches.push({ meron: current, wala: opponent });
         }
       }
     });
 
-    generatedMatches = allMatches;
-    renderClassicTable(allMatches);
-    renderCards(allMatches);
+    // 4. Rest Interval Scheduling Algorithm
+    const scheduledMatches = [];
+    let poolToSchedule = [...rawMatches];
+    let fightCounter = 1;
+
+    while (poolToSchedule.length > 0) {
+      let candidateIdx = -1;
+
+      for (let i = 0; i < poolToSchedule.length; i++) {
+        const m = poolToSchedule[i];
+        const mTeam1 = m.meron.entryName.toLowerCase();
+        const mTeam2 = m.wala.entryName.toLowerCase();
+
+        // Check buffer distance against last scheduled matches
+        let conflict = false;
+        const recentFights = scheduledMatches.slice(-restBuffer);
+        for (let prev of recentFights) {
+          const pTeam1 = prev.meron.entryName.toLowerCase();
+          const pTeam2 = prev.wala.entryName.toLowerCase();
+
+          if (mTeam1 === pTeam1 || mTeam1 === pTeam2 || mTeam2 === pTeam1 || mTeam2 === pTeam2) {
+            conflict = true;
+            break;
+          }
+        }
+
+        if (!conflict) {
+          candidateIdx = i;
+          break;
+        }
+      }
+
+      if (candidateIdx === -1) candidateIdx = 0; // Fallback if no choice available
+
+      const picked = poolToSchedule.splice(candidateIdx, 1)[0];
+      picked.num = fightCounter++;
+      scheduledMatches.push(picked);
+    }
+
+    generatedMatches = scheduledMatches;
+    renderClassicTable(scheduledMatches);
+    renderCards(scheduledMatches);
 
     switchPage('classicSchedulePage', { target: document.querySelectorAll('.page-btn')[2] });
   });
