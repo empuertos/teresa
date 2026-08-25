@@ -3,258 +3,342 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Derby Program Matchmaker</title>
+  <title>Enterprise Multi-Round Derby Matchmaker</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-      --danger: #ef4444;
+    :root { --bg: #0f172a; --card: #1e293b; --accent: #2563eb; --text: #f8fafc; --border: #334155; --danger: #ef4444; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 1.5rem; }
+    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
+    h1 { text-align: center; color: #38bdf8; }
+    .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; }
+    .card { background: var(--card); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border); }
+    .form-group { margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
+    label { font-size: 0.85rem; color: #94a3b8; }
+    input, select, textarea { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: 4px; }
+    .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-action { background: #059669; }
+    .btn-print { background: #d97706; }
+    .btn-csv { background: #0284c7; }
+    .btn-group { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .scroll-table { max-height: 250px; overflow-y: auto; }
+    
+    /* Official Banner Styling */
+    .event-banner { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #38bdf8; padding: 1.5rem; border-radius: 8px; text-align: center; margin-bottom: 1rem; }
+    .event-banner h2 { font-size: 1.8rem; color: #38bdf8; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .event-banner .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; margin-top: 1rem; text-align: left; font-size: 0.9rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+    .event-banner .meta-item b { color: #f59e0b; }
+
+    .match-row { background: #0f172a; border: 1px solid var(--border); padding: 0.6rem 1rem; border-radius: 4px; margin-bottom: 0.4rem; display: flex; justify-content: space-between; font-size: 0.85rem; }
+    .badge { background: #334155; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.75rem; }
+    .round-header { background: #0284c7; color: white; padding: 0.4rem 0.8rem; border-radius: 4px; margin: 1rem 0 0.5rem 0; font-size: 0.9rem; font-weight: bold; }
+    
+    @media print { 
+      body { background: white; color: black; padding: 0; } 
+      .no-print { display: none; } 
+      .event-banner { border: 2px solid black; background: white; color: black; }
+      .event-banner h2 { color: black; }
+      .event-banner .meta-item b { color: black; }
+      .match-row { border: 1px solid #000; color: black; background: white; } 
+      .round-header { background: #ddd; color: black; border: 1px solid #000; } 
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 2rem; }
-    .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
-    
-    h1 { text-align: center; font-size: 2rem; color: #38bdf8; }
-    
-    .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
-    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
-
-    .card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
-    .card h2 { font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-
-    .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
-    label { font-size: 0.875rem; color: var(--text-muted); }
-    input { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 4px; font-size: 0.9rem; }
-    input:focus { outline: none; border-color: var(--accent); }
-
-    .btn { background: var(--accent); color: white; border: none; padding: 0.75rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
-    .btn:hover { background: var(--accent-hover); }
-    .btn-action { margin-top: 1rem; background: #059669; }
-    .btn-action:hover { background: #047857; }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-    th, td { text-align: left; padding: 0.6rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
-    th { color: var(--text-muted); font-weight: 500; }
-
-    .match-card { background: #0f172a; border: 1px solid var(--border); padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .match-team { font-weight: bold; }
-    .match-vs { color: #f59e0b; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
-    .badge { background: #334155; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
-    .unmatched { border-left: 3px solid var(--danger); background: #1e1e24; margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Derby Program Matchmaker</h1>
+  <h1 class="no-print">Professional Derby System</h1>
 
-  <div class="grid">
-    <!-- Entry Panel -->
+  <div class="grid no-print">
+    <!-- Left Column: Settings & Info -->
     <div class="card">
-      <h2>1. Add Cock Entry</h2>
-      <form id="entryForm">
-        <div class="form-group">
-          <label for="owner">Owner / Entry Name</label>
-          <input type="text" id="owner" placeholder="e.g., Alpha Farm" required>
-        </div>
-        <div class="form-group">
-          <label for="cockId">Cock Ring / ID</label>
-          <input type="text" id="cockId" placeholder="e.g., Ring-101" required>
-        </div>
-        <div class="form-group">
-          <label for="weight">Weight (Grams)</label>
-          <input type="number" id="weight" placeholder="e.g., 2150" required>
-        </div>
-        <button type="submit" class="btn">Add Entry</button>
-      </form>
+      <h2>1. Event Details ("Sino Nagpa-Derby")</h2>
+      <div class="form-group">
+        <label>Event / Tournament Title</label>
+        <input type="text" id="eventTitle" value="4-Cock Invitational Derby">
+      </div>
+      <div class="form-group">
+        <label>Promoter / Host ("Sino Nagpa-Derby")</label>
+        <input type="text" id="eventHost" value="Governor's Gamefarm & Friends">
+      </div>
+      <div class="form-group">
+        <label>Arena / Venue Name</label>
+        <input type="text" id="eventArena" value="Metropolitan Cockpit Arena">
+      </div>
+      <div class="form-group">
+        <label>Event Date</label>
+        <input type="date" id="eventDate">
+      </div>
+      <div class="form-group">
+        <label>Pot / Minimum Bet Details</label>
+        <input type="text" id="eventPot" value="Pot: ₱100,000 | Min Bet: ₱11,000">
+      </div>
 
-      <div style="margin-top: 2rem;">
-        <h2>2. Matching Config</h2>
-        <div class="form-group">
-          <label for="maxDiff">Max Weight Difference (g)</label>
-          <input type="number" id="maxDiff" value="40" min="0">
-        </div>
-        <button id="generateBtn" class="btn btn-action">Generate Program</button>
+      <h2 style="margin-top: 1rem;">2. Tournament Format</h2>
+      <div class="form-group">
+        <label>Derby Scale</label>
+        <select id="derbyFormat">
+          <option value="2">2-Cock Derby (Small / Hackfight)</option>
+          <option value="3">3-Cock Derby (Local Event)</option>
+          <option value="4" selected>4-Cock Derby (Medium Event)</option>
+          <option value="5">5-Cock Derby (Big Event)</option>
+          <option value="6">6-Cock / 6-Stag Derby (Big Event)</option>
+          <option value="7">7-Cock Derby (Major Championship)</option>
+          <option value="9">9-Cock Derby (Super Big / WSC Format)</option>
+          <option value="12">12-Stag Derby (Circuit Format)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Max Weight Gap (Grams)</label>
+        <input type="number" id="maxDiff" value="40">
+      </div>
+
+      <h2>3. Bulk Entry Data</h2>
+      <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:0.4rem;">Format: <b>Owner, RingID, Weight</b></p>
+      <div class="form-group">
+        <textarea id="bulkInput" rows="4" placeholder="Alpha Farm, Ring-101, 2150&#10;Alpha Farm, Ring-102, 2180&#10;Beta Team, Ring-201, 2145&#10;Beta Team, Ring-202, 2190"></textarea>
+      </div>
+      <button id="importBtn" class="btn">Import Roster</button>
+      
+      <div class="btn-group">
+        <button id="generateBtn" class="btn btn-action">Generate Official Schedule</button>
+        <button id="exportCsvBtn" class="btn btn-csv">Export Schedule to CSV</button>
+        <button onclick="window.print()" class="btn btn-print">Print Official Program</button>
       </div>
     </div>
 
-    <!-- Registered Entries Pool -->
+    <!-- Right Column: Roster -->
     <div class="card">
-      <h2>Registered Entries (<span id="entryCount">0</span>)</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Owner</th>
-            <th>Cock ID</th>
-            <th>Weight</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="entryTable">
-          <!-- Rows dynamically added here -->
-        </tbody>
-      </table>
+      <h2>Entry Roster (<span id="count">0</span> Birds)</h2>
+      <div class="scroll-table">
+        <table>
+          <thead><tr><th>#</th><th>Owner</th><th>Ring ID</th><th>Weight</th></tr></thead>
+          <tbody id="rosterTable"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- Matches Output -->
-  <div class="card">
-    <h2>Matched Fights Schedule</h2>
-    <div id="matchesOutput">
-      <p style="color: var(--text-muted); font-size: 0.9rem;">No matches generated yet. Add entries and click "Generate Program".</p>
+  <!-- Official Program Output -->
+  <div class="card" id="programCard">
+    <div class="event-banner" id="bannerDisplay">
+      <h2 id="bannerTitle">4-Cock Invitational Derby</h2>
+      <div class="meta-grid">
+        <div class="meta-item"><b>Promoter/Host:</b> <span id="bannerHost">Governor's Gamefarm & Friends</span></div>
+        <div class="meta-item"><b>Arena:</b> <span id="bannerArena">Metropolitan Cockpit Arena</span></div>
+        <div class="meta-item"><b>Date:</b> <span id="bannerDate">TBD</span></div>
+        <div class="meta-item"><b>Stakes:</b> <span id="bannerPot">Pot: ₱100,000 | Min Bet: ₱11,000</span></div>
+      </div>
     </div>
+
+    <h2>Official Fight Schedule (<span id="fightCount">0</span> Matches)</h2>
+    <div id="scheduleOutput"></div>
   </div>
 </div>
 
 <script>
   let entries = [];
+  let generatedScheduleData = [];
 
-  // DOM Elements
-  const entryForm = document.getElementById('entryForm');
-  const entryTable = document.getElementById('entryTable');
-  const entryCount = document.getElementById('entryCount');
-  const generateBtn = document.getElementById('generateBtn');
-  const matchesOutput = document.getElementById('matchesOutput');
+  // Set default date to today
+  document.getElementById('eventDate').valueAsDate = new Date();
 
-  // Add Entry Handler
-  entryForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const owner = document.getElementById('owner').value.trim();
-    const cockId = document.getElementById('cockId').value.trim();
-    const weight = parseInt(document.getElementById('weight').value);
-
-    entries.push({ id: Date.now(), owner, cockId, weight });
-    
-    // Clear inputs
-    document.getElementById('cockId').value = '';
-    document.getElementById('weight').value = '';
-    
-    renderEntries();
-  });
-
-  // Delete Entry
-  function deleteEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    renderEntries();
-  }
-
-  // Render Table
-  function renderEntries() {
-    entryTable.innerHTML = '';
-    entryCount.textContent = entries.length;
-
-    entries.forEach(item => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${item.owner}</td>
-        <td>${item.cockId}</td>
-        <td>${item.weight}g</td>
-        <td><button onclick="deleteEntry(${item.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;">Delete</button></td>
-      `;
-      entryTable.appendChild(tr);
-    });
-  }
-
-  // Matching Logic Algorithm
-  generateBtn.addEventListener('click', () => {
-    const maxDiff = parseInt(document.getElementById('maxDiff').value) || 40;
-    
-    // Work on a copy sorted by weight
-    let pool = [...entries].sort((a, b) => a.weight - b.weight);
-    const matches = [];
-    const unmatched = [];
-    let matchCounter = 1;
-
-    while (pool.length > 1) {
-      const current = pool.shift(); // Pick lightest entry remaining
-      let bestMatchIdx = -1;
-      let minDiff = Infinity;
-
-      for (let i = 0; i < pool.length; i++) {
-        const candidate = pool[i];
-
-        // Constraint 1: Skip same owner
-        if (current.owner.toLowerCase() === candidate.owner.toLowerCase()) continue;
-
-        const diff = Math.abs(current.weight - candidate.weight);
-
-        // Constraint 2: Skip if weight exceeds allowed threshold
-        if (diff > maxDiff) break; // Sorted pool, so subsequent weights are even larger
-
-        // Pick closest weight match
-        if (diff < minDiff) {
-          minDiff = diff;
-          bestMatchIdx = i;
+  document.getElementById('importBtn').addEventListener('click', () => {
+    const raw = document.getElementById('bulkInput').value.trim();
+    if (!raw) return;
+    const lines = raw.split('\n');
+    lines.forEach(line => {
+      const parts = line.split(',');
+      if (parts.length >= 3) {
+        const owner = parts[0].trim();
+        const cockId = parts[1].trim();
+        const weight = parseInt(parts[2].trim());
+        if (owner && cockId && !isNaN(weight)) {
+          entries.push({ id: Date.now() + Math.random(), owner, cockId, weight });
         }
       }
-
-      if (bestMatchIdx !== -1) {
-        const opponent = pool.splice(bestMatchIdx, 1)[0];
-        matches.push({
-          num: matchCounter++,
-          cockA: current,
-          cockB: opponent,
-          diff: minDiff
-        });
-      } else {
-        unmatched.push(current);
-      }
-    }
-
-    // Add remaining single entry
-    if (pool.length > 0) {
-      unmatched.push(...pool);
-    }
-
-    renderMatches(matches, unmatched);
+    });
+    document.getElementById('bulkInput').value = '';
+    renderRoster();
   });
 
-  // Render Match Results
-  function renderMatches(matches, unmatched) {
-    matchesOutput.innerHTML = '';
+  function renderRoster() {
+    const table = document.getElementById('rosterTable');
+    document.getElementById('count').textContent = entries.length;
+    table.innerHTML = '';
+    entries.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${idx + 1}</td><td>${item.owner}</td><td>${item.cockId}</td><td>${item.weight}g</td>`;
+      table.appendChild(tr);
+    });
+  }
 
-    if (matches.length === 0 && unmatched.length === 0) {
-      matchesOutput.innerHTML = '<p style="color: var(--text-muted);">Please add at least 2 entries.</p>';
-      return;
-    }
+  document.getElementById('generateBtn').addEventListener('click', () => {
+    // Update Header Meta
+    document.getElementById('bannerTitle').textContent = document.getElementById('eventTitle').value;
+    document.getElementById('bannerHost').textContent = document.getElementById('eventHost').value;
+    document.getElementById('bannerArena').textContent = document.getElementById('eventArena').value;
+    document.getElementById('bannerDate').textContent = document.getElementById('eventDate').value;
+    document.getElementById('bannerPot').textContent = document.getElementById('eventPot').value;
 
-    matches.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'match-card';
-      div.innerHTML = `
-        <div>
-          <span class="badge">Fight #${m.num}</span>
-          <span class="match-team" style="margin-left: 0.5rem;">${m.cockA.owner}</span> (${m.cockA.cockId} - ${m.cockA.weight}g)
-        </div>
-        <div class="match-vs">VS</div>
-        <div>
-          <span class="match-team">${m.cockB.owner}</span> (${m.cockB.cockId} - ${m.cockB.weight}g)
-          <span class="badge" style="margin-left: 0.5rem; background:#0284c7;">Diff: ${m.diff}g</span>
-        </div>
-      `;
-      matchesOutput.appendChild(div);
+    const roundsCount = parseInt(document.getElementById('derbyFormat').value);
+    const maxDiff = parseInt(document.getElementById('maxDiff').value) || 40;
+    
+    const ownerGroups = {};
+    entries.forEach(e => {
+      if (!ownerGroups[e.owner]) ownerGroups[e.owner] = [];
+      ownerGroups[e.owner].push(e);
     });
 
-    if (unmatched.length > 0) {
-      const header = document.createElement('h3');
-      header.style.cssText = "margin-top: 1.5rem; margin-bottom:0.5rem; font-size:1rem; color:var(--danger)";
-      header.textContent = "Unmatched Entries (No compatible weight/owner pair found):";
-      matchesOutput.appendChild(header);
+    const roundPools = Array.from({ length: roundsCount }, () => []);
+    Object.keys(ownerGroups).forEach(owner => {
+      const ownerCocks = ownerGroups[owner].sort((a,b) => a.weight - b.weight);
+      ownerCocks.forEach((cock, index) => {
+        const targetRound = index % roundsCount;
+        roundPools[targetRound].push(cock);
+      });
+    });
 
-      unmatched.forEach(u => {
+    const allMatches = [];
+    const allUnmatched = [];
+    let globalFightNum = 1;
+    const history = [];
+
+    roundPools.forEach((rPool, rIndex) => {
+      let pool = [...rPool].sort((a, b) => a.weight - b.weight);
+      const roundMatches = [];
+
+      while (pool.length > 1) {
+        const current = pool.shift();
+        let bestIdx = -1;
+        let minDiff = Infinity;
+
+        for (let i = 0; i < pool.length; i++) {
+          const candidate = pool[i];
+          if (current.owner.toLowerCase() === candidate.owner.toLowerCase()) continue;
+
+          const matchKey = [current.owner.toLowerCase(), candidate.owner.toLowerCase()].sort().join(' VS ');
+          if (history.includes(matchKey)) continue;
+
+          const diff = Math.abs(current.weight - candidate.weight);
+          if (diff > maxDiff) break;
+
+          if (diff < minDiff) {
+            minDiff = diff;
+            bestIdx = i;
+          }
+        }
+
+        if (bestIdx !== -1) {
+          const opponent = pool.splice(bestIdx, 1)[0];
+          const matchKey = [current.owner.toLowerCase(), opponent.owner.toLowerCase()].sort().join(' VS ');
+          history.push(matchKey);
+
+          roundMatches.push({
+            num: globalFightNum++,
+            round: rIndex + 1,
+            a: current,
+            b: opponent,
+            diff: minDiff
+          });
+        } else {
+          allUnmatched.push({ cock: current, round: rIndex + 1 });
+        }
+      }
+      if (pool.length > 0) {
+        pool.forEach(c => allUnmatched.push({ cock: c, round: rIndex + 1 }));
+      }
+      allMatches.push({ round: rIndex + 1, fights: roundMatches });
+    });
+
+    generatedScheduleData = allMatches;
+    renderSchedule(allMatches, allUnmatched);
+  });
+
+  function renderSchedule(allMatches, allUnmatched) {
+    const out = document.getElementById('scheduleOutput');
+    out.innerHTML = '';
+    let totalFights = 0;
+
+    allMatches.forEach(rm => {
+      totalFights += rm.fights.length;
+      const rHeader = document.createElement('div');
+      rHeader.className = 'round-header';
+      rHeader.textContent = `ROUND ${rm.round}`;
+      out.appendChild(rHeader);
+
+      rm.fights.forEach(m => {
         const div = document.createElement('div');
-        div.className = 'unmatched';
-        div.innerHTML = `<strong>${u.owner}</strong> - ${u.cockId} (${u.weight}g)`;
-        matchesOutput.appendChild(div);
+        div.className = 'match-row';
+        div.innerHTML = `
+          <div><span class="badge">Fight #${m.num}</span> <b>${m.a.owner}</b> (${m.a.cockId} - ${m.a.weight}g)</div>
+          <div style="color:#f59e0b; font-weight:bold;">VS</div>
+          <div><b>${m.b.owner}</b> (${m.b.cockId} - ${m.b.weight}g) <span class="badge">Diff: ${m.diff}g</span></div>
+        `;
+        out.appendChild(div);
+      });
+    });
+
+    document.getElementById('fightCount').textContent = totalFights;
+
+    if (allUnmatched.length > 0) {
+      const header = document.createElement('h3');
+      header.style.cssText = "color:var(--danger); margin-top:1.5rem;";
+      header.textContent = `Unmatched Entries (${allUnmatched.length})`;
+      out.appendChild(header);
+
+      allUnmatched.forEach(u => {
+        const div = document.createElement('div');
+        div.style.cssText = "color:#f87171; padding:0.3rem 0; font-size:0.85rem;";
+        div.textContent = `[Round ${u.round}] ${u.cock.owner} - ${u.cock.cockId} (${u.cock.weight}g)`;
+        out.appendChild(div);
       });
     }
   }
+
+  // Export CSV Logic
+  document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    if (!generatedScheduleData || generatedScheduleData.length === 0) {
+      alert("Please generate a schedule first before exporting!");
+      return;
+    }
+
+    const title = document.getElementById('eventTitle').value;
+    const host = document.getElementById('eventHost').value;
+    const arena = document.getElementById('eventArena').value;
+    const date = document.getElementById('eventDate').value;
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += `EVENT,"${title}"\nPROMOTER/HOST,"${host}"\nARENA,"${arena}"\nDATE,"${date}"\n\n`;
+    csvContent += "Fight #,Round,Owner A,Ring ID A,Weight A (g),Owner B,Ring ID B,Weight B (g),Weight Gap (g)\n";
+
+    generatedScheduleData.forEach(roundData => {
+      roundData.fights.forEach(f => {
+        const row = [
+          f.num,
+          f.round,
+          `"${f.a.owner.replace(/"/g, '""')}"`,
+          `"${f.a.cockId.replace(/"/g, '""')}"`,
+          f.a.weight,
+          `"${f.b.owner.replace(/"/g, '""')}"`,
+          `"${f.b.cockId.replace(/"/g, '""')}"`,
+          f.b.weight,
+          f.diff
+        ].join(",");
+        csvContent += row + "\n";
+      });
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `official_program_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
 </script>
 
 </body>
