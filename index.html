@@ -3,263 +3,240 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Derby Matchmaker - Official Finish Program</title>
+  <title>HD Printable Derby Match Program</title>
   <style>
     :root { 
-      --bg: #0f172a; 
-      --card: #1e293b; 
-      --accent: #2563eb; 
-      --text: #f8fafc; 
-      --border: #334155; 
+      --bg: #0b0f19; 
+      --card: #151c2c; 
+      --border: #2a364f; 
+      --text: #f1f5f9; 
       --meron: #dc2626; 
       --wala: #0284c7; 
+      --gold: #d97706;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Arial Black', Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 1rem; }
-    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 1.5rem; -webkit-font-smoothing: antialiased; }
+    .container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; }
     
-    .card { background: var(--card); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border); }
+    .card-panel { background: var(--card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
     .form-group { margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
-    label { font-size: 0.8rem; color: #94a3b8; font-family: sans-serif; }
-    input, select, textarea { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: 4px; font-family: sans-serif; }
-    .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; font-family: sans-serif; }
-    .btn-action { background: #059669; }
-    .btn-print { background: #d97706; }
-    .btn-csv { background: #0284c7; }
-    .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    label { font-size: 0.85rem; color: #94a3b8; }
+    input, select, textarea { background: #0b0f19; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 6px; font-size: 0.9rem; }
     
-    /* Navigation */
-    .page-nav { display: flex; gap: 0.5rem; background: var(--card); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); font-family: sans-serif; }
-    .page-btn { flex: 1; background: #0f172a; border: 1px solid var(--border); color: #94a3b8; padding: 0.8rem; font-size: 0.9rem; font-weight: bold; border-radius: 6px; cursor: pointer; text-align: center; }
-    .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn { background: #2563eb; color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .btn-action { background: #10b981; }
+    .btn-print { background: #d97706; }
+    .btn-csv { background: #0ea5e9; }
+    .btn-group { display: flex; gap: 0.8rem; margin-top: 1rem; flex-wrap: wrap; }
+    
+    .page-nav { display: flex; gap: 0.5rem; background: var(--card); padding: 0.5rem; border-radius: 10px; border: 1px solid var(--border); }
+    .page-btn { flex: 1; background: #0b0f19; border: 1px solid var(--border); color: #94a3b8; padding: 0.8rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+    .page-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
     
     .page-view { display: none; }
     .page-view.active { display: block; }
 
-    .setup-tab-header { display: flex; gap: 0.3rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; font-family: sans-serif; }
-    .setup-tab-btn { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
-    .setup-tab-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: bold; }
-    .setup-tab-content { display: none; }
-    .setup-tab-content.active { display: block; }
+    /* Modern Banner */
+    .modern-banner { text-align: center; border: 2px solid var(--gold); background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 1.2rem; border-radius: 8px; margin-bottom: 1rem; }
+    .modern-banner h2 { font-size: 1.1rem; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; }
+    .modern-banner h1 { font-size: 2rem; color: var(--gold); text-transform: uppercase; margin: 0.2rem 0; font-weight: 800; }
+    .modern-banner .event-title { font-size: 1.3rem; color: #fff; font-weight: bold; text-transform: uppercase; }
+    .modern-banner .date-tag { display: inline-block; background: #334155; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.85rem; margin-top: 0.4rem; }
 
-    /* Program Sheet Design */
-    .program-sheet { background: #ffffff; color: #000000; padding: 1rem; border-radius: 4px; }
+    /* Match Cards */
+    .fights-grid { display: flex; flex-direction: column; gap: 0.6rem; }
     
-    .header-banner { text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
-    .header-banner h2 { font-size: 1.6rem; letter-spacing: 1px; font-weight: 900; text-transform: uppercase; }
-    .header-banner h4 { font-size: 0.8rem; font-family: sans-serif; font-weight: normal; margin-bottom: 0.4rem; }
-    .header-banner .presents { font-size: 0.75rem; font-family: sans-serif; text-transform: uppercase; font-weight: bold; }
-    .header-banner h1 { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0.2rem 0; letter-spacing: -1px; }
-    .header-banner h3 { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; }
-    .header-banner .date-line { font-size: 0.9rem; font-weight: bold; margin-top: 0.2rem; }
+    .fight-card { display: grid; grid-template-columns: 45px 1fr 1fr 45px; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .fight-num-box { background: var(--gold); color: #000; font-weight: 900; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+    
+    .side-box { padding: 0.6rem 0.8rem; display: flex; flex-direction: column; justify-content: space-between; }
+    .side-box.meron-side { border-left: 5px solid var(--meron); background: rgba(220, 38, 38, 0.08); }
+    .side-box.wala-side { border-right: 5px solid var(--wala); background: rgba(2, 132, 199, 0.08); text-align: right; }
+    
+    .team-name { font-size: 1rem; font-weight: 800; text-transform: uppercase; color: #fff; }
+    .owner-sub { font-size: 0.8rem; color: #94a3b8; font-style: italic; }
+    .stats-line { display: flex; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.8rem; font-weight: bold; }
+    .wala-side .stats-line { justify-content: flex-end; }
+    
+    .badge-wt { background: #334155; padding: 0.15rem 0.4rem; border-radius: 4px; color: #fff; }
+    .badge-band { background: #1e293b; border: 1px solid var(--border); padding: 0.15rem 0.4rem; border-radius: 4px; color: #cbd5e1; font-size: 0.75rem; }
 
-    /* Match Table Styling */
-    .match-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.8rem; }
-    .match-table th, .match-table td { border: 1px solid #000; padding: 0.25rem 0.1rem; }
-    
-    .side-header th { font-size: 1.2rem; color: #fff; text-transform: uppercase; padding: 0.3rem; }
-    .meron-bg { background-color: var(--meron) !important; color: white; }
-    .wala-bg { background-color: var(--wala) !important; color: white; }
-    
-    .col-header { background: #000; color: #fff; font-size: 0.7rem; font-weight: bold; }
-    
-    .entry-cell { text-align: left; padding-left: 0.4rem !important; position: relative; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; }
-    .owner-tag { position: absolute; right: 0.3rem; top: 0.2rem; font-size: 0.6rem; font-weight: normal; font-style: italic; color: #444; font-family: sans-serif; }
-    
-    .ft-num { font-weight: 900; font-size: 0.9rem; width: 30px; }
-    .wt-cell { font-weight: 900; font-size: 0.9rem; width: 45px; }
-    .band-cell { font-size: 0.65rem; width: 35px; font-family: sans-serif; }
-
+    /* HIGH-DEFINITON PRINT ENGINE OPTIMIZATION */
     @media print { 
-      body { background: white; color: black; padding: 0; } 
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+      
+      html, body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
       .no-print { display: none !important; } 
       .page-view { display: block !important; }
       #setupPage, #rosterPage { display: none !important; } 
-      .program-sheet { border: none; padding: 0; }
-      .match-table th, .match-table td { border: 1px solid #000 !important; }
-      .meron-bg { background-color: #dc2626 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .wala-bg { background-color: #0284c7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .col-header { background-color: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .modern-banner {
+        border: 2px solid #000000 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0.8rem !important;
+        margin-bottom: 0.8rem !important;
+        border-radius: 0 !important;
+      }
+      
+      .modern-banner h1 { color: #000000 !important; font-size: 1.8rem !important; }
+      .modern-banner h2, .modern-banner .event-title { color: #000000 !important; }
+      .modern-banner .date-tag { background: none !important; border: 1px solid #000 !important; color: #000 !important; }
+
+      .fights-grid { gap: 0.3rem !important; }
+
+      .fight-card { 
+        border: 1.5pt solid #000000 !important; 
+        background: #ffffff !important; 
+        color: #000000 !important; 
+        page-break-inside: avoid !important;
+        border-radius: 0 !important;
+      }
+
+      .fight-num-box { 
+        background: #000000 !important; 
+        color: #ffffff !important; 
+        font-size: 1pt !important;
+        font-weight: 900 !important;
+      }
+
+      .side-box.meron-side { 
+        border-left: 6pt solid #dc2626 !important; 
+        background: #ffffff !important; 
+      }
+
+      .side-box.wala-side { 
+        border-right: 6pt solid #0284c7 !important; 
+        background: #ffffff !important; 
+      }
+
+      .team-name { color: #000000 !important; font-size: 10pt !important; font-weight: 900 !important; }
+      .owner-sub { color: #333333 !important; font-size: 8pt !important; }
+      
+      .badge-wt { 
+        background: #000000 !important; 
+        color: #ffffff !important; 
+        font-size: 8pt !important;
+        font-weight: bold !important;
+      }
+
+      .badge-band { 
+        background: #ffffff !important; 
+        border: 1pt solid #000000 !important; 
+        color: #000000 !important; 
+        font-size: 7.5pt !important;
+        font-weight: bold !important;
+      }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1 class="no-print" style="text-align: center; color: #38bdf8; font-family: sans-serif;">Derby Matchmaker Engine</h1>
+  <h1 class="no-print" style="text-align: center; color: #38bdf8;">HD Matchmaker Program Generator</h1>
 
-  <!-- Navigation -->
   <div class="page-nav no-print">
     <button class="page-btn active" onclick="switchPage('setupPage', event)">⚙️ Setup & Entry</button>
     <button class="page-btn" onclick="switchPage('rosterPage', event)">📋 Entry Roster (<span id="rosterBadgeCount">0</span>)</button>
-    <button class="page-btn" onclick="switchPage('schedulePage', event)">📄 Finish Derby Program</button>
+    <button class="page-btn" onclick="switchPage('schedulePage', event)">📄 Print HD Program</button>
   </div>
 
-  <!-- PAGE 1: SETUP -->
-  <div id="setupPage" class="page-view active card no-print">
-    <h2>1. Event & Header Info</h2>
-    <div class="form-group"><label>Arena / Venue Name</label><input type="text" id="eventArena" value="GRAND TEJERO ARENA"></div>
-    <div class="form-group"><label>Arena Address / Location</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
-    <div class="form-group"><label>Promoter / Organization Header</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
-    <div class="form-group"><label>Derby Title / Event Name</label><input type="text" id="eventTitle" value="4-COCK/STAG COMBO DERBY"></div>
-    <div class="form-group"><label>Event Date Display</label><input type="text" id="eventDate" value="AUGUST 22, 2026 ( Saturday )"></div>
+  <!-- SETUP PAGE -->
+  <div id="setupPage" class="page-view active card-panel no-print">
+    <h2>1. Header Options</h2>
+    <div class="form-group"><label>Arena / Venue Name</label><input type="text" id="eventArena" value="PASAY COCKPIT STADIUM"></div>
+    <div class="form-group"><label>Promoter / Host</label><input type="text" id="eventPromoter" value="LUZON GAMEFOWL CHAMPIONS"></div>
+    <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="5-COCK BIG EVENT DERBY"></div>
+    <div class="form-group"><label>Date Display</label><input type="text" id="eventDate" value="SEPTEMBER 12, 2026"></div>
 
-    <h2 style="margin-top: 1.5rem;">2. Match Settings</h2>
+    <h2 style="margin-top:1.5rem;">2. Tournament Options</h2>
     <div class="form-group">
       <label>Derby Format</label>
       <select id="derbyFormat">
-        <option value="2">2-Cock Derby</option>
-        <option value="3">3-Cock Derby</option>
-        <option value="4" selected>4-Cock Derby</option>
-        <option value="5">5-Cock Derby</option>
-        <option value="6">6-Cock / Stag Derby</option>
+        <option value="2">2-Cock</option>
+        <option value="3">3-Cock</option>
+        <option value="4">4-Cock</option>
+        <option value="5" selected>5-Cock</option>
+        <option value="6">6-Cock</option>
       </select>
     </div>
     <div class="form-group"><label>Max Weight Gap (g)</label><input type="number" id="maxDiff" value="40"></div>
 
-    <h2 style="margin-top: 1.5rem;">3. Add Entry Data</h2>
-    <div class="setup-tab-header">
-      <button class="setup-tab-btn active" onclick="switchSetupTab('textTab', event)">Copy-Paste / Fast Entry</button>
-      <button class="setup-tab-btn" onclick="switchSetupTab('scannerTab', event)">Scanner Mode</button>
+    <h2 style="margin-top:1.5rem;">3. Data Import</h2>
+    <div class="form-group">
+      <label>Format: Entry Name, Owner, Weight, LegBand, WingBand</label>
+      <textarea id="bulkInput" rows="5" placeholder="ALPHA FARM, JOHN, 2150, 01, 10023&#10;BETA TEAM, MARK, 2140, 02, 10024"></textarea>
     </div>
-
-    <!-- Copy-Paste Option -->
-    <div id="textTab" class="setup-tab-content active">
-      <div class="form-group">
-        <label>Format: Entry Name, Owner, Weight, LegBand, WingBand</label>
-        <textarea id="bulkInput" rows="6" placeholder="MATT MATT WARBIRDZ GF, SUPER M, 2200, 01, 12345&#10;BOTH KILL, PCJ/JP, 2170, , &#10;CHARKATE, CHARKATE, 2010, 05, 0350720&#10;RZA 4-COCK GDM, ALEX, 2000, 14, 1669"></textarea>
-      </div>
-      <button id="importTextBtn" class="btn">Import Lines</button>
-    </div>
-
-    <!-- Scanner Option -->
-    <div id="scannerTab" class="setup-tab-content">
-      <div class="form-group"><label>Entry Name</label><input type="text" id="scanEntry" placeholder="e.g. CHARKATE"></div>
-      <div class="form-group"><label>Owner / Handler</label><input type="text" id="scanOwner" placeholder="e.g. ALEX"></div>
-      <div class="form-group"><label>Weight (g)</label><input type="number" id="scanWeight" placeholder="2150"></div>
-      <div class="form-group"><label>Leg Band (LB)</label><input type="text" id="scanLB" placeholder="e.g. 05"></div>
-      <div class="form-group"><label>Wing Band (WB)</label><input type="text" id="scanWB" placeholder="e.g. 0350720"></div>
-      <button id="scanAddBtn" class="btn btn-action">Add Entry</button>
-    </div>
-
-    <div class="btn-group" style="margin-top:2rem;">
-      <button id="generateBtn" class="btn btn-action" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">Generate Program Sheet</button>
+    <button id="importTextBtn" class="btn">Import Entries</button>
+    
+    <div class="btn-group" style="margin-top:1.5rem;">
+      <button id="generateBtn" class="btn btn-action" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">Generate HD Program</button>
     </div>
   </div>
 
-  <!-- PAGE 2: ROSTER VIEW -->
-  <div id="rosterPage" class="page-view card">
-    <h2 style="font-family: sans-serif;">Entry Roster (<span id="count">0</span> Birds)</h2>
-    <div style="margin-top: 1rem; overflow-x: auto;">
-      <table style="width:100%; color:#fff; border-collapse:collapse; font-family:sans-serif;" id="rosterTable">
-        <thead>
-          <tr style="background:#0f172a; text-align:left;">
-            <th style="padding:0.5rem;">#</th>
-            <th>Entry Name</th>
-            <th>Owner</th>
-            <th>Weight</th>
-            <th>LB</th>
-            <th>WB</th>
-            <th class="no-print">Action</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+  <!-- ROSTER PAGE -->
+  <div id="rosterPage" class="page-view card-panel">
+    <h2>Entry Roster (<span id="count">0</span> Birds)</h2>
+    <table style="width:100%; border-collapse:collapse; margin-top:1rem;" id="rosterTable">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+          <th style="padding:0.5rem;">#</th>
+          <th>Entry</th>
+          <th>Owner</th>
+          <th>Weight</th>
+          <th>LB</th>
+          <th>WB</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-  <!-- PAGE 3: DERBY PROGRAM DISPLAY -->
+  <!-- PROGRAM PAGE -->
   <div id="schedulePage" class="page-view">
     <div class="no-print btn-group" style="margin-bottom: 1rem;">
-      <button onclick="window.print()" class="btn btn-print">🖨️ Print Official Program</button>
+      <button onclick="triggerHDPrint()" class="btn btn-print">🖨️ Print HD Program Sheet</button>
       <button id="exportCsvBtn" class="btn btn-csv">📥 Export CSV</button>
     </div>
 
-    <!-- Official Printable Document -->
-    <div class="program-sheet">
-      <div class="header-banner">
-        <h2 id="dispArena">GRAND TEJERO ARENA</h2>
-        <h4 id="dispAddress">M.J. Cuenco Ave., Tejero, Cebu City</h4>
-        <div class="presents">PRESENTS</div>
-        <h1 id="dispPromoter">NGGBC PROMOTION</h1>
-        <h3 id="dispTitle">4-COCK/STAG COMBO DERBY</h3>
-        <div class="date-line" id="dispDate">AUGUST 22, 2026 ( Saturday )</div>
-      </div>
-
-      <table class="match-table">
-        <thead>
-          <tr class="side-header">
-            <th colspan="5" class="meron-bg">MERON</th>
-            <th colspan="5" class="wala-bg">WALA</th>
-          </tr>
-          <tr class="col-header">
-            <th style="width:25px;">FT#</th>
-            <th>ENTRY NAME / OWNER</th>
-            <th style="width:30px;">LB</th>
-            <th style="width:40px;">WB</th>
-            <th style="width:45px;">WT</th>
-            <th style="width:45px;">WT</th>
-            <th style="width:40px;">WB</th>
-            <th style="width:30px;">LB</th>
-            <th>ENTRY NAME / OWNER</th>
-            <th style="width:25px;">FT#</th>
-          </tr>
-        </thead>
-        <tbody id="programTableBody">
-          <!-- Fight Rows Injected Here -->
-        </tbody>
-      </table>
-
-      <div id="unmatchedOutput" style="margin-top:1rem; font-family:sans-serif; font-size:0.8rem; color:#dc2626;"></div>
+    <!-- Printable Area -->
+    <div class="modern-banner">
+      <h2 id="dispArena">PASAY COCKPIT STADIUM</h2>
+      <h1 id="dispPromoter">LUZON GAMEFOWL CHAMPIONS</h1>
+      <div class="event-title" id="dispTitle">5-COCK BIG EVENT DERBY</div>
+      <div class="date-tag" id="dispDate">SEPTEMBER 12, 2026</div>
     </div>
+
+    <div class="fights-grid" id="fightsContainer"></div>
   </div>
 </div>
 
 <script>
   let entries = [];
-  let generatedScheduleData = [];
 
   function switchPage(pageId, e) {
     document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.page-btn').forEach(el => el.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
-    e.target.classList.add('active');
+    if (e) e.target.classList.add('active');
   }
 
-  function switchSetupTab(tabId, e) {
-    document.querySelectorAll('.setup-tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.setup-tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    e.target.classList.add('active');
+  function triggerHDPrint() {
+    window.print();
   }
 
-  function renderRoster() {
-    const tbody = document.querySelector('#rosterTable tbody');
-    document.getElementById('count').textContent = entries.length;
-    document.getElementById('rosterBadgeCount').textContent = entries.length;
-    tbody.innerHTML = '';
-    entries.forEach((item, idx) => {
-      const tr = document.createElement('tr');
-      tr.style.borderBottom = '1px solid #334155';
-      tr.innerHTML = `
-        <td style="padding:0.5rem;">${idx + 1}</td>
-        <td><b>${item.entryName}</b></td>
-        <td>${item.owner}</td>
-        <td>${item.weight}g</td>
-        <td>${item.lb || '-'}</td>
-        <td>${item.wb || '-'}</td>
-        <td class="no-print"><button onclick="deleteEntry(${item.id})" style="color:var(--meron); background:none; border:none; cursor:pointer;">Delete</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function deleteEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    renderRoster();
-  }
-
-  // Import Text / Copy-Paste
   document.getElementById('importTextBtn').addEventListener('click', () => {
     const raw = document.getElementById('bulkInput').value.trim();
     if (!raw) return;
@@ -280,30 +257,28 @@
     renderRoster();
   });
 
-  // Scanner Form Submit
-  document.getElementById('scanAddBtn').addEventListener('click', () => {
-    const entryName = document.getElementById('scanEntry').value.trim();
-    const owner = document.getElementById('scanOwner').value.trim();
-    const weight = parseInt(document.getElementById('scanWeight').value.trim());
-    const lb = document.getElementById('scanLB').value.trim();
-    const wb = document.getElementById('scanWB').value.trim();
+  function renderRoster() {
+    const tbody = document.querySelector('#rosterTable tbody');
+    document.getElementById('count').textContent = entries.length;
+    document.getElementById('rosterBadgeCount').textContent = entries.length;
+    tbody.innerHTML = '';
+    entries.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--border)';
+      tr.innerHTML = `
+        <td style="padding:0.5rem;">${idx + 1}</td>
+        <td><b>${item.entryName}</b></td>
+        <td>${item.owner}</td>
+        <td>${item.weight}g</td>
+        <td>${item.lb || '-'}</td>
+        <td>${item.wb || '-'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-    if (entryName && !isNaN(weight)) {
-      entries.push({ id: Date.now() + Math.random(), entryName, owner, weight, lb, wb });
-      document.getElementById('scanEntry').value = '';
-      document.getElementById('scanWeight').value = '';
-      document.getElementById('scanLB').value = '';
-      document.getElementById('scanWB').value = '';
-      document.getElementById('scanEntry').focus();
-      renderRoster();
-    }
-  });
-
-  // Matchmaking Engine & Layout Renderer
   document.getElementById('generateBtn').addEventListener('click', () => {
-    // Header updates
     document.getElementById('dispArena').textContent = document.getElementById('eventArena').value;
-    document.getElementById('dispAddress').textContent = document.getElementById('eventAddress').value;
     document.getElementById('dispPromoter').textContent = document.getElementById('eventPromoter').value;
     document.getElementById('dispTitle').textContent = document.getElementById('eventTitle').value;
     document.getElementById('dispDate').textContent = document.getElementById('eventDate').value;
@@ -311,7 +286,6 @@
     const roundsCount = parseInt(document.getElementById('derbyFormat').value);
     const maxDiff = parseInt(document.getElementById('maxDiff').value) || 40;
 
-    // Grouping by Entry Name to avoid self-matching
     const entryGroups = {};
     entries.forEach(e => {
       if (!entryGroups[e.entryName]) entryGroups[e.entryName] = [];
@@ -328,7 +302,6 @@
     });
 
     const allMatches = [];
-    const allUnmatched = [];
     let globalFightNum = 1;
     const history = [];
 
@@ -368,76 +341,54 @@
             wala: opponent,
             diff: minDiff
           });
-        } else {
-          allUnmatched.push(current);
         }
       }
-      if (pool.length > 0) pool.forEach(c => allUnmatched.push(c));
     });
 
-    generatedScheduleData = allMatches;
-    renderProgramSheet(allMatches, allUnmatched);
-
-    // Switch to Program Page
-    document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.page-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById('schedulePage').classList.add('active');
+    renderCards(allMatches);
+    switchPage('schedulePage');
     document.querySelectorAll('.page-btn')[2].classList.add('active');
   });
 
-  function renderProgramSheet(matches, unmatched) {
-    const tbody = document.getElementById('programTableBody');
-    tbody.innerHTML = '';
+  function renderCards(matches) {
+    const container = document.getElementById('fightsContainer');
+    container.innerHTML = '';
 
     matches.forEach(m => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="ft-num">${m.num}</td>
-        <td class="entry-cell">
-          ${m.meron.entryName}
-          ${m.meron.owner ? `<span class="owner-tag">${m.meron.owner}</span>` : ''}
-        </td>
-        <td class="band-cell">${m.meron.lb || ''}</td>
-        <td class="band-cell">${m.meron.wb || ''}</td>
-        <td class="wt-cell">${m.meron.weight}</td>
-        <td class="wt-cell">${m.wala.weight}</td>
-        <td class="band-cell">${m.wala.wb || ''}</td>
-        <td class="band-cell">${m.wala.lb || ''}</td>
-        <td class="entry-cell">
-          ${m.wala.entryName}
-          ${m.wala.owner ? `<span class="owner-tag">${m.wala.owner}</span>` : ''}
-        </td>
-        <td class="ft-num">${m.num}</td>
+      const card = document.createElement('div');
+      card.className = 'fight-card';
+      card.innerHTML = `
+        <div class="fight-num-box">#${m.num}</div>
+        
+        <div class="side-box meron-side">
+          <div>
+            <div class="team-name">${m.meron.entryName}</div>
+            <div class="owner-sub">${m.meron.owner || ''}</div>
+          </div>
+          <div class="stats-line">
+            <span class="badge-wt">${m.meron.weight}g</span>
+            ${m.meron.lb ? `<span class="badge-band">LB: ${m.meron.lb}</span>` : ''}
+            ${m.meron.wb ? `<span class="badge-band">WB: ${m.meron.wb}</span>` : ''}
+          </div>
+        </div>
+
+        <div class="side-box wala-side">
+          <div>
+            <div class="team-name">${m.wala.entryName}</div>
+            <div class="owner-sub">${m.wala.owner || ''}</div>
+          </div>
+          <div class="stats-line">
+            ${m.wala.wb ? `<span class="badge-band">WB: ${m.wala.wb}</span>` : ''}
+            ${m.wala.lb ? `<span class="badge-band">LB: ${m.wala.lb}</span>` : ''}
+            <span class="badge-wt">${m.wala.weight}g</span>
+          </div>
+        </div>
+
+        <div class="fight-num-box">#${m.num}</div>
       `;
-      tbody.appendChild(tr);
+      container.appendChild(card);
     });
-
-    const unDiv = document.getElementById('unmatchedOutput');
-    if (unmatched.length > 0) {
-      unDiv.innerHTML = '<b>UNMATCHED BIRDS:</b> ' + unmatched.map(u => `${u.entryName} (${u.weight}g)`).join(', ');
-    } else {
-      unDiv.innerHTML = '';
-    }
   }
-
-  // Export CSV
-  document.getElementById('exportCsvBtn').addEventListener('click', () => {
-    if (generatedScheduleData.length === 0) return;
-
-    let csv = "data:text/csv;charset=utf-8,";
-    csv += "Fight#,Meron Entry,Meron Owner,Meron LB,Meron WB,Meron WT,Wala WT,Wala WB,Wala LB,Wala Entry,Wala Owner\n";
-
-    generatedScheduleData.forEach(m => {
-      csv += `${m.num},"${m.meron.entryName}","${m.meron.owner}","${m.meron.lb}","${m.meron.wb}",${m.meron.weight},${m.wala.weight},"${m.wala.wb}","${m.wala.lb}","${m.wala.entryName}","${m.wala.owner}"\n`;
-    });
-
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csv));
-    link.setAttribute("download", `derby_program_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
 </script>
 
 </body>
