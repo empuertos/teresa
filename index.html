@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Derby Program Matchmaker</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 2rem; }
+    .container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+    
+    h1 { text-align: center; font-size: 2rem; color: #38bdf8; }
+    
+    .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+    .card h2 { font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+
+    .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-size: 0.875rem; color: var(--text-muted); }
+    input { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 4px; font-size: 0.9rem; }
+    input:focus { outline: none; border-color: var(--accent); }
+
+    .btn { background: var(--accent); color: white; border: none; padding: 0.75rem 1rem; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%; }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-action { margin-top: 1rem; background: #059669; }
+    .btn-action:hover { background: #047857; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { text-align: left; padding: 0.6rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    th { color: var(--text-muted); font-weight: 500; }
+
+    .match-card { background: #0f172a; border: 1px solid var(--border); padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .match-team { font-weight: bold; }
+    .match-vs { color: #f59e0b; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+    .badge { background: #334155; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+    .unmatched { border-left: 3px solid var(--danger); background: #1e1e24; margin-bottom: 0.5rem; padding: 0.5rem 0.8rem; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Derby Program Matchmaker</h1>
+
+  <div class="grid">
+    <!-- Entry Panel -->
+    <div class="card">
+      <h2>1. Add Cock Entry</h2>
+      <form id="entryForm">
+        <div class="form-group">
+          <label for="owner">Owner / Entry Name</label>
+          <input type="text" id="owner" placeholder="e.g., Alpha Farm" required>
+        </div>
+        <div class="form-group">
+          <label for="cockId">Cock Ring / ID</label>
+          <input type="text" id="cockId" placeholder="e.g., Ring-101" required>
+        </div>
+        <div class="form-group">
+          <label for="weight">Weight (Grams)</label>
+          <input type="number" id="weight" placeholder="e.g., 2150" required>
+        </div>
+        <button type="submit" class="btn">Add Entry</button>
+      </form>
+
+      <div style="margin-top: 2rem;">
+        <h2>2. Matching Config</h2>
+        <div class="form-group">
+          <label for="maxDiff">Max Weight Difference (g)</label>
+          <input type="number" id="maxDiff" value="40" min="0">
+        </div>
+        <button id="generateBtn" class="btn btn-action">Generate Program</button>
+      </div>
+    </div>
+
+    <!-- Registered Entries Pool -->
+    <div class="card">
+      <h2>Registered Entries (<span id="entryCount">0</span>)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Owner</th>
+            <th>Cock ID</th>
+            <th>Weight</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="entryTable">
+          <!-- Rows dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Matches Output -->
+  <div class="card">
+    <h2>Matched Fights Schedule</h2>
+    <div id="matchesOutput">
+      <p style="color: var(--text-muted); font-size: 0.9rem;">No matches generated yet. Add entries and click "Generate Program".</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  let entries = [];
+
+  // DOM Elements
+  const entryForm = document.getElementById('entryForm');
+  const entryTable = document.getElementById('entryTable');
+  const entryCount = document.getElementById('entryCount');
+  const generateBtn = document.getElementById('generateBtn');
+  const matchesOutput = document.getElementById('matchesOutput');
+
+  // Add Entry Handler
+  entryForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const owner = document.getElementById('owner').value.trim();
+    const cockId = document.getElementById('cockId').value.trim();
+    const weight = parseInt(document.getElementById('weight').value);
+
+    entries.push({ id: Date.now(), owner, cockId, weight });
+    
+    // Clear inputs
+    document.getElementById('cockId').value = '';
+    document.getElementById('weight').value = '';
+    
+    renderEntries();
+  });
+
+  // Delete Entry
+  function deleteEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    renderEntries();
+  }
+
+  // Render Table
+  function renderEntries() {
+    entryTable.innerHTML = '';
+    entryCount.textContent = entries.length;
+
+    entries.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${item.owner}</td>
+        <td>${item.cockId}</td>
+        <td>${item.weight}g</td>
+        <td><button onclick="deleteEntry(${item.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;">Delete</button></td>
+      `;
+      entryTable.appendChild(tr);
+    });
+  }
+
+  // Matching Logic Algorithm
+  generateBtn.addEventListener('click', () => {
+    const maxDiff = parseInt(document.getElementById('maxDiff').value) || 40;
+    
+    // Work on a copy sorted by weight
+    let pool = [...entries].sort((a, b) => a.weight - b.weight);
+    const matches = [];
+    const unmatched = [];
+    let matchCounter = 1;
+
+    while (pool.length > 1) {
+      const current = pool.shift(); // Pick lightest entry remaining
+      let bestMatchIdx = -1;
+      let minDiff = Infinity;
+
+      for (let i = 0; i < pool.length; i++) {
+        const candidate = pool[i];
+
+        // Constraint 1: Skip same owner
+        if (current.owner.toLowerCase() === candidate.owner.toLowerCase()) continue;
+
+        const diff = Math.abs(current.weight - candidate.weight);
+
+        // Constraint 2: Skip if weight exceeds allowed threshold
+        if (diff > maxDiff) break; // Sorted pool, so subsequent weights are even larger
+
+        // Pick closest weight match
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestMatchIdx = i;
+        }
+      }
+
+      if (bestMatchIdx !== -1) {
+        const opponent = pool.splice(bestMatchIdx, 1)[0];
+        matches.push({
+          num: matchCounter++,
+          cockA: current,
+          cockB: opponent,
+          diff: minDiff
+        });
+      } else {
+        unmatched.push(current);
+      }
+    }
+
+    // Add remaining single entry
+    if (pool.length > 0) {
+      unmatched.push(...pool);
+    }
+
+    renderMatches(matches, unmatched);
+  });
+
+  // Render Match Results
+  function renderMatches(matches, unmatched) {
+    matchesOutput.innerHTML = '';
+
+    if (matches.length === 0 && unmatched.length === 0) {
+      matchesOutput.innerHTML = '<p style="color: var(--text-muted);">Please add at least 2 entries.</p>';
+      return;
+    }
+
+    matches.forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'match-card';
+      div.innerHTML = `
+        <div>
+          <span class="badge">Fight #${m.num}</span>
+          <span class="match-team" style="margin-left: 0.5rem;">${m.cockA.owner}</span> (${m.cockA.cockId} - ${m.cockA.weight}g)
+        </div>
+        <div class="match-vs">VS</div>
+        <div>
+          <span class="match-team">${m.cockB.owner}</span> (${m.cockB.cockId} - ${m.cockB.weight}g)
+          <span class="badge" style="margin-left: 0.5rem; background:#0284c7;">Diff: ${m.diff}g</span>
+        </div>
+      `;
+      matchesOutput.appendChild(div);
+    });
+
+    if (unmatched.length > 0) {
+      const header = document.createElement('h3');
+      header.style.cssText = "margin-top: 1.5rem; margin-bottom:0.5rem; font-size:1rem; color:var(--danger)";
+      header.textContent = "Unmatched Entries (No compatible weight/owner pair found):";
+      matchesOutput.appendChild(header);
+
+      unmatched.forEach(u => {
+        const div = document.createElement('div');
+        div.className = 'unmatched';
+        div.innerHTML = `<strong>${u.owner}</strong> - ${u.cockId} (${u.weight}g)`;
+        matchesOutput.appendChild(div);
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
