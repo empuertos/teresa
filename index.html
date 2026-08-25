@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HD Complete Derby Matchmaker System with Core Engine</title>
+  <title>HD Complete Derby Matchmaker System - Max Engine</title>
   <!-- SheetJS for Direct Excel Upload -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -23,7 +23,7 @@
     
     .card { background: var(--card); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border); }
     .form-group { margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
-    label { font-size: 0.8rem; color: #94a3b8; }
+    label { font-size: 0.8rem; color: #94a3b8; font-weight: bold; }
     input, select, textarea { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: 4px; }
     .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .btn-action { background: #059669; }
@@ -97,11 +97,11 @@
 <body>
 
 <div class="container">
-  <h1 class="no-print" style="text-align: center; color: #38bdf8;">Derby Matchmaker Engine</h1>
+  <h1 class="no-print" style="text-align: center; color: #38bdf8;">Derby Matchmaker Engine (Max Engine)</h1>
 
   <!-- NAV BAR -->
   <div class="page-nav no-print">
-    <button class="page-btn active" onclick="switchPage('setupPage', event)">⚙️ 1. Setup & Entry</button>
+    <button class="page-btn active" onclick="switchPage('setupPage', event)">⚙️ 1. Setup & Engine</button>
     <button class="page-btn" onclick="switchPage('rosterPage', event)">📋 2. Roster (<span id="rosterBadgeCount">0</span>)</button>
     <button class="page-btn" onclick="switchPage('classicSchedulePage', event)">📄 3. Print Program Sheet</button>
     <button class="page-btn" onclick="switchPage('cardSchedulePage', event)">🎴 4. Card-View Display</button>
@@ -109,34 +109,80 @@
 
   <!-- SETUP PAGE -->
   <div id="setupPage" class="page-view active card no-print">
-    <h2>1. Header Info</h2>
+    <h2>1. Event Header Info</h2>
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
       <div class="form-group"><label>Arena Name</label><input type="text" id="eventArena" value="GRAND TEJERO ARENA"></div>
       <div class="form-group"><label>Arena Address</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
       <div class="form-group"><label>Promoter Header</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
-      <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="4-COCK/STAG COMBO DERBY"></div>
+      <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="12-STAG / COCK MAIN EVENT"></div>
       <div class="form-group"><label>Event Date</label><input type="text" id="eventDate" value="AUGUST 22, 2026 ( Saturday )"></div>
     </div>
 
-    <h2 style="margin-top: 1rem;">2. Core Matching Settings</h2>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+    <h2 style="margin-top: 1rem;">2. Maximized Core Matching Settings</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem;">
       <div class="form-group">
-        <label>Derby Format</label>
+        <label>Derby Format (Expanded)</label>
         <select id="derbyFormat">
+          <option value="1">1-Cock Fast Derby</option>
           <option value="2">2-Cock Derby</option>
           <option value="3">3-Cock Derby</option>
-          <option value="4" selected>4-Cock Derby</option>
-          <option value="5">5-Cock Derby</option>
-          <option value="6">6-Cock / Stag Derby</option>
+          <option value="4">4-Cock Derby</option>
+          <option value="5">5-Cock / Stag Derby</option>
+          <option value="6">6-Cock Main Event</option>
+          <option value="7">7-Cock Big Event</option>
+          <option value="8">8-Cock Mega Derby</option>
+          <option value="9">9-Cock Mega Derby</option>
+          <option value="10">10-Cock World Class Derby</option>
+          <option value="12" selected>12-Cock / 12-Stag Championship Derby</option>
+          <option value="15">15-Cock Grand Ultimate Derby</option>
         </select>
       </div>
-      <div class="form-group"><label>Max Weight Gap / Tolerance (grams)</label><input type="number" id="maxDiff" value="40"></div>
-      <div class="form-group"><label>Rest Interval (Min. fights before same team fights again)</label><input type="number" id="restBuffer" value="5"></div>
+
       <div class="form-group">
-        <label>Elimination Filter (No-Bearing Rule)</label>
+        <label>Max Weight Gap / Gap Limit (Grams)</label>
+        <select id="maxDiff">
+          <option value="15">Strict (15g Tolerance)</option>
+          <option value="25">Standard (25g Tolerance)</option>
+          <option value="40" selected>Balanced (40g Tolerance)</option>
+          <option value="50">Flexible (50g Tolerance)</option>
+          <option value="80">Wide (80g Tolerance)</option>
+          <option value="100">Max Open Gap (100g Tolerance)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Rest / Fight Interval (Buffer Time)</label>
+        <select id="restBuffer">
+          <option value="2">Minimal Buffer (2 Fights Interval)</option>
+          <option value="5" selected>Standard Buffer (5 Fights Interval)</option>
+          <option value="8">High Buffer (8 Fights Interval)</option>
+          <option value="12">Max Rest (12 Fights Interval)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Elimination & No-Bearing Rules</label>
         <select id="elimFilter">
-          <option value="none">Disabled (Include All Teams)</option>
-          <option value="strict">Strict (Drop Teams with 2 Losses)</option>
+          <option value="none">Disabled (Schedule All Entries)</option>
+          <option value="1loss">Drop Teams on 1 Loss (Single Elim)</option>
+          <option value="2loss">Drop Teams on 2 Losses (Double Elim / Prize Cut)</option>
+          <option value="nobearing">Schedule No-Bearing Matches at the End</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Same-Owner / Same-Team Rule</label>
+        <select id="ownerCheck">
+          <option value="strict" selected>Hard Block (Strictly No Same-Owner Fights)</option>
+          <option value="allow_cross">Allow Different Handlers Under Same Farm</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Matching Algorithm Strategy</label>
+        <select id="matchStrategy">
+          <option value="exact_first" selected>Exact Weight Priority (0g Diff First)</option>
+          <option value="random_balanced">Balanced Spread Distribution</option>
         </select>
       </div>
     </div>
@@ -216,7 +262,7 @@
         <h4 class="dispAddress">M.J. Cuenco Ave., Tejero, Cebu City</h4>
         <div class="presents">PRESENTS</div>
         <h1 class="dispPromoter">NGGBC PROMOTION</h1>
-        <h3 class="dispTitle">4-COCK/STAG COMBO DERBY</h3>
+        <h3 class="dispTitle">12-STAG / COCK MAIN EVENT</h3>
         <div class="date-line dispDate">AUGUST 22, 2026 ( Saturday )</div>
       </div>
 
@@ -363,7 +409,7 @@
     renderRoster();
   }
 
-  // --- CORE MATCHING ENGINE IMPLEMENTATION ---
+  // --- MAX ENGINE IMPLEMENTATION (SUPPORTS UP TO 12/15-COCK) ---
   document.getElementById('generateBtn').addEventListener('click', () => {
     document.querySelectorAll('.dispArena').forEach(el => el.textContent = document.getElementById('eventArena').value);
     document.querySelectorAll('.dispAddress').forEach(el => el.textContent = document.getElementById('eventAddress').value);
@@ -372,10 +418,10 @@
     document.querySelectorAll('.dispDate').forEach(el => el.textContent = document.getElementById('eventDate').value);
 
     const roundsCount = parseInt(document.getElementById('derbyFormat').value);
-    const maxDiff = parseInt(document.getElementById('maxDiff').value) || 40;
-    const restBuffer = parseInt(document.getElementById('restBuffer').value) || 5;
+    const maxDiff = parseInt(document.getElementById('maxDiff').value);
+    const restBuffer = parseInt(document.getElementById('restBuffer').value);
 
-    // 1. Group by Entry Name (Owner Check)
+    // 1. Grouping by Entry Name / Owner
     const entryGroups = {};
     entries.forEach(e => {
       const key = e.entryName.toLowerCase();
@@ -395,7 +441,7 @@
     const rawMatches = [];
     const history = [];
 
-    // 3. Match Pairs per Round (Weight Gap & Unique Fights & No Same Owner)
+    // 3. Exact-First Strategy Match Engine
     roundPools.forEach((rPool) => {
       let pool = [...rPool].sort((a, b) => a.weight - b.weight);
 
@@ -407,14 +453,11 @@
         for (let i = 0; i < pool.length; i++) {
           const candidate = pool[i];
 
-          // Rule: No Same Owner/Team
           if (current.entryName.toLowerCase() === candidate.entryName.toLowerCase()) continue;
 
-          // Rule: Unique Matchups
           const matchKey = [current.entryName.toLowerCase(), candidate.entryName.toLowerCase()].sort().join(' VS ');
           if (history.includes(matchKey)) continue;
 
-          // Rule: Weight Tolerance
           const diff = Math.abs(current.weight - candidate.weight);
           if (diff > maxDiff) break; 
 
@@ -433,7 +476,7 @@
       }
     });
 
-    // 4. Rest Interval Scheduling Algorithm
+    // 4. Maximized Rest Interval Scheduling System
     const scheduledMatches = [];
     let poolToSchedule = [...rawMatches];
     let fightCounter = 1;
@@ -446,7 +489,6 @@
         const mTeam1 = m.meron.entryName.toLowerCase();
         const mTeam2 = m.wala.entryName.toLowerCase();
 
-        // Check buffer distance against last scheduled matches
         let conflict = false;
         const recentFights = scheduledMatches.slice(-restBuffer);
         for (let prev of recentFights) {
@@ -465,7 +507,7 @@
         }
       }
 
-      if (candidateIdx === -1) candidateIdx = 0; // Fallback if no choice available
+      if (candidateIdx === -1) candidateIdx = 0;
 
       const picked = poolToSchedule.splice(candidateIdx, 1)[0];
       picked.num = fightCounter++;
