@@ -3,86 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HD Complete Derby Matchmaker System - Max Engine</title>
+  <title>Professional Derby Matchmaker Engine - Pro Suite</title>
   <!-- SheetJS for Direct Excel Upload -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root { 
-      --bg: #0f172a; 
-      --card: #1e293b; 
+      --bg: #0b0f19; 
+      --card: #151c2c; 
+      --card-hover: #1e293b;
       --accent: #2563eb; 
+      --accent-hover: #1d4ed8;
       --text: #f8fafc; 
+      --text-muted: #94a3b8;
       --border: #334155; 
       --meron: #dc2626; 
       --wala: #0284c7; 
       --gold: #d97706;
+      --success: #059669;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 1rem; -webkit-font-smoothing: antialiased; }
-    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
     
-    .card { background: var(--card); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border); }
-    .form-group { margin-bottom: 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
-    label { font-size: 0.8rem; color: #94a3b8; font-weight: bold; }
-    input, select, textarea { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: 4px; }
-    .btn { background: var(--accent); color: white; border: none; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .btn-action { background: #059669; }
-    .btn-print { background: #d97706; }
-    .btn-csv { background: #0284c7; }
-    .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 1.5rem; line-height: 1.5; }
+    .container { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.2rem; }
     
+    /* Header Bar */
+    .app-header { text-align: center; margin-bottom: 0.5rem; }
+    .app-header h1 { font-size: 1.8rem; font-weight: 800; color: #38bdf8; letter-spacing: -0.5px; }
+    .app-header p { font-size: 0.85rem; color: var(--text-muted); }
+
     /* Navigation Bar */
-    .page-nav { display: flex; gap: 0.5rem; background: var(--card); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border); flex-wrap: wrap; }
-    .page-btn { flex: 1; min-width: 140px; background: #0f172a; border: 1px solid var(--border); color: #94a3b8; padding: 0.8rem 0.5rem; font-size: 0.85rem; font-weight: bold; border-radius: 6px; cursor: pointer; text-align: center; }
+    .page-nav { display: flex; gap: 0.5rem; background: var(--card); padding: 0.5rem; border-radius: 10px; border: 1px solid var(--border); }
+    .page-btn { flex: 1; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 0.75rem 0.5rem; font-size: 0.85rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+    .page-btn:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
     .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
     
     .page-view { display: none; }
     .page-view.active { display: block; }
 
+    /* Cards & Forms */
+    .card { background: var(--card); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border); }
+    .section-title { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+    
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+    
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea { background: #0b0f19; border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.9rem; transition: border-color 0.2s ease; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    
+    /* Buttons */
+    .btn { background: var(--accent); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: background 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-action { background: var(--success); }
+    .btn-action:hover { background: #047857; }
+    .btn-print { background: var(--gold); }
+    .btn-print:hover { background: #b45309; }
+    .btn-csv { background: var(--wala); }
+    .btn-danger { background: var(--meron); }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-group { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+
     /* Input Tabs */
     .input-tab-header { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-    .input-tab-btn { background: #0f172a; border: 1px solid var(--border); color: var(--text); padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 4px; cursor: pointer; }
-    .input-tab-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: bold; }
+    .input-tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; }
+    .input-tab-btn.active { background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; }
     .input-tab-content { display: none; }
     .input-tab-content.active { display: block; }
 
-    /* Classic Program Design */
-    .program-sheet { background: #ffffff; color: #000000; padding: 1rem; border-radius: 4px; }
-    .header-banner { text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.5rem; }
-    .header-banner h2 { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; }
-    .header-banner h4 { font-size: 0.8rem; font-weight: normal; margin-bottom: 0.3rem; }
-    .header-banner .presents { font-size: 0.75rem; text-transform: uppercase; font-weight: bold; }
-    .header-banner h1 { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; margin: 0.2rem 0; letter-spacing: -1px; }
-    .header-banner h3 { font-size: 1.3rem; font-weight: 900; text-transform: uppercase; }
-    .header-banner .date-line { font-size: 0.85rem; font-weight: bold; margin-top: 0.2rem; }
+    /* Table Styles */
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; text-align: left; font-size: 0.85rem; }
+    .data-table th { background: #0b0f19; padding: 0.75rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+    .data-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    .data-table tr:hover { background: var(--card-hover); }
+
+    /* Classic Printable Program */
+    .program-sheet { background: #ffffff; color: #000000; padding: 1.5rem; border-radius: 6px; }
+    .header-banner { text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.8rem; }
+    .header-banner h2 { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; }
+    .header-banner h4 { font-size: 0.8rem; font-weight: 500; }
+    .header-banner .presents { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin: 0.2rem 0; }
+    .header-banner h1 { font-size: 2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+    .header-banner h3 { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; }
+    .header-banner .date-line { font-size: 0.8rem; font-weight: 700; margin-top: 0.2rem; }
 
     .match-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.8rem; }
-    .match-table th, .match-table td { border: 1px solid #000; padding: 0.25rem 0.1rem; }
-    .side-header th { font-size: 1.1rem; color: #fff; text-transform: uppercase; padding: 0.3rem; }
+    .match-table th, .match-table td { border: 1px solid #000; padding: 0.3rem 0.15rem; }
+    .side-header th { font-size: 1rem; color: #fff; text-transform: uppercase; padding: 0.3rem; }
     .meron-bg { background-color: var(--meron) !important; color: white; }
     .wala-bg { background-color: var(--wala) !important; color: white; }
-    .col-header { background: #000; color: #fff; font-size: 0.7rem; font-weight: bold; }
-    .entry-cell { text-align: left; padding-left: 0.4rem !important; position: relative; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; }
-    .owner-tag { position: absolute; right: 0.3rem; top: 0.2rem; font-size: 0.6rem; font-weight: normal; font-style: italic; color: #444; }
+    .col-header { background: #000; color: #fff; font-size: 0.7rem; font-weight: 700; }
+    .entry-cell { text-align: left; padding-left: 0.5rem !important; position: relative; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; }
+    .owner-tag { position: absolute; right: 0.4rem; top: 0.2rem; font-size: 0.6rem; font-weight: normal; font-style: italic; color: #555; }
 
-    /* Modern Card Layout */
-    .fights-grid { display: flex; flex-direction: column; gap: 0.5rem; }
-    .fight-card { display: grid; grid-template-columns: 45px 1fr 1fr 45px; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    /* Card Layout */
+    .fights-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+    .fight-card { display: grid; grid-template-columns: 50px 1fr 1fr 50px; background: #0b0f19; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
     .fight-num-box { background: var(--gold); color: #000; font-weight: 900; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
-    .side-box { padding: 0.6rem; display: flex; flex-direction: column; justify-content: space-between; }
-    .side-box.meron-side { border-left: 5px solid var(--meron); background: rgba(220, 38, 38, 0.08); }
-    .side-box.wala-side { border-right: 5px solid var(--wala); background: rgba(2, 132, 199, 0.08); text-align: right; }
+    .side-box { padding: 0.8rem; display: flex; flex-direction: column; justify-content: space-between; }
+    .side-box.meron-side { border-left: 5px solid var(--meron); background: rgba(220, 38, 38, 0.06); }
+    .side-box.wala-side { border-right: 5px solid var(--wala); background: rgba(2, 132, 199, 0.06); text-align: right; }
     .team-name { font-size: 1rem; font-weight: 800; text-transform: uppercase; color: #fff; }
-    .owner-sub { font-size: 0.8rem; color: #94a3b8; font-style: italic; }
-    .stats-line { display: flex; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.8rem; font-weight: bold; }
+    .owner-sub { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+    .stats-line { display: flex; gap: 0.4rem; margin-top: 0.4rem; font-size: 0.78rem; font-weight: 700; }
     .wala-side .stats-line { justify-content: flex-end; }
     .badge-wt { background: #334155; padding: 0.15rem 0.4rem; border-radius: 4px; color: #fff; }
-    .badge-band { background: #1e293b; border: 1px solid var(--border); padding: 0.15rem 0.4rem; border-radius: 4px; color: #cbd5e1; font-size: 0.75rem; }
+    .badge-band { background: #1e293b; border: 1px solid var(--border); padding: 0.15rem 0.4rem; border-radius: 4px; color: #cbd5e1; }
 
-    /* HD PRINT ENGINE SETTINGS */
     @media print { 
       @page { size: A4 portrait; margin: 8mm; }
-      body { background: white !important; color: black !important; padding: 0 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } 
+      body { background: white !important; color: black !important; padding: 0 !important; } 
       .no-print { display: none !important; } 
       .page-view { display: block !important; }
       #setupPage, #rosterPage, #cardSchedulePage { display: none !important; } 
@@ -97,33 +127,36 @@
 <body>
 
 <div class="container">
-  <h1 class="no-print" style="text-align: center; color: #38bdf8;">Derby Matchmaker Engine (Max Engine)</h1>
+  <div class="app-header no-print">
+    <h1>DERBY MATCHMAKER ENGINE</h1>
+    <p>Professional Event Setup, Pairing Logic, & Schedule Generator</p>
+  </div>
 
-  <!-- NAV BAR -->
+  <!-- NAVIGATION BAR -->
   <div class="page-nav no-print">
-    <button class="page-btn active" onclick="switchPage('setupPage', event)">⚙️ 1. Setup & Engine</button>
+    <button class="page-btn active" onclick="switchPage('setupPage', event)">⚙️ 1. Setup & Config</button>
     <button class="page-btn" onclick="switchPage('rosterPage', event)">📋 2. Roster (<span id="rosterBadgeCount">0</span>)</button>
-    <button class="page-btn" onclick="switchPage('classicSchedulePage', event)">📄 3. Print Program Sheet</button>
-    <button class="page-btn" onclick="switchPage('cardSchedulePage', event)">🎴 4. Card-View Display</button>
+    <button class="page-btn" onclick="switchPage('classicSchedulePage', event)">📄 3. Print Program</button>
+    <button class="page-btn" onclick="switchPage('cardSchedulePage', event)">🎴 4. Display Cards</button>
   </div>
 
   <!-- SETUP PAGE -->
   <div id="setupPage" class="page-view active card no-print">
-    <h2>1. Event Header Info</h2>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+    <div class="section-title">1. Event Details</div>
+    <div class="grid-2">
       <div class="form-group"><label>Arena Name</label><input type="text" id="eventArena" value="GRAND TEJERO ARENA"></div>
-      <div class="form-group"><label>Arena Address</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
-      <div class="form-group"><label>Promoter Header</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
+      <div class="form-group"><label>Arena Location</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
+      <div class="form-group"><label>Promoter / Host</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
       <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="12-STAG / COCK MAIN EVENT"></div>
       <div class="form-group"><label>Event Date</label><input type="text" id="eventDate" value="AUGUST 22, 2026 ( Saturday )"></div>
     </div>
 
-    <h2 style="margin-top: 1rem;">2. Maximized Core Matching Settings</h2>
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem;">
+    <div class="section-title" style="margin-top: 1.5rem;">2. Core Matching Settings</div>
+    <div class="grid-2">
       <div class="form-group">
-        <label>Derby Format (Expanded)</label>
+        <label>Derby Format</label>
         <select id="derbyFormat">
-          <option value="1">1-Cock Fast Derby</option>
+          <option value="1">1-Cock Solo Derby</option>
           <option value="2">2-Cock Derby</option>
           <option value="3">3-Cock Derby</option>
           <option value="4">4-Cock Derby</option>
@@ -139,7 +172,7 @@
       </div>
 
       <div class="form-group">
-        <label>Max Weight Gap / Gap Limit (Grams)</label>
+        <label>Weight Tolerance Gap</label>
         <select id="maxDiff">
           <option value="15">Strict (15g Tolerance)</option>
           <option value="25">Standard (25g Tolerance)</option>
@@ -151,97 +184,83 @@
       </div>
 
       <div class="form-group">
-        <label>Rest / Fight Interval (Buffer Time)</label>
+        <label>Rest Interval Buffer</label>
         <select id="restBuffer">
-          <option value="2">Minimal Buffer (2 Fights Interval)</option>
-          <option value="5" selected>Standard Buffer (5 Fights Interval)</option>
-          <option value="8">High Buffer (8 Fights Interval)</option>
-          <option value="12">Max Rest (12 Fights Interval)</option>
+          <option value="2">Minimal (2 Fights Rest)</option>
+          <option value="5" selected>Standard (5 Fights Rest)</option>
+          <option value="8">High (8 Fights Rest)</option>
+          <option value="12">Max (12 Fights Rest)</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Elimination & No-Bearing Rules</label>
-        <select id="elimFilter">
-          <option value="none">Disabled (Schedule All Entries)</option>
-          <option value="1loss">Drop Teams on 1 Loss (Single Elim)</option>
-          <option value="2loss">Drop Teams on 2 Losses (Double Elim / Prize Cut)</option>
-          <option value="nobearing">Schedule No-Bearing Matches at the End</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Same-Owner / Same-Team Rule</label>
+        <label>Matching Rules</label>
         <select id="ownerCheck">
-          <option value="strict" selected>Hard Block (Strictly No Same-Owner Fights)</option>
-          <option value="allow_cross">Allow Different Handlers Under Same Farm</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Matching Algorithm Strategy</label>
-        <select id="matchStrategy">
-          <option value="exact_first" selected>Exact Weight Priority (0g Diff First)</option>
-          <option value="random_balanced">Balanced Spread Distribution</option>
+          <option value="strict" selected>Hard Block (No Same-Owner Fights)</option>
+          <option value="allow_cross">Allow Same Farm / Diff. Handlers</option>
         </select>
       </div>
     </div>
 
     <!-- ENTRY METHODS -->
-    <h2 style="margin-top: 1rem;">3. Add Entry Data</h2>
+    <div class="section-title" style="margin-top: 1.5rem;">3. Add Entries</div>
     <div class="input-tab-header">
-      <button class="input-tab-btn active" onclick="switchInputTab('copyTab', event)">📋 Copy-Paste (Excel/Word)</button>
-      <button class="input-tab-btn" onclick="switchInputTab('fileTab', event)">📁 Upload Excel File (.xlsx)</button>
-      <button class="input-tab-btn" onclick="switchInputTab('manualTab', event)">⌨️ Manual Typing / Scanner</button>
+      <button class="input-tab-btn active" onclick="switchInputTab('copyTab', event)">📋 Copy-Paste Import</button>
+      <button class="input-tab-btn" onclick="switchInputTab('fileTab', event)">📁 Excel File Upload</button>
+      <button class="input-tab-btn" onclick="switchInputTab('manualTab', event)">⌨️ Manual Entry</button>
     </div>
 
     <!-- METHOD A: COPY PASTE -->
     <div id="copyTab" class="input-tab-content active">
       <div class="form-group">
-        <label>Format per line: Entry Name, Owner, Weight, LegBand, WingBand</label>
-        <textarea id="bulkInput" rows="5" placeholder="ALPHA FARM, JOHN, 2150, 01, 10023&#10;BETA TEAM, MARK, 2140, 02, 10024"></textarea>
+        <label>Format: [Entry Name, Owner Name, Weight (grams), LegBand, WingBand]</label>
+        <textarea id="bulkInput" rows="4" placeholder="ALPHA FARM, JOHN, 2150, LB-01, WB-100&#10;BETA TEAM, MARK, 2140, LB-02, WB-101"></textarea>
       </div>
-      <button id="importTextBtn" class="btn">Import Lines</button>
+      <button id="importTextBtn" class="btn" style="margin-top: 0.5rem;">Import Entries</button>
     </div>
 
     <!-- METHOD B: EXCEL UPLOAD -->
     <div id="fileTab" class="input-tab-content">
       <div class="form-group">
-        <label>Select Excel File (.xlsx, .xls, .csv)</label>
+        <label>Upload Excel Document (.xlsx, .csv)</label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
       </div>
-      <p style="font-size:0.75rem; color:#94a3b8;">* Column order: [Entry Name, Owner, Weight, LegBand, WingBand]</p>
+      <p style="font-size:0.75rem; color: var(--text-muted); margin-top: 0.3rem;">Columns must follow: Entry Name | Owner Name | Weight | LegBand | WingBand</p>
     </div>
 
     <!-- METHOD C: MANUAL TYPING -->
     <div id="manualTab" class="input-tab-content">
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:0.5rem;">
-        <div class="form-group"><label>Entry Name</label><input type="text" id="mEntry"></div>
-        <div class="form-group"><label>Owner Name</label><input type="text" id="mOwner"></div>
-        <div class="form-group"><label>Weight (g)</label><input type="number" id="mWeight"></div>
-        <div class="form-group"><label>Leg Band (LB)</label><input type="text" id="mLB"></div>
-        <div class="form-group"><label>Wing Band (WB)</label><input type="text" id="mWB"></div>
+      <div class="grid-3">
+        <div class="form-group"><label>Entry Name *</label><input type="text" id="mEntry" placeholder="e.g. Thunder Farm"></div>
+        <div class="form-group"><label>Owner Name</label><input type="text" id="mOwner" placeholder="e.g. Mr. Smith"></div>
+        <div class="form-group"><label>Weight (g) *</label><input type="number" id="mWeight" placeholder="e.g. 2150"></div>
+        <div class="form-group"><label>Leg Band</label><input type="text" id="mLB" placeholder="e.g. LB-01"></div>
+        <div class="form-group"><label>Wing Band</label><input type="text" id="mWB" placeholder="e.g. WB-501"></div>
       </div>
-      <button id="manualAddBtn" class="btn btn-action" style="margin-top:0.5rem;">+ Add Entry</button>
+      <button id="manualAddBtn" class="btn btn-action" style="margin-top: 0.8rem;">+ Save Entry</button>
     </div>
 
-    <div class="btn-group" style="margin-top:1.5rem;">
-      <button id="generateBtn" class="btn btn-action" style="font-size: 1.1rem; padding: 0.8rem 1.5rem;">Generate Core Matches</button>
+    <div class="btn-group" style="margin-top:2rem;">
+      <button id="generateBtn" class="btn btn-action" style="font-size: 1rem; padding: 0.8rem 1.8rem;">⚙️ Run Core Matchmaker Engine</button>
     </div>
   </div>
 
   <!-- ROSTER PAGE -->
   <div id="rosterPage" class="page-view card">
-    <h2>Entry Roster (<span id="count">0</span> Birds)</h2>
-    <table style="width:100%; border-collapse:collapse; margin-top:1rem; text-align:left;" id="rosterTable">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+      <h2>Entry Roster (<span id="count">0</span> Registered Birds)</h2>
+      <button onclick="clearRoster()" class="btn btn-danger" style="font-size:0.75rem;">Clear Roster</button>
+    </div>
+    
+    <table class="data-table" id="rosterTable">
       <thead>
-        <tr style="border-bottom: 2px solid var(--border);">
-          <th style="padding:0.5rem;">#</th>
+        <tr>
+          <th>#</th>
           <th>Entry Name</th>
           <th>Owner</th>
           <th>Weight</th>
-          <th>LB</th>
-          <th>WB</th>
+          <th>Leg Band</th>
+          <th>Wing Band</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -249,11 +268,11 @@
     </table>
   </div>
 
-  <!-- CLASSIC PRINT PROGRAM SHEET -->
+  <!-- PRINTABLE PROGRAM SHEET -->
   <div id="classicSchedulePage" class="page-view">
     <div class="no-print btn-group" style="margin-bottom: 1rem;">
-      <button onclick="window.print()" class="btn btn-print">🖨️ Print HD Sheet</button>
-      <button onclick="exportCsv()" class="btn btn-csv">📥 Export CSV</button>
+      <button onclick="window.print()" class="btn btn-print">🖨️ Print HD Fight Sheet</button>
+      <button onclick="exportCsv()" class="btn btn-csv">📥 Export to CSV File</button>
     </div>
 
     <div class="program-sheet">
@@ -273,16 +292,16 @@
             <th colspan="5" class="wala-bg">WALA</th>
           </tr>
           <tr class="col-header">
-            <th style="width:25px;">FT#</th>
+            <th style="width:30px;">FT#</th>
             <th>ENTRY NAME / OWNER</th>
-            <th style="width:30px;">LB</th>
-            <th style="width:40px;">WB</th>
-            <th style="width:45px;">WT</th>
-            <th style="width:45px;">WT</th>
-            <th style="width:40px;">WB</th>
-            <th style="width:30px;">LB</th>
+            <th style="width:40px;">LB</th>
+            <th style="width:45px;">WB</th>
+            <th style="width:50px;">WT</th>
+            <th style="width:50px;">WT</th>
+            <th style="width:45px;">WB</th>
+            <th style="width:40px;">LB</th>
             <th>ENTRY NAME / OWNER</th>
-            <th style="width:25px;">FT#</th>
+            <th style="width:30px;">FT#</th>
           </tr>
         </thead>
         <tbody id="classicTableBody"></tbody>
@@ -314,7 +333,7 @@
     e.target.classList.add('active');
   }
 
-  // Data Imports
+  // --- DATA IMPORTS ---
   document.getElementById('importTextBtn').addEventListener('click', () => {
     const raw = document.getElementById('bulkInput').value.trim();
     if (!raw) return;
@@ -360,7 +379,7 @@
         }
       });
       renderRoster();
-      alert('Excel File Imported Successfully!');
+      alert('Excel Roster Loaded Successfully!');
     };
     reader.readAsArrayBuffer(file);
   });
@@ -372,15 +391,18 @@
     const lb = document.getElementById('mLB').value.trim();
     const wb = document.getElementById('mWB').value.trim();
 
-    if (entryName && !isNaN(weight)) {
-      entries.push({ id: Date.now() + Math.random(), entryName, owner, weight, lb, wb });
-      document.getElementById('mEntry').value = '';
-      document.getElementById('mWeight').value = '';
-      document.getElementById('mLB').value = '';
-      document.getElementById('mWB').value = '';
-      document.getElementById('mEntry').focus();
-      renderRoster();
+    if (!entryName || isNaN(weight)) {
+      alert('Please fill out both Entry Name and Weight fields.');
+      return;
     }
+
+    entries.push({ id: Date.now() + Math.random(), entryName, owner, weight, lb, wb });
+    document.getElementById('mEntry').value = '';
+    document.getElementById('mWeight').value = '';
+    document.getElementById('mLB').value = '';
+    document.getElementById('mWB').value = '';
+    document.getElementById('mEntry').focus();
+    renderRoster();
   });
 
   function renderRoster() {
@@ -390,15 +412,14 @@
     tbody.innerHTML = '';
     entries.forEach((item, idx) => {
       const tr = document.createElement('tr');
-      tr.style.borderBottom = '1px solid var(--border)';
       tr.innerHTML = `
-        <td style="padding:0.5rem;">${idx + 1}</td>
+        <td>${idx + 1}</td>
         <td><b>${item.entryName}</b></td>
-        <td>${item.owner}</td>
-        <td>${item.weight}g</td>
+        <td>${item.owner || '-'}</td>
+        <td><b>${item.weight}g</b></td>
         <td>${item.lb || '-'}</td>
         <td>${item.wb || '-'}</td>
-        <td><button onclick="deleteEntry(${item.id})" style="color:var(--meron); background:none; border:none; cursor:pointer;">Delete</button></td>
+        <td><button onclick="deleteEntry(${item.id})" style="color:var(--meron); background:none; border:none; cursor:pointer; font-weight:bold;">Delete</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -409,8 +430,21 @@
     renderRoster();
   }
 
-  // --- MAX ENGINE IMPLEMENTATION (SUPPORTS UP TO 12/15-COCK) ---
+  function clearRoster() {
+    if (confirm('Are you sure you want to clear all entries in the roster?')) {
+      entries = [];
+      renderRoster();
+    }
+  }
+
+  // --- MATCHMAKING ALGORITHM ENGINE ---
   document.getElementById('generateBtn').addEventListener('click', () => {
+    if (entries.length < 2) {
+      alert('Please add at least 2 entries to generate matches.');
+      return;
+    }
+
+    // Update Banner Texts
     document.querySelectorAll('.dispArena').forEach(el => el.textContent = document.getElementById('eventArena').value);
     document.querySelectorAll('.dispAddress').forEach(el => el.textContent = document.getElementById('eventAddress').value);
     document.querySelectorAll('.dispPromoter').forEach(el => el.textContent = document.getElementById('eventPromoter').value);
@@ -421,7 +455,7 @@
     const maxDiff = parseInt(document.getElementById('maxDiff').value);
     const restBuffer = parseInt(document.getElementById('restBuffer').value);
 
-    // 1. Grouping by Entry Name / Owner
+    // Grouping Entries
     const entryGroups = {};
     entries.forEach(e => {
       const key = e.entryName.toLowerCase();
@@ -429,7 +463,7 @@
       entryGroups[key].push(e);
     });
 
-    // 2. Distribute to Round Pools
+    // Round Distribution
     const roundPools = Array.from({ length: roundsCount }, () => []);
     Object.keys(entryGroups).forEach(groupKey => {
       const groupCocks = entryGroups[groupKey].sort((a,b) => a.weight - b.weight);
@@ -441,7 +475,7 @@
     const rawMatches = [];
     const history = [];
 
-    // 3. Exact-First Strategy Match Engine
+    // Pairing Optimization Strategy
     roundPools.forEach((rPool) => {
       let pool = [...rPool].sort((a, b) => a.weight - b.weight);
 
@@ -476,7 +510,7 @@
       }
     });
 
-    // 4. Maximized Rest Interval Scheduling System
+    // Fight Sequencing with Rest Buffer Constraints
     const scheduledMatches = [];
     let poolToSchedule = [...rawMatches];
     let fightCounter = 1;
@@ -527,16 +561,16 @@
     matches.forEach(m => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="ft-num">${m.num}</td>
+        <td><b>${m.num}</b></td>
         <td class="entry-cell">${m.meron.entryName} ${m.meron.owner ? `<span class="owner-tag">${m.meron.owner}</span>` : ''}</td>
-        <td class="band-cell">${m.meron.lb || ''}</td>
-        <td class="band-cell">${m.meron.wb || ''}</td>
-        <td class="wt-cell">${m.meron.weight}</td>
-        <td class="wt-cell">${m.wala.weight}</td>
-        <td class="band-cell">${m.wala.wb || ''}</td>
-        <td class="band-cell">${m.wala.lb || ''}</td>
+        <td>${m.meron.lb || '-'}</td>
+        <td>${m.meron.wb || '-'}</td>
+        <td><b>${m.meron.weight}</b></td>
+        <td><b>${m.wala.weight}</b></td>
+        <td>${m.wala.wb || '-'}</td>
+        <td>${m.wala.lb || '-'}</td>
         <td class="entry-cell">${m.wala.entryName} ${m.wala.owner ? `<span class="owner-tag">${m.wala.owner}</span>` : ''}</td>
-        <td class="ft-num">${m.num}</td>
+        <td><b>${m.num}</b></td>
       `;
       tbody.appendChild(tr);
     });
@@ -566,13 +600,13 @@
 
   function exportCsv() {
     if (!generatedMatches.length) return;
-    let csv = "data:text/csv;charset=utf-8,Fight#,Meron,Meron WT,Wala WT,Wala\n";
+    let csv = "data:text/csv;charset=utf-8,Fight#,Meron,Meron Weight,Wala Weight,Wala\n";
     generatedMatches.forEach(m => {
       csv += `${m.num},"${m.meron.entryName}",${m.meron.weight},${m.wala.weight},"${m.wala.entryName}"\n`;
     });
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csv));
-    link.setAttribute("download", `derby_program.csv`);
+    link.setAttribute("download", `Derby_Fight_Schedule.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
