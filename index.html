@@ -1,633 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Professional Derby Matchmaker Engine - Pro Suite</title>
-  <!-- SheetJS for Direct Excel Upload -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    :root { 
-      --bg: #0b0f19; 
-      --card: #151c2c; 
-      --card-hover: #1e293b;
-      --accent: #2563eb; 
-      --accent-hover: #1d4ed8;
-      --text: #f8fafc; 
-      --text-muted: #94a3b8;
-      --border: #334155; 
-      --meron: #dc2626; 
-      --wala: #0284c7; 
-      --gold: #d97706;
-      --success: #059669;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Stream Fetch + Inject - Full Demo</title>
     
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 1.5rem; line-height: 1.5; }
-    .container { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.2rem; }
-    
-    /* Header Bar */
-    .app-header { text-align: center; margin-bottom: 0.5rem; }
-    .app-header h1 { font-size: 1.8rem; font-weight: 800; color: #38bdf8; letter-spacing: -0.5px; }
-    .app-header p { font-size: 0.85rem; color: var(--text-muted); }
+    <!-- Import ng HLS.js library para suportahan ang streaming (.m3u8) -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    /* Navigation Bar */
-    .page-nav { display: flex; gap: 0.5rem; background: var(--card); padding: 0.5rem; border-radius: 10px; border: 1px solid var(--border); }
-    .page-btn { flex: 1; background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 0.75rem 0.5rem; font-size: 0.85rem; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; text-align: center; }
-    .page-btn:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
-    .page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-    
-    .page-view { display: none; }
-    .page-view.active { display: block; }
-
-    /* Cards & Forms */
-    .card { background: var(--card); padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border); }
-    .section-title { font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
-    
-    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
-    
-    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-    label { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    input, select, textarea { background: #0b0f19; border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.9rem; transition: border-color 0.2s ease; outline: none; }
-    input[type="date"] { color-scheme: dark; }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-    
-    /* Buttons */
-    .btn { background: var(--accent); color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: background 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
-    .btn:hover { background: var(--accent-hover); }
-    .btn-action { background: var(--success); }
-    .btn-action:hover { background: #047857; }
-    .btn-print { background: var(--gold); }
-    .btn-print:hover { background: #b45309; }
-    .btn-csv { background: var(--wala); }
-    .btn-danger { background: var(--meron); }
-    .btn-danger:hover { background: #b91c1c; }
-    .btn-group { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
-
-    /* Input Tabs */
-    .input-tab-header { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-    .input-tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; }
-    .input-tab-btn.active { background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; }
-    .input-tab-content { display: none; }
-    .input-tab-content.active { display: block; }
-
-    /* Table Styles */
-    .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; text-align: left; font-size: 0.85rem; }
-    .data-table th { background: #0b0f19; padding: 0.75rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
-    .data-table td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
-    .data-table tr:hover { background: var(--card-hover); }
-
-    /* Classic Printable Program */
-    .program-sheet { background: #ffffff; color: #000000; padding: 1.5rem; border-radius: 6px; }
-    .header-banner { text-align: center; border-bottom: 2px solid #000; padding-bottom: 0.5rem; margin-bottom: 0.8rem; }
-    .header-banner h2 { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; }
-    .header-banner h4 { font-size: 0.8rem; font-weight: 500; }
-    .header-banner .presents { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin: 0.2rem 0; }
-    .header-banner h1 { font-size: 2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
-    .header-banner h3 { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; }
-    .header-banner .date-line { font-size: 0.8rem; font-weight: 700; margin-top: 0.2rem; }
-
-    .match-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 0.8rem; }
-    .match-table th, .match-table td { border: 1px solid #000; padding: 0.3rem 0.15rem; }
-    .side-header th { font-size: 1rem; color: #fff; text-transform: uppercase; padding: 0.3rem; }
-    .meron-bg { background-color: var(--meron) !important; color: white; }
-    .wala-bg { background-color: var(--wala) !important; color: white; }
-    .col-header { background: #000; color: #fff; font-size: 0.7rem; font-weight: 700; }
-    .entry-cell { text-align: left; padding-left: 0.5rem !important; position: relative; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; }
-    .owner-tag { position: absolute; right: 0.4rem; top: 0.2rem; font-size: 0.6rem; font-weight: normal; font-style: italic; color: #555; }
-
-    /* Card Layout */
-    .fights-grid { display: flex; flex-direction: column; gap: 0.6rem; }
-    .fight-card { display: grid; grid-template-columns: 50px 1fr 1fr 50px; background: #0b0f19; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .fight-num-box { background: var(--gold); color: #000; font-weight: 900; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
-    .side-box { padding: 0.8rem; display: flex; flex-direction: column; justify-content: space-between; }
-    .side-box.meron-side { border-left: 5px solid var(--meron); background: rgba(220, 38, 38, 0.06); }
-    .side-box.wala-side { border-right: 5px solid var(--wala); background: rgba(2, 132, 199, 0.06); text-align: right; }
-    .team-name { font-size: 1rem; font-weight: 800; text-transform: uppercase; color: #fff; }
-    .owner-sub { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
-    .stats-line { display: flex; gap: 0.4rem; margin-top: 0.4rem; font-size: 0.78rem; font-weight: 700; }
-    .wala-side .stats-line { justify-content: flex-end; }
-    .badge-wt { background: #334155; padding: 0.15rem 0.4rem; border-radius: 4px; color: #fff; }
-    .badge-band { background: #1e293b; border: 1px solid var(--border); padding: 0.15rem 0.4rem; border-radius: 4px; color: #cbd5e1; }
-
-    @media print { 
-      @page { size: A4 portrait; margin: 8mm; }
-      body { background: white !important; color: black !important; padding: 0 !important; } 
-      .no-print { display: none !important; } 
-      .page-view { display: block !important; }
-      #setupPage, #rosterPage, #cardSchedulePage { display: none !important; } 
-      .program-sheet { border: none; padding: 0; }
-      .match-table th, .match-table td { border: 1px solid #000 !important; }
-      .meron-bg { background-color: #dc2626 !important; }
-      .wala-bg { background-color: #0284c7 !important; }
-      .col-header { background-color: #000 !important; color: #fff !important; }
-    }
-  </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        body {
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .container {
+            background: #16213e;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            max-width: 960px;
+            width: 100%;
+        }
+        h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        video {
+            width: 100%;
+            background: #000;
+            border-radius: 12px;
+            display: block;
+            margin-bottom: 20px;
+            max-height: 500px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 4px 10px rgba(233, 69, 96, 0.4);
+        }
+        button:hover {
+            background: #c73652;
+            transform: scale(1.03);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        #logArea {
+            background: #0f0f1f;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .status-badge {
+            color: #ffd700;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="app-header no-print">
-    <h1>DERBY MATCHMAKER ENGINE</h1>
-    <p>Professional Event Setup, Pairing Logic, & Schedule Generator</p>
-  </div>
+    <h2>🎬 Movie Stream Engine</h2>
+    <p class="subtitle">⚡ <span class="status-badge">FETCH</span> mula sa Video Host ➔ <span class="status-badge">INJECT</span> sa Player</p>
 
-  <!-- NAVIGATION BAR -->
-  <div class="page-nav no-print">
-    <button class="page-btn active" onclick="switchPage('setupPage', event)">⚙️ 1. Setup & Config</button>
-    <button class="page-btn" onclick="switchPage('rosterPage', event)">📋 2. Roster (<span id="rosterBadgeCount">0</span>)</button>
-    <button class="page-btn" onclick="switchPage('classicSchedulePage', event)">📄 3. Print Program</button>
-    <button class="page-btn" onclick="switchPage('cardSchedulePage', event)">🎴 4. Display Cards</button>
-  </div>
+    <!-- ITO ANG VIDEO PLAYER (Dito i-inject ang stream) -->
+    <video id="myMoviePlayer" controls width="100%"></video>
 
-  <!-- SETUP PAGE -->
-  <div id="setupPage" class="page-view active card no-print">
-    <div class="section-title">1. Event Details</div>
-    <div class="grid-2">
-      <div class="form-group"><label>Arena Name</label><input type="text" id="eventArena" value="GRAND TEJERO ARENA"></div>
-      <div class="form-group"><label>Arena Location</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
-      <div class="form-group"><label>Promoter / Host</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
-      <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="12-STAG / COCK MAIN EVENT"></div>
-      <!-- CALENDAR INPUT -->
-      <div class="form-group"><label>Event Date (Select from Calendar)</label><input type="date" id="eventDate"></div>
+    <div class="controls">
+        <button id="loadBtn" onclick="fetchAndInjectStream()">🚀 I-Fetch at I-Inject ang Stream</button>
+        <button onclick="document.getElementById('myMoviePlayer').pause(); document.getElementById('myMoviePlayer').currentTime=0;" style="background:#555;">⏹ Stop</button>
     </div>
 
-    <div class="section-title" style="margin-top: 1.5rem;">2. Core Matching Settings</div>
-    <div class="grid-2">
-      <div class="form-group">
-        <label>Derby Format</label>
-        <select id="derbyFormat">
-          <option value="1">1-Cock Solo Derby</option>
-          <option value="2">2-Cock Derby</option>
-          <option value="3">3-Cock Derby</option>
-          <option value="4">4-Cock Derby</option>
-          <option value="5">5-Cock / Stag Derby</option>
-          <option value="6">6-Cock Main Event</option>
-          <option value="7">7-Cock Big Event</option>
-          <option value="8">8-Cock Mega Derby</option>
-          <option value="9">9-Cock Mega Derby</option>
-          <option value="10">10-Cock World Class Derby</option>
-          <option value="12" selected>12-Cock / 12-Stag Championship Derby</option>
-          <option value="15">15-Cock Grand Ultimate Derby</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Weight Tolerance Gap</label>
-        <select id="maxDiff">
-          <option value="15">Strict (15g Tolerance)</option>
-          <option value="25">Standard (25g Tolerance)</option>
-          <option value="40" selected>Balanced (40g Tolerance)</option>
-          <option value="50">Flexible (50g Tolerance)</option>
-          <option value="80">Wide (80g Tolerance)</option>
-          <option value="100">Max Open Gap (100g Tolerance)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Rest Interval Buffer</label>
-        <select id="restBuffer">
-          <option value="2">Minimal (2 Fights Rest)</option>
-          <option value="5" selected>Standard (5 Fights Rest)</option>
-          <option value="8">High (8 Fights Rest)</option>
-          <option value="12">Max (12 Fights Rest)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Matching Rules</label>
-        <select id="ownerCheck">
-          <option value="strict" selected>Hard Block (No Same-Owner Fights)</option>
-          <option value="allow_cross">Allow Same Farm / Diff. Handlers</option>
-        </select>
-      </div>
+    <!-- Dito lalabas ang real-time na technical logs -->
+    <div id="logArea">
+        🔍 [System] Handa na. Pindutin ang button para magsimula...
     </div>
-
-    <!-- ENTRY METHODS -->
-    <div class="section-title" style="margin-top: 1.5rem;">3. Add Entries</div>
-    <div class="input-tab-header">
-      <button class="input-tab-btn active" onclick="switchInputTab('copyTab', event)">📋 Copy-Paste Import</button>
-      <button class="input-tab-btn" onclick="switchInputTab('fileTab', event)">📁 Excel File Upload</button>
-      <button class="input-tab-btn" onclick="switchInputTab('manualTab', event)">⌨️ Manual Entry</button>
-    </div>
-
-    <!-- METHOD A: COPY PASTE -->
-    <div id="copyTab" class="input-tab-content active">
-      <div class="form-group">
-        <label>Format: [Entry Name, Owner Name, Weight (grams), LegBand, WingBand]</label>
-        <textarea id="bulkInput" rows="4" placeholder="ALPHA FARM, JOHN, 2150, LB-01, WB-100&#10;BETA TEAM, MARK, 2140, LB-02, WB-101"></textarea>
-      </div>
-      <button id="importTextBtn" class="btn" style="margin-top: 0.5rem;">Import Entries</button>
-    </div>
-
-    <!-- METHOD B: EXCEL UPLOAD -->
-    <div id="fileTab" class="input-tab-content">
-      <div class="form-group">
-        <label>Upload Excel Document (.xlsx, .csv)</label>
-        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv">
-      </div>
-      <p style="font-size:0.75rem; color: var(--text-muted); margin-top: 0.3rem;">Columns must follow: Entry Name | Owner Name | Weight | LegBand | WingBand</p>
-    </div>
-
-    <!-- METHOD C: MANUAL TYPING -->
-    <div id="manualTab" class="input-tab-content">
-      <div class="grid-3">
-        <div class="form-group"><label>Entry Name *</label><input type="text" id="mEntry" placeholder="e.g. Thunder Farm"></div>
-        <div class="form-group"><label>Owner Name</label><input type="text" id="mOwner" placeholder="e.g. Mr. Smith"></div>
-        <div class="form-group"><label>Weight (g) *</label><input type="number" id="mWeight" placeholder="e.g. 2150"></div>
-        <div class="form-group"><label>Leg Band</label><input type="text" id="mLB" placeholder="e.g. LB-01"></div>
-        <div class="form-group"><label>Wing Band</label><input type="text" id="mWB" placeholder="e.g. WB-501"></div>
-      </div>
-      <button id="manualAddBtn" class="btn btn-action" style="margin-top: 0.8rem;">+ Save Entry</button>
-    </div>
-
-    <div class="btn-group" style="margin-top:2rem;">
-      <button id="generateBtn" class="btn btn-action" style="font-size: 1rem; padding: 0.8rem 1.8rem;">⚙️ Run Core Matchmaker Engine</button>
-    </div>
-  </div>
-
-  <!-- ROSTER PAGE -->
-  <div id="rosterPage" class="page-view card">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-      <h2>Entry Roster (<span id="count">0</span> Registered Birds)</h2>
-      <button onclick="clearRoster()" class="btn btn-danger" style="font-size:0.75rem;">Clear Roster</button>
-    </div>
-    
-    <table class="data-table" id="rosterTable">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Entry Name</th>
-          <th>Owner</th>
-          <th>Weight</th>
-          <th>Leg Band</th>
-          <th>Wing Band</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- PRINTABLE PROGRAM SHEET -->
-  <div id="classicSchedulePage" class="page-view">
-    <div class="no-print btn-group" style="margin-bottom: 1rem;">
-      <button onclick="window.print()" class="btn btn-print">🖨️ Print HD Fight Sheet</button>
-      <button onclick="exportCsv()" class="btn btn-csv">📥 Export to CSV File</button>
-    </div>
-
-    <div class="program-sheet">
-      <div class="header-banner">
-        <h2 class="dispArena">GRAND TEJERO ARENA</h2>
-        <h4 class="dispAddress">M.J. Cuenco Ave., Tejero, Cebu City</h4>
-        <div class="presents">PRESENTS</div>
-        <h1 class="dispPromoter">NGGBC PROMOTION</h1>
-        <h3 class="dispTitle">12-STAG / COCK MAIN EVENT</h3>
-        <div class="date-line dispDate">AUGUST 22, 2026 ( Saturday )</div>
-      </div>
-
-      <table class="match-table">
-        <thead>
-          <tr class="side-header">
-            <th colspan="5" class="meron-bg">MERON</th>
-            <th colspan="5" class="wala-bg">WALA</th>
-          </tr>
-          <tr class="col-header">
-            <th style="width:30px;">FT#</th>
-            <th>ENTRY NAME / OWNER</th>
-            <th style="width:40px;">LB</th>
-            <th style="width:45px;">WB</th>
-            <th style="width:50px;">WT</th>
-            <th style="width:50px;">WT</th>
-            <th style="width:45px;">WB</th>
-            <th style="width:40px;">LB</th>
-            <th>ENTRY NAME / OWNER</th>
-            <th style="width:30px;">FT#</th>
-          </tr>
-        </thead>
-        <tbody id="classicTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- CARD-VIEW DISPLAY -->
-  <div id="cardSchedulePage" class="page-view">
-    <div class="fights-grid" id="cardsContainer"></div>
-  </div>
 </div>
 
 <script>
-  let entries = [];
-  let generatedMatches = [];
+    // --- ITO ANG CORE LOGIC NG FETCHING AT INJECTING ---
+    
+    // Elemento ng video player
+    const video = document.getElementById('myMoviePlayer');
+    const log = document.getElementById('logArea');
+    const loadBtn = document.getElementById('loadBtn');
 
-  // Set Default Date to Today
-  document.addEventListener('DOMContentLoaded', () => {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('eventDate').value = today;
-  });
-
-  function switchPage(pageId, e) {
-    document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.page-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    if (e && e.target) e.target.classList.add('active');
-  }
-
-  function switchInputTab(tabId, e) {
-    document.querySelectorAll('.input-tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.input-tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    e.target.classList.add('active');
-  }
-
-  // --- DATA IMPORTS ---
-  document.getElementById('importTextBtn').addEventListener('click', () => {
-    const raw = document.getElementById('bulkInput').value.trim();
-    if (!raw) return;
-    raw.split('\n').forEach(line => {
-      const parts = line.split(',');
-      if (parts.length >= 3) {
-        const entryName = parts[0].trim();
-        const owner = parts[1].trim();
-        const weight = parseInt(parts[2].trim());
-        const lb = parts[3] ? parts[3].trim() : '';
-        const wb = parts[4] ? parts[4].trim() : '';
-        if (entryName && !isNaN(weight)) {
-          entries.push({ id: Date.now() + Math.random(), entryName, owner, weight, lb, wb });
-        }
-      }
-    });
-    document.getElementById('bulkInput').value = '';
-    renderRoster();
-  });
-
-  document.getElementById('excelFileInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const data = new Uint8Array(evt.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-      rows.forEach((row, idx) => {
-        if (idx === 0 && isNaN(parseInt(row[2]))) return; 
-        if (row.length >= 3) {
-          const entryName = String(row[0] || '').trim();
-          const owner = String(row[1] || '').trim();
-          const weight = parseInt(row[2]);
-          const lb = row[3] ? String(row[3]).trim() : '';
-          const wb = row[4] ? String(row[4]).trim() : '';
-          if (entryName && !isNaN(weight)) {
-            entries.push({ id: Date.now() + Math.random(), entryName, owner, weight, lb, wb });
-          }
-        }
-      });
-      renderRoster();
-      alert('Excel Roster Loaded Successfully!');
-    };
-    reader.readAsArrayBuffer(file);
-  });
-
-  document.getElementById('manualAddBtn').addEventListener('click', () => {
-    const entryName = document.getElementById('mEntry').value.trim();
-    const owner = document.getElementById('mOwner').value.trim();
-    const weight = parseInt(document.getElementById('mWeight').value.trim());
-    const lb = document.getElementById('mLB').value.trim();
-    const wb = document.getElementById('mWB').value.trim();
-
-    if (!entryName || isNaN(weight)) {
-      alert('Please fill out both Entry Name and Weight fields.');
-      return;
+    // Helper function para mag-print ng logs sa screen (para makita ang proseso)
+    function addLog(message, isError = false) {
+        const timestamp = new Date().toLocaleTimeString();
+        const prefix = isError ? '❌' : '✅';
+        log.innerHTML += `\n[${timestamp}] ${prefix} ${message}`;
+        log.scrollTop = log.scrollHeight; // Auto-scroll pababa
+        console.log(message); // Sabay print sa browser console
     }
 
-    entries.push({ id: Date.now() + Math.random(), entryName, owner, weight, lb, wb });
-    document.getElementById('mEntry').value = '';
-    document.getElementById('mWeight').value = '';
-    document.getElementById('mLB').value = '';
-    document.getElementById('mWB').value = '';
-    document.getElementById('mEntry').focus();
-    renderRoster();
-  });
-
-  function renderRoster() {
-    const tbody = document.querySelector('#rosterTable tbody');
-    document.getElementById('count').textContent = entries.length;
-    document.getElementById('rosterBadgeCount').textContent = entries.length;
-    tbody.innerHTML = '';
-    entries.forEach((item, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td><b>${item.entryName}</b></td>
-        <td>${item.owner || '-'}</td>
-        <td><b>${item.weight}g</b></td>
-        <td>${item.lb || '-'}</td>
-        <td>${item.wb || '-'}</td>
-        <td><button onclick="deleteEntry(${item.id})" style="color:var(--meron); background:none; border:none; cursor:pointer; font-weight:bold;">Delete</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function deleteEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    renderRoster();
-  }
-
-  function clearRoster() {
-    if (confirm('Are you sure you want to clear all entries in the roster?')) {
-      entries = [];
-      renderRoster();
-    }
-  }
-
-  // --- MATCHMAKING ALGORITHM ENGINE ---
-  document.getElementById('generateBtn').addEventListener('click', () => {
-    if (entries.length < 2) {
-      alert('Please add at least 2 entries to generate matches.');
-      return;
+    // --- [PART 1] ANG "FETCHING" (Kumukuha ng Stream URL) ---
+    // Ginaya natin ang tawag sa API ng video hosting provider (hal. VidSrc, Voeux, etc.)
+    function mockApiCallToFetchStreamUrl() {
+        addLog('🌐 [1. FETCHING] Tumatawag sa Video Hosting Provider API...');
+        
+        // Ito ang gumagaya sa paghihintay ng response mula sa internet (1.5 seconds)
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Sa totoong buhay, ito ang JSON na galing sa server ng provider.
+                // Ginamit ko ang public test stream ng Mux para 100% gumana.
+                const fakeApiResponse = {
+                    status: "success",
+                    movie_title: "Big Buck Bunny (Test Stream)",
+                    stream_url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" // Actual working HLS stream
+                };
+                
+                addLog(`📦 [1. FETCHING] Natanggap ang data mula sa API: ${fakeApiResponse.movie_title}`);
+                resolve(fakeApiResponse.stream_url); // Ibinabalik nito ang URL ng video
+            }, 1500); // Naghintay ng 1.5 sec para gayahin ang internet lag
+        });
     }
 
-    // Format Calendar Date Professional String
-    const rawDateVal = document.getElementById('eventDate').value;
-    let formattedDate = rawDateVal;
-    if (rawDateVal) {
-      const d = new Date(rawDateVal + 'T00:00:00');
-      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-      formattedDate = d.toLocaleDateString('en-US', options).toUpperCase();
+    // --- [PART 2] ANG "INJECTING" (Isinaksak sa Video Player) ---
+    async function fetchAndInjectStream() {
+        // I-disable ang button habang naglo-load para iwas doble-click
+        loadBtn.disabled = true;
+        loadBtn.textContent = '⏳ Nagfa-fetch at nag-iinject...';
+        log.innerHTML = ''; // Burahin lumang logs
+        addLog('⚡ Nagsisimula ang proseso ng "Fetching Stream"...');
+
+        try {
+            // --- HAKBANG A: TUMAWAG SA API PARA KUMUHA NG VIDEO URL (FETCHING) ---
+            const streamUrl = await mockApiCallToFetchStreamUrl();
+            addLog(`🔗 [2. INJECTING] Natanggap ang Stream URL: ${streamUrl.substring(0, 50)}...`);
+
+            // --- HAKBANG B: ISAKSAK (INJECT) ANG STREAM SA VIDEO PLAYER ---
+            addLog('🛠️ [2. INJECTING] Sinisimulan ang pag-inject ng stream sa HTML5 Player...');
+
+            // Check kung HLS (.m3u8) ang stream at supported ng browser
+            if (Hls.isSupported()) {
+                // Gumawa ng bagong HLS client
+                const hls = new Hls({
+                    enableWorker: true, // Para bumilis ang pag-load
+                });
+
+                // I-load ang na-fetch na stream URL
+                hls.loadSource(streamUrl);
+                
+                // I-ATTACH (INJECT) ito sa ating video player element
+                hls.attachMedia(video);
+                
+                addLog('✅ [2. INJECTING] Na-attach na ang stream sa video player!');
+
+                // Kapag handa na ang video, i-play agad
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    addLog('🎉 [SUCCESS] Handa na ang stream! Awtomatikong nagpe-play...');
+                    video.play().catch(e => addLog('⚠️ Hindi awtomatikong nag-play (kailangan ng user interaction).', true));
+                });
+
+                // Error handling ng HLS
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        addLog(`💥 [ERROR] Fatal error sa stream: ${data.type}`, true);
+                    }
+                });
+
+            } 
+            // Fallback para sa Safari (native ang HLS support nito)
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamUrl;
+                addLog('🍎 [2. INJECTING] Gumamit ng Native Safari HLS support.');
+                video.play();
+            } 
+            else {
+                // Kung hindi supported ang HLS, subukan i-play bilang normal na MP4 (kung .mp4 ang binigay)
+                if (streamUrl.endsWith('.mp4')) {
+                    video.src = streamUrl;
+                    addLog('📹 [2. INJECTING] Direct MP4 file ang na-detect. Naglo-load na...');
+                    video.play();
+                } else {
+                    addLog('🚫 [ERROR] Hindi supported ng iyong browser ang ganitong uri ng stream.', true);
+                }
+            }
+
+        } catch (error) {
+            // Kapag nag-error ang buong proseso (hal. nawalan ng internet)
+            addLog(`🔥 [CRITICAL ERROR] May problema sa pag-fetch: ${error.message}`, true);
+            console.error(error);
+        } finally {
+            // Ibalik ang button sa normal state
+            loadBtn.disabled = false;
+            loadBtn.textContent = '🔄 I-Fetch at I-Inject ulit';
+            addLog('🏁 Tapos na ang proseso.');
+        }
     }
 
-    // Update Banner Texts
-    document.querySelectorAll('.dispArena').forEach(el => el.textContent = document.getElementById('eventArena').value);
-    document.querySelectorAll('.dispAddress').forEach(el => el.textContent = document.getElementById('eventAddress').value);
-    document.querySelectorAll('.dispPromoter').forEach(el => el.textContent = document.getElementById('eventPromoter').value);
-    document.querySelectorAll('.dispTitle').forEach(el => el.textContent = document.getElementById('eventTitle').value);
-    document.querySelectorAll('.dispDate').forEach(el => el.textContent = formattedDate);
+    // Optional: Kapag na-click ang video mismo, magdagdag ng log
+    video.addEventListener('play', () => addLog('▶️ Nagpe-play ang video.'));
+    video.addEventListener('pause', () => addLog('⏸️ Na-pause ang video.'));
+    video.addEventListener('ended', () => addLog('⏹️ Tapos na ang movie.'));
 
-    const roundsCount = parseInt(document.getElementById('derbyFormat').value);
-    const maxDiff = parseInt(document.getElementById('maxDiff').value);
-    const restBuffer = parseInt(document.getElementById('restBuffer').value);
-
-    // Grouping Entries
-    const entryGroups = {};
-    entries.forEach(e => {
-      const key = e.entryName.toLowerCase();
-      if (!entryGroups[key]) entryGroups[key] = [];
-      entryGroups[key].push(e);
-    });
-
-    // Round Distribution
-    const roundPools = Array.from({ length: roundsCount }, () => []);
-    Object.keys(entryGroups).forEach(groupKey => {
-      const groupCocks = entryGroups[groupKey].sort((a,b) => a.weight - b.weight);
-      groupCocks.forEach((cock, index) => {
-        roundPools[index % roundsCount].push(cock);
-      });
-    });
-
-    const rawMatches = [];
-    const history = [];
-
-    // Pairing Optimization Strategy
-    roundPools.forEach((rPool) => {
-      let pool = [...rPool].sort((a, b) => a.weight - b.weight);
-
-      while (pool.length > 1) {
-        const current = pool.shift();
-        let bestIdx = -1;
-        let minDiff = Infinity;
-
-        for (let i = 0; i < pool.length; i++) {
-          const candidate = pool[i];
-
-          if (current.entryName.toLowerCase() === candidate.entryName.toLowerCase()) continue;
-
-          const matchKey = [current.entryName.toLowerCase(), candidate.entryName.toLowerCase()].sort().join(' VS ');
-          if (history.includes(matchKey)) continue;
-
-          const diff = Math.abs(current.weight - candidate.weight);
-          if (diff > maxDiff) break; 
-
-          if (diff < minDiff) {
-            minDiff = diff;
-            bestIdx = i;
-          }
-        }
-
-        if (bestIdx !== -1) {
-          const opponent = pool.splice(bestIdx, 1)[0];
-          const matchKey = [current.entryName.toLowerCase(), opponent.entryName.toLowerCase()].sort().join(' VS ');
-          history.push(matchKey);
-          rawMatches.push({ meron: current, wala: opponent });
-        }
-      }
-    });
-
-    // Fight Sequencing with Rest Buffer Constraints
-    const scheduledMatches = [];
-    let poolToSchedule = [...rawMatches];
-    let fightCounter = 1;
-
-    while (poolToSchedule.length > 0) {
-      let candidateIdx = -1;
-
-      for (let i = 0; i < poolToSchedule.length; i++) {
-        const m = poolToSchedule[i];
-        const mTeam1 = m.meron.entryName.toLowerCase();
-        const mTeam2 = m.wala.entryName.toLowerCase();
-
-        let conflict = false;
-        const recentFights = scheduledMatches.slice(-restBuffer);
-        for (let prev of recentFights) {
-          const pTeam1 = prev.meron.entryName.toLowerCase();
-          const pTeam2 = prev.wala.entryName.toLowerCase();
-
-          if (mTeam1 === pTeam1 || mTeam1 === pTeam2 || mTeam2 === pTeam1 || mTeam2 === pTeam2) {
-            conflict = true;
-            break;
-          }
-        }
-
-        if (!conflict) {
-          candidateIdx = i;
-          break;
-        }
-      }
-
-      if (candidateIdx === -1) candidateIdx = 0;
-
-      const picked = poolToSchedule.splice(candidateIdx, 1)[0];
-      picked.num = fightCounter++;
-      scheduledMatches.push(picked);
-    }
-
-    generatedMatches = scheduledMatches;
-    renderClassicTable(scheduledMatches);
-    renderCards(scheduledMatches);
-
-    switchPage('classicSchedulePage', { target: document.querySelectorAll('.page-btn')[2] });
-  });
-
-  function renderClassicTable(matches) {
-    const tbody = document.getElementById('classicTableBody');
-    tbody.innerHTML = '';
-    matches.forEach(m => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><b>${m.num}</b></td>
-        <td class="entry-cell">${m.meron.entryName} ${m.meron.owner ? `<span class="owner-tag">${m.meron.owner}</span>` : ''}</td>
-        <td>${m.meron.lb || '-'}</td>
-        <td>${m.meron.wb || '-'}</td>
-        <td><b>${m.meron.weight}</b></td>
-        <td><b>${m.wala.weight}</b></td>
-        <td>${m.wala.wb || '-'}</td>
-        <td>${m.wala.lb || '-'}</td>
-        <td class="entry-cell">${m.wala.entryName} ${m.wala.owner ? `<span class="owner-tag">${m.wala.owner}</span>` : ''}</td>
-        <td><b>${m.num}</b></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderCards(matches) {
-    const container = document.getElementById('cardsContainer');
-    container.innerHTML = '';
-    matches.forEach(m => {
-      const card = document.createElement('div');
-      card.className = 'fight-card';
-      card.innerHTML = `
-        <div class="fight-num-box">#${m.num}</div>
-        <div class="side-box meron-side">
-          <div><div class="team-name">${m.meron.entryName}</div><div class="owner-sub">${m.meron.owner || ''}</div></div>
-          <div class="stats-line"><span class="badge-wt">${m.meron.weight}g</span>${m.meron.lb ? `<span class="badge-band">LB: ${m.meron.lb}</span>` : ''}</div>
-        </div>
-        <div class="side-box wala-side">
-          <div><div class="team-name">${m.wala.entryName}</div><div class="owner-sub">${m.wala.owner || ''}</div></div>
-          <div class="stats-line">${m.wala.lb ? `<span class="badge-band">LB: ${m.wala.lb}</span>` : ''}<span class="badge-wt">${m.wala.weight}g</span></div>
-        </div>
-        <div class="fight-num-box">#${m.num}</div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  function exportCsv() {
-    if (!generatedMatches.length) return;
-    let csv = "data:text/csv;charset=utf-8,Fight#,Meron,Meron Weight,Wala Weight,Wala\n";
-    generatedMatches.forEach(m => {
-      csv += `${m.num},"${m.meron.entryName}",${m.meron.weight},${m.wala.weight},"${m.wala.entryName}"\n`;
-    });
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csv));
-    link.setAttribute("download", `Derby_Fight_Schedule.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+    // Magdagdag ng initial guide sa log
+    addLog('💡 Pindutin ang "I-Fetch at I-Inject" para makita ang buong daloy.');
 </script>
 
 </body>
