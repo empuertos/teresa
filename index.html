@@ -3,173 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Stream - Optimized Loading</title>
-    
-    <!-- HLS.js library -->
+    <title>Auto-Fastest Movie Stream</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-    <!-- Pre-connect para mas mabilis ang DNS resolution -->
-    <link rel="preconnect" href="https://vidlink.pro">
-    <link rel="preconnect" href="https://vidsrc.net">
-    <link rel="preconnect" href="https://showbox.media">
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body {
-            background: #1a1a2e;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            background: #16213e;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-            max-width: 960px;
-            width: 100%;
-        }
+        body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background: #16213e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); max-width: 960px; width: 100%; }
         h2 { color: #fff; text-align: center; margin-bottom: 5px; }
         .subtitle { color: #aaa; text-align: center; margin-bottom: 20px; font-size: 14px; }
         
-        /* === VIDEO PLAYER WITH SPINNER OVERLAY === */
-        .player-wrapper {
-            position: relative;
-            width: 100%;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            max-height: 500px;
-            aspect-ratio: 16 / 9;
-        }
-        .player-wrapper video {
-            width: 100%;
-            height: 100%;
-            display: block;
-            background: #000;
-        }
-        .player-wrapper iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        .player-wrapper { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 20px; max-height: 500px; aspect-ratio: 16 / 9; }
+        .player-wrapper video { width: 100%; height: 100%; display: block; background: #000; }
+        .player-wrapper iframe { width: 100%; height: 100%; border: none; }
 
-        /* Spinner overlay */
         #loadingOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none; /* Nakatago sa simula */
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 10;
-            color: white;
-            border-radius: 12px;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: none; justify-content: center;
+            align-items: center; flex-direction: column; z-index: 10; color: white; border-radius: 12px;
         }
-        #loadingOverlay.active {
-            display: flex;
-        }
-        .spinner {
-            border: 6px solid #444;
-            border-top: 6px solid #e94560;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #loadingText {
-            font-size: 16px;
-            color: #ccc;
-        }
-        #loadingTimer {
-            font-size: 14px;
-            color: #888;
-            margin-top: 5px;
-        }
+        #loadingOverlay.active { display: flex; }
+        .spinner { border: 6px solid #444; border-top: 6px solid #e94560; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loadingText { font-size: 16px; color: #ccc; }
+        #loadingTimer { font-size: 14px; color: #888; margin-top: 5px; }
 
-        .controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-        .controls select, .controls input {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: none;
-            font-size: 14px;
-            background: #0f3460;
-            color: #fff;
-            min-width: 150px;
-        }
+        .controls { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 15px; }
+        .controls select, .controls input { padding: 10px 15px; border-radius: 8px; border: none; font-size: 14px; background: #0f3460; color: #fff; min-width: 150px; }
         .controls select option { background: #1a1a2e; }
         .controls input::placeholder { color: #888; }
         
         button {
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s ease;
+            background: #e94560; color: white; border: none; padding: 10px 20px;
+            border-radius: 50px; font-size: 15px; font-weight: bold; cursor: pointer;
+            transition: 0.3s ease; white-space: nowrap;
         }
         button:hover { background: #c73652; transform: scale(1.03); }
         button:disabled { background: #555; cursor: not-allowed; transform: none; }
-        
+        .btn-fastest { background: #f39c12; }
+        .btn-fastest:hover { background: #e67e22; }
+
         #logArea {
-            background: #0f0f1f;
-            color: #0f0;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #333;
-            white-space: pre-wrap;
-            word-break: break-all;
+            background: #0f0f1f; color: #0f0; padding: 15px; border-radius: 10px;
+            margin-top: 15px; font-family: 'Courier New', monospace; font-size: 13px;
+            max-height: 150px; overflow-y: auto; border: 1px solid #333;
+            white-space: pre-wrap; word-break: break-all;
         }
         .status-badge { color: #ffd700; font-weight: bold; }
-        .provider-info { color: #4fc3f7; font-size: 12px; text-align: center; margin-top: 10px; }
+        .winner { color: #00ff88; font-weight: bold; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>🎬 Movie Stream Engine</h2>
-    <p class="subtitle">⚡ <span class="status-badge">FETCH</span> ➔ <span class="status-badge">INJECT</span> (may Loading Spinner at Timeout)</p>
+    <h2>⚡ Auto-Fastest Stream Engine</h2>
+    <p class="subtitle"><span class="status-badge">AUTO-SCAN</span> sa lahat ng providers ➔ pipili ng pinakamabilis</p>
 
-    <!-- PLAYER WRAPPER -->
     <div class="player-wrapper" id="playerWrapper">
         <video id="myMoviePlayer" controls width="100%"></video>
-        
-        <!-- LOADING OVERLAY -->
         <div id="loadingOverlay">
             <div class="spinner"></div>
-            <div id="loadingText">⏳ Naglo-load ng video...</div>
+            <div id="loadingText">⏳ Naglo-load...</div>
             <div id="loadingTimer">0s</div>
         </div>
     </div>
 
-    <!-- CONTROLS -->
     <div class="controls">
         <select id="providerSelect">
             <option value="vidlink">Vidlink.pro</option>
@@ -188,18 +84,14 @@
             <option value="onetouchtv">onetouchtv</option>
             <option value="kkphim">kkphim</option>
         </select>
-        
         <input type="text" id="movieIdInput" placeholder="TMDB ID (e.g. 597)" value="597">
-        
-        <button id="loadBtn" onclick="fetchAndInjectStream()">🚀 I-Fetch at I-Inject</button>
+        <button id="loadBtn" onclick="fetchAndInjectStream()">🚀 I-Fetch</button>
+        <button id="autoBtn" class="btn-fastest" onclick="findFastestAndPlay()">⚡ Auto-Fastest & Play</button>
         <button onclick="resetPlayer()" style="background:#555;">⏹ Reset</button>
     </div>
 
-    <!-- LOGS -->
-    <div id="logArea">
-        🔍 [System] Handa na. Pumili ng provider...
-    </div>
-    <div class="provider-info">💡 Kung mabagal ang isang provider, subukan ang iba (hal. palitan ang Vidlink -> Showbox)</div>
+    <div id="logArea">🔍 [System] Pindutin ang <span class="winner">"Auto-Fastest & Play"</span> para awtomatikong piliin ang pinakamabilis na provider...</div>
+    <div class="provider-info" style="color:#4fc3f7; font-size:12px; text-align:center; margin-top:10px;">⏱️ Susubukan ang lahat ng providers nang sabay-sabay (max 4 seconds timeout).</div>
 </div>
 
 <script>
@@ -207,6 +99,7 @@
     let video = document.getElementById('myMoviePlayer');
     const log = document.getElementById('logArea');
     const loadBtn = document.getElementById('loadBtn');
+    const autoBtn = document.getElementById('autoBtn');
     const providerSelect = document.getElementById('providerSelect');
     const movieIdInput = document.getElementById('movieIdInput');
     const loadingOverlay = document.getElementById('loadingOverlay');
@@ -214,252 +107,209 @@
     const loadingTimer = document.getElementById('loadingTimer');
     const playerWrapper = document.getElementById('playerWrapper');
 
-    let loadingTimeout = null;
-    let timerInterval = null;
-    let seconds = 0;
+    let loadingTimeout = null; let timerInterval = null; let seconds = 0;
 
-    // --- LOADING SPINNER CONTROLS ---
-    function showLoading(message = '⏳ Naglo-load ng video...') {
+    // --- LOADING SPINNER ---
+    function showLoading(msg = '⏳ Naglo-load...') {
         loadingOverlay.classList.add('active');
-        loadingText.textContent = message;
-        seconds = 0;
-        loadingTimer.textContent = '0s';
+        loadingText.textContent = msg;
+        seconds = 0; loadingTimer.textContent = '0s';
         if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            seconds++;
-            loadingTimer.textContent = `${seconds}s`;
-            if (seconds > 15) {
-                loadingText.textContent = '⏳ Medyo natatagalan... (subukan ang ibang provider)';
-            }
-            if (seconds > 25) {
-                loadingText.textContent = '⚠️ Matagal na masyado. I-click ang Reset at subukan ibang provider.';
-            }
-        }, 1000);
-
-        // Auto-hide after 30 seconds (timeout)
+        timerInterval = setInterval(() => { seconds++; loadingTimer.textContent = `${seconds}s`; }, 1000);
         if (loadingTimeout) clearTimeout(loadingTimeout);
-        loadingTimeout = setTimeout(() => {
-            hideLoading(true);
-            addLog('⏰ [TIMEOUT] Matagal bago nag-load ang video (30s). Subukan ang ibang provider.', true);
-        }, 30000);
+        loadingTimeout = setTimeout(() => { hideLoading(true); addLog('⏰ [TIMEOUT] Matagal na (30s). Subukan ang iba.', true); }, 30000);
     }
-
     function hideLoading(isTimeout = false) {
         loadingOverlay.classList.remove('active');
         if (timerInterval) clearInterval(timerInterval);
         if (loadingTimeout) clearTimeout(loadingTimeout);
-        if (!isTimeout) {
-            addLog('✅ Tapos na ang paglo-load ng video.');
-        }
+        if (!isTimeout) addLog('✅ Tapos ang paglo-load.');
     }
 
-    // --- HELPER: Add log ---
-    function addLog(message, isError = false) {
-        const timestamp = new Date().toLocaleTimeString();
-        const prefix = isError ? '❌' : '✅';
-        log.innerHTML += `\n[${timestamp}] ${prefix} ${message}`;
+    function addLog(msg, err = false) {
+        const ts = new Date().toLocaleTimeString();
+        log.innerHTML += `\n[${ts}] ${err ? '❌' : '✅'} ${msg}`;
         log.scrollTop = log.scrollHeight;
-        console.log(message);
+        console.log(msg);
     }
 
-    // --- RESET PLAYER ---
     function resetPlayer() {
         hideLoading();
-        const currentPlayer = window.currentPlayer;
-        if (currentPlayer && currentPlayer.tagName === 'IFRAME') {
-            const newVideo = document.createElement('video');
-            newVideo.id = 'myMoviePlayer';
-            newVideo.controls = true;
-            newVideo.width = '100%';
-            newVideo.style.width = '100%';
-            newVideo.style.height = '100%';
-            newVideo.style.background = '#000';
-            currentPlayer.parentNode.replaceChild(newVideo, currentPlayer);
-            window.currentPlayer = null;
-            video = document.getElementById('myMoviePlayer');
-            addLog('🔄 Na-reset ang player.');
-        } else {
-            video.pause();
-            video.currentTime = 0;
-            video.src = '';
-            addLog('🔄 Na-reset ang video player.');
-        }
+        const cur = window.currentPlayer;
+        if (cur && cur.tagName === 'IFRAME') {
+            const nv = document.createElement('video');
+            nv.id = 'myMoviePlayer'; nv.controls = true; nv.style.width = '100%'; nv.style.height = '100%'; nv.style.background = '#000';
+            cur.parentNode.replaceChild(nv, cur);
+            window.currentPlayer = null; video = document.getElementById('myMoviePlayer');
+            addLog('🔄 Reset player');
+        } else { video.pause(); video.currentTime = 0; video.src = ''; addLog('🔄 Reset video'); }
     }
 
-    // --- PROVIDERS (same as before, dinagdagan lang ng konti) ---
+    // --- PROVIDERS LIST ---
     const PROVIDERS = {
-        vidlink: {
-            name: 'Vidlink.pro',
-            getStreamUrl: async (tmdbId) => {
-                const url = `https://vidlink.pro/api/vidlink/watch?isMovie=true&id=${tmdbId}`;
-                addLog(`🌐 [Vidlink] Tumatawag sa API...`);
-                // May timeout na 15 seconds ang fetch
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                try {
-                    const response = await fetch(url, { signal: controller.signal });
-                    clearTimeout(timeoutId);
-                    const data = await response.json();
-                    if (data && data.stream && data.stream.playlist) {
-                        return data.stream.playlist;
-                    }
-                    throw new Error('Walang nakitang stream URL');
-                } catch (err) {
-                    clearTimeout(timeoutId);
-                    throw new Error(`Vidlink API error: ${err.message}`);
-                }
-            }
-        },
-        vidsrc: { name: 'Vidsrc.net', getStreamUrl: async (id) => `https://vidsrc.net/embed/movie/${id}` },
-        vidsrc_cc: { name: 'Vidsrc.cc', getStreamUrl: async (id) => `https://vidsrc.cc/v2/embed/movie/${id}?poster=true&autoPlay=false` },
-        embed_su: { name: 'Embed.su', getStreamUrl: async (id) => `https://embed.su/embed/movie/${id}` },
-        '2embed': { name: '2Embed', getStreamUrl: async (id) => `https://www.2embed.cc/embed/movie/${id}` },
-        showbox: { name: 'Showbox', getStreamUrl: async (id) => `https://showbox.media/embed/movie/${id}` },
-        febbox: { name: 'FebBox', getStreamUrl: async (id) => `https://febbox.com/embed/movie/${id}` },
-        '4khdhub': { name: '4KHDHub', getStreamUrl: async (id) => `https://4khdhub.com/embed/movie/${id}` },
-        videasy: { name: 'Videasy', getStreamUrl: async (id) => `https://videasy.net/embed/movie/${id}` },
-        streamflix: { name: 'StreamFlix', getStreamUrl: async (id) => `https://streamflix.to/embed/movie/${id}` },
-        vaplayer: { name: 'VaPlayer', getStreamUrl: async (id) => `https://vaplayer.xyz/embed/movie/${id}` },
-        zxcstreams: { name: 'ZXCStreams', getStreamUrl: async (id) => `https://zxcstreams.com/embed/movie/${id}` },
-        kisskh: { name: 'kisskh', getStreamUrl: async (id) => `https://kisskh.co/movie/${id}` },
-        onetouchtv: { name: 'onetouchtv', getStreamUrl: async (id) => `https://onetouchtv.com/embed/movie/${id}` },
-        kkphim: { name: 'kkphim', getStreamUrl: async (id) => `https://kkphim.com/phim/${id}` }
+        vidlink: { name: 'Vidlink.pro', getUrl: (id) => `https://vidlink.pro/api/vidlink/watch?isMovie=true&id=${id}` },
+        vidsrc: { name: 'Vidsrc.net', getUrl: (id) => `https://vidsrc.net/embed/movie/${id}` },
+        vidsrc_cc: { name: 'Vidsrc.cc', getUrl: (id) => `https://vidsrc.cc/v2/embed/movie/${id}?poster=true&autoPlay=false` },
+        embed_su: { name: 'Embed.su', getUrl: (id) => `https://embed.su/embed/movie/${id}` },
+        '2embed': { name: '2Embed', getUrl: (id) => `https://www.2embed.cc/embed/movie/${id}` },
+        showbox: { name: 'Showbox', getUrl: (id) => `https://showbox.media/embed/movie/${id}` },
+        febbox: { name: 'FebBox', getUrl: (id) => `https://febbox.com/embed/movie/${id}` },
+        '4khdhub': { name: '4KHDHub', getUrl: (id) => `https://4khdhub.com/embed/movie/${id}` },
+        videasy: { name: 'Videasy', getUrl: (id) => `https://videasy.net/embed/movie/${id}` },
+        streamflix: { name: 'StreamFlix', getUrl: (id) => `https://streamflix.to/embed/movie/${id}` },
+        vaplayer: { name: 'VaPlayer', getUrl: (id) => `https://vaplayer.xyz/embed/movie/${id}` },
+        zxcstreams: { name: 'ZXCStreams', getUrl: (id) => `https://zxcstreams.com/embed/movie/${id}` },
+        kisskh: { name: 'kisskh', getUrl: (id) => `https://kisskh.co/movie/${id}` },
+        onetouchtv: { name: 'onetouchtv', getUrl: (id) => `https://onetouchtv.com/embed/movie/${id}` },
+        kkphim: { name: 'kkphim', getUrl: (id) => `https://kkphim.com/phim/${id}` }
     };
 
     function isEmbedUrl(url) {
-        const patterns = ['/embed/', 'vidsrc.cc', 'embed.su', '2embed.cc', 'showbox.media', 'febbox.com', '4khdhub.com', 'videasy.net', 'streamflix.to', 'vaplayer.xyz', 'zxcstreams.com', 'kisskh.co', 'onetouchtv.com', 'kkphim.com'];
-        return patterns.some(p => url.includes(p));
+        const p = ['/embed/', 'vidsrc.cc', 'embed.su', '2embed.cc', 'showbox.media', 'febbox.com', '4khdhub.com', 'videasy.net', 'streamflix.to', 'vaplayer.xyz', 'zxcstreams.com', 'kisskh.co', 'onetouchtv.com', 'kkphim.com'];
+        return p.some(s => url.includes(s));
     }
 
-    // --- INJECT FUNCTIONS (with loading hide) ---
-    function injectIframe(embedUrl) {
+    // --- INJECT FUNCTIONS ---
+    function injectIframe(url) {
         const iframe = document.createElement('iframe');
-        iframe.src = embedUrl;
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.border = 'none';
-        iframe.allowFullscreen = true;
-        iframe.allow = 'autoplay; encrypted-media; fullscreen';
-        
-        // Kapag nag-load na ang iframe, itago ang spinner
-        iframe.onload = function() {
-            hideLoading();
-            addLog('🖼️ [IFRAME] Na-load na ang player!');
-        };
-        iframe.onerror = function() {
-            hideLoading(true);
-            addLog('💥 [IFRAME] Nag-error ang pag-load ng iframe.', true);
-        };
-
+        iframe.src = url; iframe.style.width = '100%'; iframe.style.height = '100%'; iframe.style.border = 'none';
+        iframe.allowFullscreen = true; iframe.allow = 'autoplay; encrypted-media; fullscreen';
+        iframe.onload = () => { hideLoading(); addLog('🖼️ Iframe loaded!'); };
+        iframe.onerror = () => { hideLoading(true); addLog('💥 Iframe error', true); };
         video.parentNode.replaceChild(iframe, video);
         window.currentPlayer = iframe;
-        addLog('✅ [INJECT] Na-inject na ang iframe player. Naghihintay ng load...');
+        addLog('✅ Injected iframe');
     }
 
-    function injectHLS(streamUrl) {
-        // I-restore ang video tag kung iframe
+    function injectHLS(url) {
         if (window.currentPlayer && window.currentPlayer.tagName === 'IFRAME') {
-            const newVideo = document.createElement('video');
-            newVideo.id = 'myMoviePlayer';
-            newVideo.controls = true;
-            newVideo.style.width = '100%';
-            newVideo.style.height = '100%';
-            newVideo.style.background = '#000';
-            window.currentPlayer.parentNode.replaceChild(newVideo, window.currentPlayer);
-            window.currentPlayer = null;
-            video = document.getElementById('myMoviePlayer');
+            const nv = document.createElement('video');
+            nv.id = 'myMoviePlayer'; nv.controls = true; nv.style.width = '100%'; nv.style.height = '100%'; nv.style.background = '#000';
+            window.currentPlayer.parentNode.replaceChild(nv, window.currentPlayer);
+            window.currentPlayer = null; video = document.getElementById('myMoviePlayer');
         }
-
         if (Hls.isSupported()) {
             const hls = new Hls({ enableWorker: true });
-            hls.loadSource(streamUrl);
-            hls.attachMedia(video);
-            addLog('✅ [INJECT] HLS stream attached. Naghihintay ng manifest...');
-
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                hideLoading(); // <-- Itago ang spinner kapag handa na
-                addLog('🎉 Handa na ang stream! Awtomatikong nagpe-play...');
-                video.play().catch(e => addLog('⚠️ Kailangan i-click ang play manually.', true));
-            });
-
-            hls.on(Hls.Events.ERROR, (event, data) => {
-                if (data.fatal) {
-                    hideLoading(true);
-                    addLog(`💥 [ERROR] Fatal error sa stream: ${data.type}`, true);
-                }
-            });
+            hls.loadSource(url); hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => { hideLoading(); addLog('🎉 HLS Ready!'); video.play().catch(e => {}); });
+            hls.on(Hls.Events.ERROR, (e, d) => { if (d.fatal) { hideLoading(true); addLog('💥 HLS Error', true); } });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = streamUrl;
-            video.onloadedmetadata = () => hideLoading();
-            video.play();
-            addLog('🍎 Native HLS (Safari)');
-        } else {
+            video.src = url; video.onloadedmetadata = () => hideLoading(); video.play();
+        } else { hideLoading(true); addLog('🚫 HLS not supported', true); }
+    }
+
+    // --- CORE FETCH (ginamit sa manual) ---
+    async function fetchAndInjectStream(selectedProviderKey = null) {
+        const key = selectedProviderKey || providerSelect.value;
+        const tmdbId = movieIdInput.value.trim();
+        if (!tmdbId) { addLog('⚠️ Need TMDB ID', true); return; }
+        const provider = PROVIDERS[key];
+        if (!provider) { addLog('⚠️ Unknown provider', true); return; }
+
+        loadBtn.disabled = true; autoBtn.disabled = true;
+        showLoading(`⏳ Kinukuha ang ${provider.name}...`);
+        try {
+            const url = provider.getUrl(tmdbId);
+            addLog(`📡 ${provider.name} | ID: ${tmdbId}`);
+            // For Vidlink, need to fetch JSON. For others, direct URL.
+            let finalUrl = url;
+            if (key === 'vidlink') {
+                const resp = await fetch(url, { signal: AbortSignal.timeout(10000) });
+                const data = await resp.json();
+                if (data?.stream?.playlist) finalUrl = data.stream.playlist;
+                else throw new Error('No stream from Vidlink');
+            }
+            addLog(`🔗 URL: ${finalUrl.substring(0, 60)}...`);
+            if (isEmbedUrl(finalUrl)) injectIframe(finalUrl);
+            else if (finalUrl.includes('.m3u8')) injectHLS(finalUrl);
+            else { video.src = finalUrl; video.onloadedmetadata = () => hideLoading(); video.play(); }
+        } catch (e) {
             hideLoading(true);
-            addLog('🚫 Hindi supported ang HLS.', true);
+            addLog(`🔥 Error: ${e.message}`, true);
+        } finally {
+            loadBtn.disabled = false; autoBtn.disabled = false;
         }
     }
 
-    // --- CORE FETCH & INJECT ---
-    async function fetchAndInjectStream() {
-        loadBtn.disabled = true;
-        loadBtn.textContent = '⏳ Nagfa-fetch...';
-        log.innerHTML = '';
-        addLog('⚡ Nagsisimula...');
-
-        const providerKey = providerSelect.value;
+    // --- 🚀 ANG BAGONG FEATURE: AUTO-FIND FASTEST PROVIDER ---
+    async function findFastestAndPlay() {
         const tmdbId = movieIdInput.value.trim();
+        if (!tmdbId) { addLog('⚠️ Maglagay ng TMDB ID!', true); return; }
 
-        if (!tmdbId) {
-            addLog('⚠️ Maglagay ng TMDB ID (hal. 597)', true);
-            loadBtn.disabled = false;
-            loadBtn.textContent = '🚀 I-Fetch at I-Inject';
-            return;
+        // I-disable ang buttons
+        loadBtn.disabled = true; autoBtn.disabled = true;
+        log.innerHTML = '';
+        addLog(`⚡ Nagsisimula ang Auto-Scan para sa TMDB ID: ${tmdbId}`);
+        addLog(`📡 Sinusubukan ang ${Object.keys(PROVIDERS).length} providers nang sabay-sabay (max 4 sec)...`);
+        showLoading(`🔍 Sine-scan ang ${Object.keys(PROVIDERS).length} providers...`);
+
+        const results = [];
+        const startTime = performance.now();
+        const promises = [];
+
+        // Subukan ang bawat provider
+        for (const [key, provider] of Object.entries(PROVIDERS)) {
+            const url = provider.getUrl(tmdbId);
+            const promise = (async () => {
+                const pStart = performance.now();
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 sec timeout
+                    const resp = await fetch(url, { 
+                        method: 'HEAD', 
+                        mode: 'no-cors', // Para iwas CORS, basta masukat ang bilis ng response
+                        cache: 'no-store',
+                        signal: controller.signal 
+                    });
+                    clearTimeout(timeoutId);
+                    const duration = Math.round(performance.now() - pStart);
+                    // Sa no-cors, ang response ay "opaque" pero ibig sabihin connected ang server.
+                    return { key, name: provider.name, duration, success: true, url };
+                } catch (err) {
+                    const duration = Math.round(performance.now() - pStart);
+                    return { key, name: provider.name, duration, success: false, error: err.message, url };
+                }
+            })();
+            promises.push(promise);
         }
 
-        const provider = PROVIDERS[providerKey];
-        if (!provider) {
-            addLog(`⚠️ Unknown provider`, true);
-            loadBtn.disabled = false;
-            loadBtn.textContent = '🚀 I-Fetch at I-Inject';
-            return;
-        }
+        // Hintayin lahat
+        const allResults = await Promise.all(promises);
+        const elapsed = Math.round(performance.now() - startTime);
+        addLog(`⏱️ Scan tapos sa ${elapsed}ms.`);
 
-        // Show spinner
-        showLoading(`⏳ Kinukuha ang stream mula sa ${provider.name}...`);
-
-        try {
-            addLog(`📡 Provider: ${provider.name} | TMDB ID: ${tmdbId}`);
-            const streamUrl = await provider.getStreamUrl(tmdbId);
-            addLog(`🔗 Nakuha ang URL`);
-
-            // Itago ang spinner after fetching, pero ipapakita ulit while injecting
-            // Actually, i-keep natin ang spinner hanggang mag-load ang video.
-            // So hindi natin tatawagin ang hideLoading dito.
-
-            if (isEmbedUrl(streamUrl)) {
-                addLog('🖼️ Embed detected');
-                injectIframe(streamUrl);
-            } else if (streamUrl.endsWith('.m3u8') || streamUrl.includes('m3u8')) {
-                addLog('📹 HLS detected');
-                injectHLS(streamUrl);
-            } else if (streamUrl.endsWith('.mp4')) {
-                addLog('📹 MP4 detected');
-                video.src = streamUrl;
-                video.onloadedmetadata = () => hideLoading();
-                video.play();
-            } else {
-                addLog('🔄 Unknown format, trying HLS...');
-                injectHLS(streamUrl);
-            }
-
-        } catch (error) {
+        // I-filter ang mga successful
+        const successful = allResults.filter(r => r.success).sort((a, b) => a.duration - b.duration);
+        
+        if (successful.length === 0) {
             hideLoading(true);
-            addLog(`🔥 [ERROR] ${error.message}`, true);
-            addLog('💡 Tip: Subukan ang ibang provider (hal. Showbox, Vidsrc, o 2Embed)', false);
-        } finally {
-            loadBtn.disabled = false;
-            loadBtn.textContent = '🔄 I-Fetch ulit';
+            addLog('🚫 Walang provider na nagrespond! Subukan ang manual.', true);
+            loadBtn.disabled = false; autoBtn.disabled = false;
+            return;
         }
+
+        // I-log ang lahat ng successful
+        successful.forEach((r, i) => {
+            const prefix = i === 0 ? '🥇 (FASTEST)' : '   ';
+            addLog(`${prefix} ${r.name} - ${r.duration}ms`);
+        });
+
+        // Kunin ang pinakamabilis
+        const fastest = successful[0];
+        addLog(`🏆 <span class="winner">WINNER: ${fastest.name}</span> sa ${fastest.duration}ms!`);
+
+        // Piliin sa dropdown
+        providerSelect.value = fastest.key;
+        addLog(`🔄 Awtomatikong napili ang ${fastest.name}. Naglo-load na...`);
+
+        // Itago ang scan spinner at magpakita ng loading para sa video
+        hideLoading();
+        
+        // Tawagin ang fetchAndInject gamit ang fastest key
+        await fetchAndInjectStream(fastest.key);
+        
+        // I-enable ulit
+        loadBtn.disabled = false; autoBtn.disabled = false;
     }
 
     // --- EVENT LISTENERS ---
@@ -467,9 +317,7 @@
     video.addEventListener('pause', () => addLog('⏸️ Paused'));
     video.addEventListener('ended', () => addLog('⏹️ Ended'));
 
-    // Initial log
-    addLog('💡 Pindutin ang button. Kung mabagal, palitan ang provider.');
-    addLog('📌 Mabilis na providers: Showbox, Vidsrc.net, 2Embed');
+    addLog('💡 I-click ang <span class="winner">"Auto-Fastest & Play"</span> para hanapin ang pinakamabilis na provider.');
 </script>
 </body>
 </html>
