@@ -109,7 +109,7 @@
             <option value="embed_su">Embed.su</option>
             <option value="2embed">2Embed</option>
             
-            <!-- NEW PROVIDERS -->
+            <!-- Previous new providers -->
             <option value="showbox">Showbox</option>
             <option value="febbox">FebBox (FedBox)</option>
             <option value="4khdhub">4KHDHub</option>
@@ -117,9 +117,14 @@
             <option value="streamflix">StreamFlix</option>
             <option value="vaplayer">VaPlayer</option>
             <option value="zxcstreams">ZXCStreams</option>
+
+            <!-- 🆕 BAGONG IDINAGDAG (galing sa screenshot) -->
+            <option value="kisskh">kisskh</option>
+            <option value="onetouchtv">onetouchtv</option>
+            <option value="kkphim">kkphim</option>
         </select>
         
-        <input type="text" id="movieIdInput" placeholder="Enter TMDB ID (e.g. 27205)" value="27205">
+        <input type="text" id="movieIdInput" placeholder="Enter TMDB ID (e.g. 597 for Titanic)" value="597">
         
         <button id="loadBtn" onclick="fetchAndInjectStream()">🚀 I-Fetch at I-Inject</button>
         <button onclick="resetPlayer()" style="background:#555;">⏹ Reset</button>
@@ -129,7 +134,7 @@
     <div id="logArea">
         🔍 [System] Handa na. Pumili ng provider at mag-click ng button...
     </div>
-    <div class="provider-info">💡 TMDB ID = The Movie Database ID ng pelikula (hanapin sa themoviedb.org)</div>
+    <div class="provider-info">💡 TMDB ID = The Movie Database ID ng pelikula (hal. 597 = Titanic)</div>
 </div>
 
 <script>
@@ -149,7 +154,7 @@
         console.log(message);
     }
 
-    // --- HELPER: Reset player (para maibalik ang video tag kung napalitan ng iframe) ---
+    // --- HELPER: Reset player ---
     function resetPlayer() {
         const currentPlayer = window.currentPlayer;
         if (currentPlayer && currentPlayer.tagName === 'IFRAME') {
@@ -213,7 +218,7 @@
             }
         },
 
-        // === BAGONG PROVIDERS (Embed-based) ===
+        // === PREVIOUS NEW PROVIDERS ===
         showbox: {
             name: 'Showbox',
             getStreamUrl: async (tmdbId) => {
@@ -255,20 +260,41 @@
             getStreamUrl: async (tmdbId) => {
                 return `https://zxcstreams.com/embed/movie/${tmdbId}`;
             }
+        },
+
+        // === 🆕 BAGONG MGA PROVIDER (mula sa screenshot) ===
+        kisskh: {
+            name: 'kisskh',
+            getStreamUrl: async (tmdbId) => {
+                return `https://kisskh.co/movie/${tmdbId}`;
+            }
+        },
+        onetouchtv: {
+            name: 'onetouchtv',
+            getStreamUrl: async (tmdbId) => {
+                return `https://onetouchtv.com/embed/movie/${tmdbId}`;
+            }
+        },
+        kkphim: {
+            name: 'kkphim',
+            getStreamUrl: async (tmdbId) => {
+                return `https://kkphim.com/phim/${tmdbId}`;
+            }
         }
     };
 
-    // --- DETECT kung ang URL ay embed (iframe) o direct stream ---
+    // --- DETECT kung ang URL ay embed (iframe) ---
     function isEmbedUrl(url) {
         const embedPatterns = ['/embed/', 'vidsrc.cc', 'embed.su', '2embed.cc', 
                                'showbox.media', 'febbox.com', '4khdhub.com', 
-                               'videasy.net', 'streamflix.to', 'vaplayer.xyz', 'zxcstreams.com'];
+                               'videasy.net', 'streamflix.to', 'vaplayer.xyz', 'zxcstreams.com',
+                               // 🆕 Bagong patterns
+                               'kisskh.co', 'onetouchtv.com', 'kkphim.com'];
         return embedPatterns.some(pattern => url.includes(pattern));
     }
 
     // --- INJECT via Iframe ---
     function injectIframe(embedUrl) {
-        // Gumawa ng iframe
         const iframe = document.createElement('iframe');
         iframe.src = embedUrl;
         iframe.width = '100%';
@@ -277,7 +303,6 @@
         iframe.allowFullscreen = true;
         iframe.allow = 'autoplay; encrypted-media; fullscreen';
         
-        // Palitan ang video element ng iframe
         video.parentNode.replaceChild(iframe, video);
         window.currentPlayer = iframe;
         addLog('✅ [INJECT] Na-inject na ang iframe player!');
@@ -285,7 +310,6 @@
 
     // --- INJECT via HLS.js ---
     function injectHLS(streamUrl) {
-        // I-restore ang video element kung napalitan ng iframe
         const currentPlayer = window.currentPlayer;
         if (currentPlayer && currentPlayer.tagName === 'IFRAME') {
             const newVideo = document.createElement('video');
@@ -336,7 +360,7 @@
         const tmdbId = movieIdInput.value.trim();
 
         if (!tmdbId) {
-            addLog('⚠️ Mangyaring maglagay ng TMDB ID (hal. 27205)', true);
+            addLog('⚠️ Mangyaring maglagay ng TMDB ID (hal. 597)', true);
             loadBtn.disabled = false;
             loadBtn.textContent = '🚀 I-Fetch at I-Inject';
             return;
@@ -392,7 +416,7 @@
 
     // --- Initial log ---
     addLog('💡 Pumili ng provider, maglagay ng TMDB ID, at i-click ang button.');
-    addLog('📌 Kasama ngayon: Showbox, FebBox, 4KHDHub, Videasy, StreamFlix, VaPlayer, ZXCStreams');
+    addLog('📌 Kasama ngayon: kisskh, onetouchtv, at kkphim (gaya ng screenshot mo!)');
 </script>
 </body>
 </html>
