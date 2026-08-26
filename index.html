@@ -50,6 +50,7 @@
     .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
     label { font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
     input, select, textarea { background: #0b0f19; border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.9rem; transition: border-color 0.2s ease; outline: none; }
+    input[type="date"] { color-scheme: dark; }
     input:focus, select:focus, textarea:focus { border-color: var(--accent); }
     
     /* Buttons */
@@ -148,7 +149,8 @@
       <div class="form-group"><label>Arena Location</label><input type="text" id="eventAddress" value="M.J. Cuenco Ave., Tejero, Cebu City"></div>
       <div class="form-group"><label>Promoter / Host</label><input type="text" id="eventPromoter" value="NGGBC PROMOTION"></div>
       <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" value="12-STAG / COCK MAIN EVENT"></div>
-      <div class="form-group"><label>Event Date</label><input type="text" id="eventDate" value="AUGUST 22, 2026 ( Saturday )"></div>
+      <!-- CALENDAR INPUT -->
+      <div class="form-group"><label>Event Date (Select from Calendar)</label><input type="date" id="eventDate"></div>
     </div>
 
     <div class="section-title" style="margin-top: 1.5rem;">2. Core Matching Settings</div>
@@ -319,6 +321,12 @@
   let entries = [];
   let generatedMatches = [];
 
+  // Set Default Date to Today
+  document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('eventDate').value = today;
+  });
+
   function switchPage(pageId, e) {
     document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.page-btn').forEach(el => el.classList.remove('active'));
@@ -444,12 +452,21 @@
       return;
     }
 
+    // Format Calendar Date Professional String
+    const rawDateVal = document.getElementById('eventDate').value;
+    let formattedDate = rawDateVal;
+    if (rawDateVal) {
+      const d = new Date(rawDateVal + 'T00:00:00');
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      formattedDate = d.toLocaleDateString('en-US', options).toUpperCase();
+    }
+
     // Update Banner Texts
     document.querySelectorAll('.dispArena').forEach(el => el.textContent = document.getElementById('eventArena').value);
     document.querySelectorAll('.dispAddress').forEach(el => el.textContent = document.getElementById('eventAddress').value);
     document.querySelectorAll('.dispPromoter').forEach(el => el.textContent = document.getElementById('eventPromoter').value);
     document.querySelectorAll('.dispTitle').forEach(el => el.textContent = document.getElementById('eventTitle').value);
-    document.querySelectorAll('.dispDate').forEach(el => el.textContent = document.getElementById('eventDate').value);
+    document.querySelectorAll('.dispDate').forEach(el => el.textContent = formattedDate);
 
     const roundsCount = parseInt(document.getElementById('derbyFormat').value);
     const maxDiff = parseInt(document.getElementById('maxDiff').value);
