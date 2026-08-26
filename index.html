@@ -3,25 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Stream Fetch + Inject - Full Demo</title>
+    <title>Movie Stream - All Providers</title>
     
-    <!-- Import ng HLS.js library para suportahan ang streaming (.m3u8) -->
+    <!-- HLS.js library para sa streaming -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body {
             background: #1a1a2e;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            flex-direction: column;
             padding: 20px;
         }
         .container {
@@ -32,17 +26,9 @@
             max-width: 960px;
             width: 100%;
         }
-        h2 {
-            color: #fff;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #aaa;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
+        h2 { color: #fff; text-align: center; margin-bottom: 5px; }
+        .subtitle { color: #aaa; text-align: center; margin-bottom: 20px; font-size: 14px; }
+        
         video {
             width: 100%;
             background: #000;
@@ -51,195 +37,362 @@
             margin-bottom: 20px;
             max-height: 500px;
         }
+        
         .controls {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 15px;
         }
+        .controls select, .controls input {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            background: #0f3460;
+            color: #fff;
+            min-width: 150px;
+        }
+        .controls select option { background: #1a1a2e; }
+        .controls input::placeholder { color: #888; }
+        
         button {
             background: #e94560;
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 25px;
             border-radius: 50px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s ease;
-            box-shadow: 0 4px 10px rgba(233, 69, 96, 0.4);
         }
-        button:hover {
-            background: #c73652;
-            transform: scale(1.03);
-        }
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
+        button:hover { background: #c73652; transform: scale(1.03); }
+        button:disabled { background: #555; cursor: not-allowed; transform: none; }
+        
         #logArea {
             background: #0f0f1f;
             color: #0f0;
             padding: 15px;
             border-radius: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: 13px;
             max-height: 150px;
             overflow-y: auto;
             border: 1px solid #333;
             white-space: pre-wrap;
             word-break: break-all;
         }
-        .status-badge {
-            color: #ffd700;
-            font-weight: bold;
-        }
+        .status-badge { color: #ffd700; font-weight: bold; }
+        .provider-info { color: #4fc3f7; font-size: 12px; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🎬 Movie Stream Engine</h2>
-    <p class="subtitle">⚡ <span class="status-badge">FETCH</span> mula sa Video Host ➔ <span class="status-badge">INJECT</span> sa Player</p>
+    <p class="subtitle">⚡ <span class="status-badge">FETCH</span> mula sa Video Provider ➔ <span class="status-badge">INJECT</span> sa Player</p>
 
-    <!-- ITO ANG VIDEO PLAYER (Dito i-inject ang stream) -->
+    <!-- Video Player -->
     <video id="myMoviePlayer" controls width="100%"></video>
 
+    <!-- Controls with Provider Selector -->
     <div class="controls">
-        <button id="loadBtn" onclick="fetchAndInjectStream()">🚀 I-Fetch at I-Inject ang Stream</button>
-        <button onclick="document.getElementById('myMoviePlayer').pause(); document.getElementById('myMoviePlayer').currentTime=0;" style="background:#555;">⏹ Stop</button>
+        <select id="providerSelect">
+            <!-- Existing providers -->
+            <option value="vidlink">Vidlink.pro</option>
+            <option value="vidsrc">Vidsrc.net</option>
+            <option value="vidsrc_cc">Vidsrc.cc</option>
+            <option value="embed_su">Embed.su</option>
+            <option value="2embed">2Embed</option>
+            
+            <!-- NEW PROVIDERS -->
+            <option value="showbox">Showbox</option>
+            <option value="febbox">FebBox (FedBox)</option>
+            <option value="4khdhub">4KHDHub</option>
+            <option value="videasy">Videasy</option>
+            <option value="streamflix">StreamFlix</option>
+            <option value="vaplayer">VaPlayer</option>
+            <option value="zxcstreams">ZXCStreams</option>
+        </select>
+        
+        <input type="text" id="movieIdInput" placeholder="Enter TMDB ID (e.g. 27205)" value="27205">
+        
+        <button id="loadBtn" onclick="fetchAndInjectStream()">🚀 I-Fetch at I-Inject</button>
+        <button onclick="resetPlayer()" style="background:#555;">⏹ Reset</button>
     </div>
 
-    <!-- Dito lalabas ang real-time na technical logs -->
+    <!-- Logs -->
     <div id="logArea">
-        🔍 [System] Handa na. Pindutin ang button para magsimula...
+        🔍 [System] Handa na. Pumili ng provider at mag-click ng button...
     </div>
+    <div class="provider-info">💡 TMDB ID = The Movie Database ID ng pelikula (hanapin sa themoviedb.org)</div>
 </div>
 
 <script>
-    // --- ITO ANG CORE LOGIC NG FETCHING AT INJECTING ---
-    
-    // Elemento ng video player
-    const video = document.getElementById('myMoviePlayer');
+    // --- ELEMENTS ---
+    let video = document.getElementById('myMoviePlayer');
     const log = document.getElementById('logArea');
     const loadBtn = document.getElementById('loadBtn');
+    const providerSelect = document.getElementById('providerSelect');
+    const movieIdInput = document.getElementById('movieIdInput');
 
-    // Helper function para mag-print ng logs sa screen (para makita ang proseso)
+    // --- HELPER: Add log ---
     function addLog(message, isError = false) {
         const timestamp = new Date().toLocaleTimeString();
         const prefix = isError ? '❌' : '✅';
         log.innerHTML += `\n[${timestamp}] ${prefix} ${message}`;
-        log.scrollTop = log.scrollHeight; // Auto-scroll pababa
-        console.log(message); // Sabay print sa browser console
+        log.scrollTop = log.scrollHeight;
+        console.log(message);
     }
 
-    // --- [PART 1] ANG "FETCHING" (Kumukuha ng Stream URL) ---
-    // Ginaya natin ang tawag sa API ng video hosting provider (hal. VidSrc, Voeux, etc.)
-    function mockApiCallToFetchStreamUrl() {
-        addLog('🌐 [1. FETCHING] Tumatawag sa Video Hosting Provider API...');
+    // --- HELPER: Reset player (para maibalik ang video tag kung napalitan ng iframe) ---
+    function resetPlayer() {
+        const currentPlayer = window.currentPlayer;
+        if (currentPlayer && currentPlayer.tagName === 'IFRAME') {
+            const newVideo = document.createElement('video');
+            newVideo.id = 'myMoviePlayer';
+            newVideo.controls = true;
+            newVideo.width = '100%';
+            newVideo.style.background = '#000';
+            newVideo.style.borderRadius = '12px';
+            newVideo.style.maxHeight = '500px';
+            currentPlayer.parentNode.replaceChild(newVideo, currentPlayer);
+            window.currentPlayer = null;
+            video = document.getElementById('myMoviePlayer');
+            addLog('🔄 Na-reset ang player (video tag na ulit).');
+        } else {
+            video.pause();
+            video.currentTime = 0;
+            video.src = '';
+            addLog('🔄 Na-reset ang video player.');
+        }
+    }
+
+    // --- PROVIDER CONFIGURATIONS ---
+    const PROVIDERS = {
+        // === EXISTING PROVIDERS ===
+        vidlink: {
+            name: 'Vidlink.pro',
+            getStreamUrl: async (tmdbId) => {
+                const url = `https://vidlink.pro/api/vidlink/watch?isMovie=true&id=${tmdbId}`;
+                addLog(`🌐 [Vidlink] Tumatawag sa: ${url}`);
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data && data.stream && data.stream.playlist) {
+                    return data.stream.playlist;
+                }
+                throw new Error('Walang nakitang stream URL mula sa Vidlink');
+            }
+        },
+        vidsrc: {
+            name: 'Vidsrc.net',
+            getStreamUrl: async (tmdbId) => {
+                return `https://vidsrc.net/embed/movie/${tmdbId}`;
+            }
+        },
+        vidsrc_cc: {
+            name: 'Vidsrc.cc',
+            getStreamUrl: async (tmdbId) => {
+                return `https://vidsrc.cc/v2/embed/movie/${tmdbId}?poster=true&autoPlay=false`;
+            }
+        },
+        embed_su: {
+            name: 'Embed.su',
+            getStreamUrl: async (tmdbId) => {
+                return `https://embed.su/embed/movie/${tmdbId}`;
+            }
+        },
+        '2embed': {
+            name: '2Embed',
+            getStreamUrl: async (tmdbId) => {
+                return `https://www.2embed.cc/embed/movie/${tmdbId}`;
+            }
+        },
+
+        // === BAGONG PROVIDERS (Embed-based) ===
+        showbox: {
+            name: 'Showbox',
+            getStreamUrl: async (tmdbId) => {
+                return `https://showbox.media/embed/movie/${tmdbId}`;
+            }
+        },
+        febbox: {
+            name: 'FebBox (FedBox)',
+            getStreamUrl: async (tmdbId) => {
+                return `https://febbox.com/embed/movie/${tmdbId}`;
+            }
+        },
+        '4khdhub': {
+            name: '4KHDHub',
+            getStreamUrl: async (tmdbId) => {
+                return `https://4khdhub.com/embed/movie/${tmdbId}`;
+            }
+        },
+        videasy: {
+            name: 'Videasy',
+            getStreamUrl: async (tmdbId) => {
+                return `https://videasy.net/embed/movie/${tmdbId}`;
+            }
+        },
+        streamflix: {
+            name: 'StreamFlix',
+            getStreamUrl: async (tmdbId) => {
+                return `https://streamflix.to/embed/movie/${tmdbId}`;
+            }
+        },
+        vaplayer: {
+            name: 'VaPlayer',
+            getStreamUrl: async (tmdbId) => {
+                return `https://vaplayer.xyz/embed/movie/${tmdbId}`;
+            }
+        },
+        zxcstreams: {
+            name: 'ZXCStreams',
+            getStreamUrl: async (tmdbId) => {
+                return `https://zxcstreams.com/embed/movie/${tmdbId}`;
+            }
+        }
+    };
+
+    // --- DETECT kung ang URL ay embed (iframe) o direct stream ---
+    function isEmbedUrl(url) {
+        const embedPatterns = ['/embed/', 'vidsrc.cc', 'embed.su', '2embed.cc', 
+                               'showbox.media', 'febbox.com', '4khdhub.com', 
+                               'videasy.net', 'streamflix.to', 'vaplayer.xyz', 'zxcstreams.com'];
+        return embedPatterns.some(pattern => url.includes(pattern));
+    }
+
+    // --- INJECT via Iframe ---
+    function injectIframe(embedUrl) {
+        // Gumawa ng iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = embedUrl;
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.style.border = 'none';
+        iframe.allowFullscreen = true;
+        iframe.allow = 'autoplay; encrypted-media; fullscreen';
         
-        // Ito ang gumagaya sa paghihintay ng response mula sa internet (1.5 seconds)
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // Sa totoong buhay, ito ang JSON na galing sa server ng provider.
-                // Ginamit ko ang public test stream ng Mux para 100% gumana.
-                const fakeApiResponse = {
-                    status: "success",
-                    movie_title: "Big Buck Bunny (Test Stream)",
-                    stream_url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" // Actual working HLS stream
-                };
-                
-                addLog(`📦 [1. FETCHING] Natanggap ang data mula sa API: ${fakeApiResponse.movie_title}`);
-                resolve(fakeApiResponse.stream_url); // Ibinabalik nito ang URL ng video
-            }, 1500); // Naghintay ng 1.5 sec para gayahin ang internet lag
-        });
+        // Palitan ang video element ng iframe
+        video.parentNode.replaceChild(iframe, video);
+        window.currentPlayer = iframe;
+        addLog('✅ [INJECT] Na-inject na ang iframe player!');
     }
 
-    // --- [PART 2] ANG "INJECTING" (Isinaksak sa Video Player) ---
+    // --- INJECT via HLS.js ---
+    function injectHLS(streamUrl) {
+        // I-restore ang video element kung napalitan ng iframe
+        const currentPlayer = window.currentPlayer;
+        if (currentPlayer && currentPlayer.tagName === 'IFRAME') {
+            const newVideo = document.createElement('video');
+            newVideo.id = 'myMoviePlayer';
+            newVideo.controls = true;
+            newVideo.width = '100%';
+            newVideo.style.background = '#000';
+            newVideo.style.borderRadius = '12px';
+            newVideo.style.maxHeight = '500px';
+            currentPlayer.parentNode.replaceChild(newVideo, currentPlayer);
+            window.currentPlayer = null;
+            video = document.getElementById('myMoviePlayer');
+        }
+
+        if (Hls.isSupported()) {
+            const hls = new Hls({ enableWorker: true });
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+            addLog('✅ [INJECT] Na-attach na ang HLS stream sa player!');
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                addLog('🎉 Handa na ang stream! Awtomatikong nagpe-play...');
+                video.play().catch(e => addLog('⚠️ Hindi awtomatikong nag-play (kailangan ng user interaction).', true));
+            });
+
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    addLog(`💥 [ERROR] Fatal error sa stream: ${data.type}`, true);
+                }
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = streamUrl;
+            addLog('🍎 Gumamit ng Native Safari HLS support.');
+            video.play();
+        } else {
+            addLog('🚫 Hindi supported ng browser ang HLS streaming.', true);
+        }
+    }
+
+    // --- CORE: FETCH + INJECT ---
     async function fetchAndInjectStream() {
-        // I-disable ang button habang naglo-load para iwas doble-click
         loadBtn.disabled = true;
-        loadBtn.textContent = '⏳ Nagfa-fetch at nag-iinject...';
-        log.innerHTML = ''; // Burahin lumang logs
+        loadBtn.textContent = '⏳ Nagfa-fetch...';
+        log.innerHTML = '';
         addLog('⚡ Nagsisimula ang proseso ng "Fetching Stream"...');
 
+        const providerKey = providerSelect.value;
+        const tmdbId = movieIdInput.value.trim();
+
+        if (!tmdbId) {
+            addLog('⚠️ Mangyaring maglagay ng TMDB ID (hal. 27205)', true);
+            loadBtn.disabled = false;
+            loadBtn.textContent = '🚀 I-Fetch at I-Inject';
+            return;
+        }
+
+        const provider = PROVIDERS[providerKey];
+        if (!provider) {
+            addLog(`⚠️ Hindi kilalang provider: ${providerKey}`, true);
+            loadBtn.disabled = false;
+            loadBtn.textContent = '🚀 I-Fetch at I-Inject';
+            return;
+        }
+
         try {
-            // --- HAKBANG A: TUMAWAG SA API PARA KUMUHA NG VIDEO URL (FETCHING) ---
-            const streamUrl = await mockApiCallToFetchStreamUrl();
-            addLog(`🔗 [2. INJECTING] Natanggap ang Stream URL: ${streamUrl.substring(0, 50)}...`);
+            addLog(`📡 Napiling Provider: ${provider.name}`);
+            addLog(`🎬 TMDB ID: ${tmdbId}`);
 
-            // --- HAKBANG B: ISAKSAK (INJECT) ANG STREAM SA VIDEO PLAYER ---
-            addLog('🛠️ [2. INJECTING] Sinisimulan ang pag-inject ng stream sa HTML5 Player...');
+            // --- STEP 1: FETCHING ---
+            const streamUrl = await provider.getStreamUrl(tmdbId);
+            addLog(`🔗 Nakuha ang URL: ${streamUrl.substring(0, 80)}...`);
 
-            // Check kung HLS (.m3u8) ang stream at supported ng browser
-            if (Hls.isSupported()) {
-                // Gumawa ng bagong HLS client
-                const hls = new Hls({
-                    enableWorker: true, // Para bumilis ang pag-load
-                });
-
-                // I-load ang na-fetch na stream URL
-                hls.loadSource(streamUrl);
-                
-                // I-ATTACH (INJECT) ito sa ating video player element
-                hls.attachMedia(video);
-                
-                addLog('✅ [2. INJECTING] Na-attach na ang stream sa video player!');
-
-                // Kapag handa na ang video, i-play agad
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    addLog('🎉 [SUCCESS] Handa na ang stream! Awtomatikong nagpe-play...');
-                    video.play().catch(e => addLog('⚠️ Hindi awtomatikong nag-play (kailangan ng user interaction).', true));
-                });
-
-                // Error handling ng HLS
-                hls.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        addLog(`💥 [ERROR] Fatal error sa stream: ${data.type}`, true);
-                    }
-                });
-
-            } 
-            // Fallback para sa Safari (native ang HLS support nito)
-            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // --- STEP 2: INJECTING ---
+            if (isEmbedUrl(streamUrl)) {
+                addLog('🖼️ [INJECT] Embed URL detected - gumagamit ng iframe');
+                injectIframe(streamUrl);
+            } else if (streamUrl.endsWith('.m3u8') || streamUrl.includes('m3u8')) {
+                addLog('📹 [INJECT] HLS Stream detected - gamit ang HLS.js');
+                injectHLS(streamUrl);
+            } else if (streamUrl.endsWith('.mp4')) {
+                addLog('📹 [INJECT] Direct MP4 detected');
                 video.src = streamUrl;
-                addLog('🍎 [2. INJECTING] Gumamit ng Native Safari HLS support.');
                 video.play();
-            } 
-            else {
-                // Kung hindi supported ang HLS, subukan i-play bilang normal na MP4 (kung .mp4 ang binigay)
-                if (streamUrl.endsWith('.mp4')) {
-                    video.src = streamUrl;
-                    addLog('📹 [2. INJECTING] Direct MP4 file ang na-detect. Naglo-load na...');
-                    video.play();
-                } else {
-                    addLog('🚫 [ERROR] Hindi supported ng iyong browser ang ganitong uri ng stream.', true);
-                }
+                addLog('🎉 Nagpe-play na ang MP4 video!');
+            } else {
+                addLog('🔄 [INJECT] Unknown format, sinusubukan bilang HLS...');
+                injectHLS(streamUrl);
             }
 
         } catch (error) {
-            // Kapag nag-error ang buong proseso (hal. nawalan ng internet)
-            addLog(`🔥 [CRITICAL ERROR] May problema sa pag-fetch: ${error.message}`, true);
+            addLog(`🔥 [ERROR] ${error.message}`, true);
             console.error(error);
         } finally {
-            // Ibalik ang button sa normal state
             loadBtn.disabled = false;
-            loadBtn.textContent = '🔄 I-Fetch at I-Inject ulit';
+            loadBtn.textContent = '🔄 I-Fetch ulit';
             addLog('🏁 Tapos na ang proseso.');
         }
     }
 
-    // Optional: Kapag na-click ang video mismo, magdagdag ng log
+    // --- Event Listeners para sa video ---
     video.addEventListener('play', () => addLog('▶️ Nagpe-play ang video.'));
     video.addEventListener('pause', () => addLog('⏸️ Na-pause ang video.'));
     video.addEventListener('ended', () => addLog('⏹️ Tapos na ang movie.'));
 
-    // Magdagdag ng initial guide sa log
-    addLog('💡 Pindutin ang "I-Fetch at I-Inject" para makita ang buong daloy.');
+    // --- Initial log ---
+    addLog('💡 Pumili ng provider, maglagay ng TMDB ID, at i-click ang button.');
+    addLog('📌 Kasama ngayon: Showbox, FebBox, 4KHDHub, Videasy, StreamFlix, VaPlayer, ZXCStreams');
 </script>
-
 </body>
 </html>
