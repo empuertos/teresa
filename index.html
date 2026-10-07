@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StoreFlow — Store Management & POS</title>
+<meta name="theme-color" content="#0b1220">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        navy: { 950:'#070c17', 900:'#0b1220', 800:'#111c33', 700:'#1b2a4a', 600:'#27395f' },
+        brand:{ 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' }
+      },
+      fontFamily: { sans: ['Inter','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'] },
+      boxShadow: { card: '0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1)' }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+<script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased">
+
+<!-- ══════════════ BOOT / LOADING ══════════════ -->
+<div id="boot" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-navy-900 text-white">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-11 h-11 rounded-xl bg-brand-600 grid place-items-center font-extrabold text-lg">SF</div>
+    <div><div class="text-xl font-bold tracking-tight">StoreFlow</div>
+    <div class="text-xs text-slate-400">Store Management &amp; POS</div></div>
+  </div>
+  <div class="w-48 h-1 rounded-full bg-white/10 overflow-hidden">
+    <div id="bootBar" class="h-full w-1/3 bg-brand-500 rounded-full animate-pulse"></div>
+  </div>
+  <p id="bootMsg" class="mt-4 text-xs text-slate-400">Starting…</p>
+</div>
+
+<!-- ══════════════ LOCK SCREEN ══════════════ -->
+<div id="lockScreen" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 bg-navy-950">
+  <div class="w-full max-w-lg bg-navy-900 border border-white/10 rounded-2xl p-8 text-center text-white shadow-2xl">
+    <div class="w-14 h-14 rounded-2xl bg-amber-500/15 grid place-items-center mx-auto mb-5">
+      <i data-lucide="shield-alert" class="w-7 h-7 text-amber-400"></i>
+    </div>
+    <div class="text-sm font-semibold tracking-widest text-slate-400 uppercase">StoreFlow</div>
+    <h1 id="lockTitle" class="text-2xl font-bold mt-1">Subscription verification required</h1>
+    <p id="lockMessage" class="text-slate-400 mt-3 text-sm leading-relaxed">
+      Your StoreFlow subscription could not be verified.
+    </p>
+    <div id="lockMeta" class="mt-5 text-xs text-slate-500"></div>
+    <div class="mt-7 grid gap-3 sm:grid-cols-3">
+      <button data-lock-action="retry" class="btn-primary justify-center"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Retry Connection</button>
+      <button data-lock-action="contact" class="btn-ghost justify-center"><i data-lucide="life-buoy" class="w-4 h-4"></i> Contact StoreFlow</button>
+      <button data-lock-action="renew" class="btn-ghost justify-center"><i data-lucide="credit-card" class="w-4 h-4"></i> Renew Subscription</button>
+    </div>
+    <p class="mt-6 text-[11px] text-slate-600">StoreFlow licensing · server-verified authorization</p>
+  </div>
+</div>
+
+<!-- ══════════════ AUTH SCREEN ══════════════ -->
+<div id="authScreen" class="hidden min-h-screen grid lg:grid-cols-2">
+  <div class="hidden lg:flex flex-col justify-between bg-navy-900 text-white p-12">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-brand-600 grid place-items-center font-extrabold">SF</div>
+      <span class="text-lg font-bold">StoreFlow</span>
+    </div>
+    <div>
+      <h2 class="text-4xl font-extrabold leading-tight tracking-tight">Run your store.<br>Anywhere. Even offline.</h2>
+      <p class="text-slate-400 mt-4 max-w-md">A complete POS + inventory + cash flow platform for multi-branch retail. Built for speed at the counter and clarity at the back office.</p>
+      <div class="grid grid-cols-2 gap-4 mt-10 max-w-md text-sm">
+        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="zap" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Offline POS</div><div class="text-slate-400 text-xs">Keep selling when the internet drops.</div></div>
+        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="store" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Multi-branch</div><div class="text-slate-400 text-xs">Separate stock per branch.</div></div>
+        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="users" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Roles</div><div class="text-slate-400 text-xs">Owner, manager, cashier.</div></div>
+        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="line-chart" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Reports</div><div class="text-slate-400 text-xs">Profit, cash flow, shifts.</div></div>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500">© <span id="authYear"></span> StoreFlow. All rights reserved.</p>
+  </div>
+
+  <div class="flex items-center justify-center p-6 sm:p-10 bg-slate-50">
+    <div class="w-full max-w-md">
+      <div class="lg:hidden flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-brand-600 grid place-items-center text-white font-extrabold">SF</div>
+        <span class="text-lg font-bold text-navy-900">StoreFlow</span>
+      </div>
+
+      <!-- Login -->
+      <div id="paneLogin">
+        <h1 class="text-2xl font-bold text-navy-900">Welcome back</h1>
+        <p class="text-slate-500 text-sm mt-1">Sign in to your store workspace.</p>
+        <form id="formLogin" class="mt-7 space-y-4" autocomplete="on">
+          <div>
+            <label class="label" for="loginEmail">Email</label>
+            <input id="loginEmail" name="email" type="email" required class="input" placeholder="you@store.com" autocomplete="username">
+          </div>
+          <div>
+            <label class="label" for="loginPassword">Password</label>
+            <div class="relative">
+              <input id="loginPassword" name="password" type="password" required class="input pr-11" placeholder="••••••••" autocomplete="current-password">
+              <button type="button" class="pw-toggle" data-target="loginPassword" aria-label="Show password"><i data-lucide="eye" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" id="rememberDevice" class="rounded border-slate-300"> Remember this device</label>
+            <button type="button" id="linkForgot" class="text-brand-600 font-medium hover:underline">Forgot password?</button>
+          </div>
+          <div id="loginError" class="hidden rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2"></div>
+          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="loginSubmit">Sign in</button>
+        </form>
+        <p class="text-sm text-slate-500 mt-6 text-center">No account yet?
+          <button id="linkToRegister" class="text-brand-600 font-semibold hover:underline">Create a store</button>
+        </p>
+      </div>
+
+      <!-- Register -->
+      <div id="paneRegister" class="hidden">
+        <h1 class="text-2xl font-bold text-navy-900">Create your store</h1>
+        <p class="text-slate-500 text-sm mt-1">Set up a workspace in under a minute.</p>
+        <form id="formRegister" class="mt-7 space-y-4">
+          <div>
+            <label class="label" for="regName">Full name</label>
+            <input id="regName" required class="input" placeholder="Juan Dela Cruz">
+          </div>
+          <div>
+            <label class="label" for="regStore">Store name</label>
+            <input id="regStore" required class="input" placeholder="Dela Cruz Trading">
+          </div>
+          <div>
+            <label class="label" for="regEmail">Email</label>
+            <input id="regEmail" type="email" required class="input" placeholder="you@store.com">
+          </div>
+          <div>
+            <label class="label" for="regPassword">Password</label>
+            <input id="regPassword" type="password" required minlength="8" class="input" placeholder="At least 8 characters">
+            <div class="mt-2 h-1 rounded-full bg-slate-200 overflow-hidden"><div id="pwStrength" class="h-full w-0 bg-red-400 transition-all"></div></div>
+            <p class="text-xs text-slate-500 mt-1" id="pwHint">Use 8+ characters with letters and numbers.</p>
+          </div>
+          <div id="registerError" class="hidden rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2"></div>
+          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="registerSubmit">Create account</button>
+        </form>
+        <p class="text-sm text-slate-500 mt-6 text-center">Already have an account?
+          <button id="linkToLogin" class="text-brand-600 font-semibold hover:underline">Sign in</button>
+        </p>
+      </div>
+
+      <!-- Forgot -->
+      <div id="paneForgot" class="hidden">
+        <button id="linkBackLogin" class="text-sm text-slate-500 hover:text-navy-900 flex items-center gap-1 mb-6">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to sign in
+        </button>
+        <h1 class="text-2xl font-bold text-navy-900">Reset your password</h1>
+        <p class="text-slate-500 text-sm mt-1">We'll send a reset link to your email.</p>
+        <form id="formForgot" class="mt-7 space-y-4">
+          <div>
+            <label class="label" for="forgotEmail">Email</label>
+            <input id="forgotEmail" type="email" required class="input" placeholder="you@store.com">
+          </div>
+          <div id="forgotMsg" class="hidden rounded-lg text-sm px-3 py-2"></div>
+          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="forgotSubmit">Send reset link</button>
+        </form>
+      </div>
+
+      <!-- Reset (token in URL) -->
+      <div id="paneReset" class="hidden">
+        <h1 class="text-2xl font-bold text-navy-900">Set a new password</h1>
+        <p class="text-slate-500 text-sm mt-1">Choose a strong password you don't use elsewhere.</p>
+        <form id="formReset" class="mt-7 space-y-4">
+          <div>
+            <label class="label" for="resetPassword">New password</label>
+            <input id="resetPassword" type="password" required minlength="8" class="input">
+          </div>
+          <div>
+            <label class="label" for="resetPassword2">Confirm password</label>
+            <input id="resetPassword2" type="password" required minlength="8" class="input">
+          </div>
+          <div id="resetError" class="hidden rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2"></div>
+          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="resetSubmit">Update password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP SHELL ══════════════ -->
+<div id="app" class="hidden min-h-screen">
+  <!-- Sidebar (desktop) -->
+  <aside id="sidebar" class="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-navy-900 text-white z-40">
+    <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
+      <div class="w-9 h-9 rounded-lg bg-brand-600 grid place-items-center font-extrabold text-sm">SF</div>
+      <div class="min-w-0">
+        <div class="font-bold leading-tight">StoreFlow</div>
+        <div class="text-[11px] text-slate-400 truncate" id="sideStoreName">—</div>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="navDesktop"></nav>
+    <div class="p-3 border-t border-white/10 shrink-0">
+      <div class="rounded-xl bg-white/5 p-3 text-xs">
+        <div class="flex items-center gap-2 text-slate-300"><span id="licDot" class="w-2 h-2 rounded-full bg-emerald-400"></span><span id="licLabel">Licensed</span></div>
+        <div class="text-slate-500 mt-1" id="licExpiry">—</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="lg:pl-64">
+    <!-- Topbar -->
+    <header class="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur border-b border-slate-200">
+      <div class="h-full px-4 sm:px-6 flex items-center gap-3">
+        <button id="btnMobileNav" class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100" aria-label="Open menu">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+        <div class="min-w-0 flex-1">
+          <h1 id="pageTitle" class="font-bold text-navy-900 truncate">Dashboard</h1>
+          <p id="pageSubtitle" class="text-xs text-slate-500 truncate hidden sm:block">Overview of your store</p>
+        </div>
+
+        <div class="hidden md:flex items-center gap-2">
+          <button id="storeSwitcher" class="btn-ghost text-sm max-w-[200px]">
+            <i data-lucide="store" class="w-4 h-4"></i>
+            <span class="truncate" id="activeStoreLabel">Main Branch</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <div id="netPill" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span id="netPillText">Online</span>
+        </div>
+
+        <button id="btnNotifications" class="relative p-2 rounded-lg hover:bg-slate-100" aria-label="Notifications">
+          <i data-lucide="bell" class="w-5 h-5 text-slate-600"></i>
+          <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold grid place-items-center">0</span>
+        </button>
+
+        <button id="btnUserMenu" class="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-slate-100">
+          <span id="userAvatar" class="w-8 h-8 rounded-full bg-brand-600 text-white grid place-items-center text-xs font-bold">U</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 hidden sm:block"></i>
+        </button>
+      </div>
+    </header>
+
+    <main id="view" class="p-4 sm:p-6 pb-28 lg:pb-10 max-w-[1600px] mx-auto"></main>
+  </div>
+
+  <!-- Bottom nav (mobile) -->
+  <nav id="navMobile" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 border-t border-white/10 pb-[env(safe-area-inset-bottom)]"></nav>
+
+  <!-- Mobile drawer -->
+  <div id="drawer" class="lg:hidden fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" data-drawer-close></div>
+    <div class="absolute inset-y-0 left-0 w-72 bg-navy-900 text-white flex flex-col">
+      <div class="h-16 flex items-center justify-between px-5 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-brand-600 grid place-items-center font-extrabold text-sm">SF</div>
+          <span class="font-bold">StoreFlow</span>
+        </div>
+        <button data-drawer-close class="p-2 rounded-lg hover:bg-white/10"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="navDrawer"></nav>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ GLOBAL OVERLAYS ══════════════ -->
+<div id="toasts" class="fixed top-4 right-4 z-[110] space-y-2 w-[min(92vw,360px)] pointer-events-none"></div>
+
+<div id="modalRoot" class="hidden fixed inset-0 z-[90]">
+  <div class="absolute inset-0 bg-navy-950/50 backdrop-blur-sm" data-modal-close></div>
+  <div class="relative h-full overflow-y-auto p-4 flex items-start sm:items-center justify-center">
+    <div id="modalBox" class="w-full max-w-lg bg-white rounded-2xl shadow-2xl my-auto"></div>
+  </div>
+</div>
+
+<div id="dropdownRoot" class="hidden fixed z-[80]"></div>
+
+<!-- Hidden receipt print surface -->
+<div id="printArea" class="hidden"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/offline.js"></script>
+<script src="/js/license.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/pos.js"></script>
+<script src="/js/views.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
