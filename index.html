@@ -5,43 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>StoreFlow — Store Management & POS</title>
 <meta name="theme-color" content="#0b1220">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏪</text></svg>">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        navy: { 950:'#070c17', 900:'#0b1220', 800:'#111c33', 700:'#1b2a4a', 600:'#27395f' },
-        brand:{ 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',800:'#1e40af',900:'#1e3a8a' }
-      },
-      fontFamily: { sans: ['Inter','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'] },
-      boxShadow: { card: '0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1)' }
-    }
-  }
+  theme: { extend: {
+    colors: {
+      navy: { 950:'#070c17', 900:'#0b1220', 800:'#111c33', 700:'#1b2a4a' },
+      brand:{ 50:'#eff6ff',100:'#dbeafe',300:'#93c5fd',400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8' }
+    },
+    fontFamily: { sans: ['Inter','system-ui','sans-serif'] }
+  }}
 }
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/styles.css">
 <script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+
+<style>
+* { -webkit-tap-highlight-color: transparent; }
+html, body { overscroll-behavior-y: none; }
+
+.btn-primary { display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1rem;border-radius:.75rem;background:#2563eb;color:#fff;font-weight:600;font-size:.875rem;border:none;cursor:pointer;transition:all .15s; }
+.btn-primary:hover { background:#1d4ed8; }
+.btn-primary:disabled { opacity:.5;cursor:not-allowed; }
+.btn-ghost { display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .85rem;border-radius:.75rem;background:transparent;color:#334155;font-weight:500;font-size:.875rem;border:1px solid #e2e8f0;cursor:pointer;transition:all .15s; }
+.btn-ghost:hover { background:#f1f5f9; }
+.btn-danger { display:inline-flex;align-items:center;gap:.5rem;padding:.5rem .9rem;border-radius:.75rem;background:#dc2626;color:#fff;font-weight:600;font-size:.875rem;border:none;cursor:pointer; }
+.input { width:100%;padding:.65rem .9rem;border:1px solid #d1d5db;border-radius:.75rem;font-size:.875rem;background:#fff;transition:border .15s,box-shadow .15s; }
+.input:focus { outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+.label { display:block;font-size:.75rem;font-weight:600;color:#475569;margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.03em; }
+.card { background:#fff;border-radius:1rem;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(16,24,40,.04); }
+.nav-item { display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:.75rem;color:#cbd5e1;font-size:.875rem;font-weight:500;transition:all .15s;cursor:pointer;text-decoration:none; }
+.nav-item:hover { background:rgba(255,255,255,.06);color:#fff; }
+.nav-item.active { background:#2563eb;color:#fff; }
+.nav-item i { width:18px;height:18px;flex-shrink:0; }
+.toast { display:flex;align-items:flex-start;gap:.6rem;background:#fff;border-radius:.75rem;padding:.75rem 1rem;box-shadow:0 4px 12px rgba(0,0,0,.1);border-left:4px solid #2563eb;font-size:.875rem;pointer-events:auto;animation:slideIn .2s ease; }
+.toast.success { border-color:#10b981; }
+.toast.error { border-color:#dc2626; }
+.toast.warn { border-color:#f59e0b; }
+@keyframes slideIn { from{transform:translateX(20px);opacity:0} to{transform:translateX(0);opacity:1} }
+.pos-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem; }
+.product-tile { background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.75rem;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:.4rem;min-height:110px;text-align:left; }
+.product-tile:hover { border-color:#2563eb;transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,.06); }
+.product-tile .name { font-weight:600;font-size:.8rem;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical; }
+.product-tile .price { font-weight:700;color:#2563eb;font-size:.95rem; }
+.product-tile .stock { font-size:.7rem;color:#64748b; }
+#navMobile .nav-bottom { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem 0;color:#94a3b8;font-size:.65rem;gap:.15rem;text-decoration:none;flex:1;min-width:0; }
+#navMobile .nav-bottom.active { color:#60a5fa; }
+.receipt { font-family:'Courier New',monospace;font-size:12px;background:#fff;padding:12px;max-width:320px;margin:0 auto;color:#000; }
+.receipt h2 { text-align:center;font-size:14px;margin-bottom:4px; }
+.receipt .center { text-align:center; }
+.receipt .row { display:flex;justify-content:space-between; }
+.receipt hr { border:none;border-top:1px dashed #999;margin:6px 0; }
+.skeleton { background:linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 50%,#e2e8f0 100%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:.5rem; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@media print { body * { visibility:hidden; } #printArea, #printArea * { visibility:visible; } #printArea { position:absolute;left:0;top:0;width:100%;display:block!important; } }
+</style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased">
 
-<!-- ══════════════ BOOT / LOADING ══════════════ -->
+<!-- BOOT -->
 <div id="boot" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-navy-900 text-white">
   <div class="flex items-center gap-3 mb-6">
     <div class="w-11 h-11 rounded-xl bg-brand-600 grid place-items-center font-extrabold text-lg">SF</div>
-    <div><div class="text-xl font-bold tracking-tight">StoreFlow</div>
-    <div class="text-xs text-slate-400">Store Management &amp; POS</div></div>
-  </div>
-  <div class="w-48 h-1 rounded-full bg-white/10 overflow-hidden">
-    <div id="bootBar" class="h-full w-1/3 bg-brand-500 rounded-full animate-pulse"></div>
+    <div><div class="text-xl font-bold">StoreFlow</div><div class="text-xs text-slate-400">Store Management &amp; POS</div></div>
   </div>
   <p id="bootMsg" class="mt-4 text-xs text-slate-400">Starting…</p>
 </div>
 
-<!-- ══════════════ LOCK SCREEN ══════════════ -->
+<!-- LOCK SCREEN -->
 <div id="lockScreen" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 bg-navy-950">
   <div class="w-full max-w-lg bg-navy-900 border border-white/10 rounded-2xl p-8 text-center text-white shadow-2xl">
     <div class="w-14 h-14 rounded-2xl bg-amber-500/15 grid place-items-center mx-auto mb-5">
@@ -49,20 +80,17 @@ tailwind.config = {
     </div>
     <div class="text-sm font-semibold tracking-widest text-slate-400 uppercase">StoreFlow</div>
     <h1 id="lockTitle" class="text-2xl font-bold mt-1">Subscription verification required</h1>
-    <p id="lockMessage" class="text-slate-400 mt-3 text-sm leading-relaxed">
-      Your StoreFlow subscription could not be verified.
-    </p>
+    <p id="lockMessage" class="text-slate-400 mt-3 text-sm">Your StoreFlow subscription could not be verified.</p>
     <div id="lockMeta" class="mt-5 text-xs text-slate-500"></div>
     <div class="mt-7 grid gap-3 sm:grid-cols-3">
-      <button data-lock-action="retry" class="btn-primary justify-center"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Retry Connection</button>
-      <button data-lock-action="contact" class="btn-ghost justify-center"><i data-lucide="life-buoy" class="w-4 h-4"></i> Contact StoreFlow</button>
-      <button data-lock-action="renew" class="btn-ghost justify-center"><i data-lucide="credit-card" class="w-4 h-4"></i> Renew Subscription</button>
+      <button data-lock-action="retry" class="btn-primary justify-center">Retry</button>
+      <button data-lock-action="contact" class="btn-ghost justify-center">Support</button>
+      <button data-lock-action="renew" class="btn-ghost justify-center">Renew</button>
     </div>
-    <p class="mt-6 text-[11px] text-slate-600">StoreFlow licensing · server-verified authorization</p>
   </div>
 </div>
 
-<!-- ══════════════ AUTH SCREEN ══════════════ -->
+<!-- AUTH SCREEN -->
 <div id="authScreen" class="hidden min-h-screen grid lg:grid-cols-2">
   <div class="hidden lg:flex flex-col justify-between bg-navy-900 text-white p-12">
     <div class="flex items-center gap-3">
@@ -70,186 +98,89 @@ tailwind.config = {
       <span class="text-lg font-bold">StoreFlow</span>
     </div>
     <div>
-      <h2 class="text-4xl font-extrabold leading-tight tracking-tight">Run your store.<br>Anywhere. Even offline.</h2>
-      <p class="text-slate-400 mt-4 max-w-md">A complete POS + inventory + cash flow platform for multi-branch retail. Built for speed at the counter and clarity at the back office.</p>
-      <div class="grid grid-cols-2 gap-4 mt-10 max-w-md text-sm">
-        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="zap" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Offline POS</div><div class="text-slate-400 text-xs">Keep selling when the internet drops.</div></div>
-        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="store" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Multi-branch</div><div class="text-slate-400 text-xs">Separate stock per branch.</div></div>
-        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="users" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Roles</div><div class="text-slate-400 text-xs">Owner, manager, cashier.</div></div>
-        <div class="rounded-xl bg-white/5 border border-white/10 p-4"><i data-lucide="line-chart" class="w-5 h-5 text-brand-400"></i><div class="mt-2 font-semibold">Reports</div><div class="text-slate-400 text-xs">Profit, cash flow, shifts.</div></div>
-      </div>
+      <h2 class="text-4xl font-extrabold leading-tight">Run your store.<br>Anywhere. Even offline.</h2>
+      <p class="text-slate-400 mt-4 max-w-md">A complete POS + inventory + cash flow platform for multi-branch retail.</p>
     </div>
-    <p class="text-xs text-slate-500">© <span id="authYear"></span> StoreFlow. All rights reserved.</p>
+    <p class="text-xs text-slate-500">© StoreFlow</p>
   </div>
-
   <div class="flex items-center justify-center p-6 sm:p-10 bg-slate-50">
     <div class="w-full max-w-md">
-      <div class="lg:hidden flex items-center gap-3 mb-8">
-        <div class="w-10 h-10 rounded-xl bg-brand-600 grid place-items-center text-white font-extrabold">SF</div>
-        <span class="text-lg font-bold text-navy-900">StoreFlow</span>
-      </div>
-
-      <!-- Login -->
       <div id="paneLogin">
         <h1 class="text-2xl font-bold text-navy-900">Welcome back</h1>
         <p class="text-slate-500 text-sm mt-1">Sign in to your store workspace.</p>
-        <form id="formLogin" class="mt-7 space-y-4" autocomplete="on">
-          <div>
-            <label class="label" for="loginEmail">Email</label>
-            <input id="loginEmail" name="email" type="email" required class="input" placeholder="you@store.com" autocomplete="username">
-          </div>
-          <div>
-            <label class="label" for="loginPassword">Password</label>
-            <div class="relative">
-              <input id="loginPassword" name="password" type="password" required class="input pr-11" placeholder="••••••••" autocomplete="current-password">
-              <button type="button" class="pw-toggle" data-target="loginPassword" aria-label="Show password"><i data-lucide="eye" class="w-4 h-4"></i></button>
-            </div>
-          </div>
+        <form id="formLogin" class="mt-7 space-y-4">
+          <div><label class="label">Email</label><input id="loginEmail" type="email" required class="input" placeholder="you@store.com"></div>
+          <div><label class="label">Password</label><input id="loginPassword" type="password" required class="input" placeholder="••••••••"></div>
           <div class="flex items-center justify-between text-sm">
-            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" id="rememberDevice" class="rounded border-slate-300"> Remember this device</label>
+            <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" id="rememberDevice" class="rounded border-slate-300"> Remember</label>
             <button type="button" id="linkForgot" class="text-brand-600 font-medium hover:underline">Forgot password?</button>
           </div>
           <div id="loginError" class="hidden rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2"></div>
           <button type="submit" class="btn-primary w-full justify-center py-2.5" id="loginSubmit">Sign in</button>
         </form>
-        <p class="text-sm text-slate-500 mt-6 text-center">No account yet?
-          <button id="linkToRegister" class="text-brand-600 font-semibold hover:underline">Create a store</button>
-        </p>
+        <p class="text-sm text-slate-500 mt-6 text-center">No account? <button id="linkToRegister" class="text-brand-600 font-semibold hover:underline">Create a store</button></p>
       </div>
-
-      <!-- Register -->
       <div id="paneRegister" class="hidden">
         <h1 class="text-2xl font-bold text-navy-900">Create your store</h1>
-        <p class="text-slate-500 text-sm mt-1">Set up a workspace in under a minute.</p>
         <form id="formRegister" class="mt-7 space-y-4">
-          <div>
-            <label class="label" for="regName">Full name</label>
-            <input id="regName" required class="input" placeholder="Juan Dela Cruz">
-          </div>
-          <div>
-            <label class="label" for="regStore">Store name</label>
-            <input id="regStore" required class="input" placeholder="Dela Cruz Trading">
-          </div>
-          <div>
-            <label class="label" for="regEmail">Email</label>
-            <input id="regEmail" type="email" required class="input" placeholder="you@store.com">
-          </div>
-          <div>
-            <label class="label" for="regPassword">Password</label>
-            <input id="regPassword" type="password" required minlength="8" class="input" placeholder="At least 8 characters">
-            <div class="mt-2 h-1 rounded-full bg-slate-200 overflow-hidden"><div id="pwStrength" class="h-full w-0 bg-red-400 transition-all"></div></div>
-            <p class="text-xs text-slate-500 mt-1" id="pwHint">Use 8+ characters with letters and numbers.</p>
-          </div>
+          <div><label class="label">Full name</label><input id="regName" required class="input"></div>
+          <div><label class="label">Store name</label><input id="regStore" required class="input"></div>
+          <div><label class="label">Email</label><input id="regEmail" type="email" required class="input"></div>
+          <div><label class="label">Password</label><input id="regPassword" type="password" required minlength="8" class="input"></div>
           <div id="registerError" class="hidden rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2"></div>
-          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="registerSubmit">Create account</button>
+          <button type="submit" class="btn-primary w-full justify-center py-2.5">Create account</button>
         </form>
-        <p class="text-sm text-slate-500 mt-6 text-center">Already have an account?
-          <button id="linkToLogin" class="text-brand-600 font-semibold hover:underline">Sign in</button>
-        </p>
+        <p class="text-sm text-slate-500 mt-6 text-center">Already registered? <button id="linkToLogin" class="text-brand-600 font-semibold hover:underline">Sign in</button></p>
       </div>
-
-      <!-- Forgot -->
       <div id="paneForgot" class="hidden">
-        <button id="linkBackLogin" class="text-sm text-slate-500 hover:text-navy-900 flex items-center gap-1 mb-6">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to sign in
-        </button>
         <h1 class="text-2xl font-bold text-navy-900">Reset your password</h1>
-        <p class="text-slate-500 text-sm mt-1">We'll send a reset link to your email.</p>
         <form id="formForgot" class="mt-7 space-y-4">
-          <div>
-            <label class="label" for="forgotEmail">Email</label>
-            <input id="forgotEmail" type="email" required class="input" placeholder="you@store.com">
-          </div>
+          <div><label class="label">Email</label><input id="forgotEmail" type="email" required class="input"></div>
           <div id="forgotMsg" class="hidden rounded-lg text-sm px-3 py-2"></div>
-          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="forgotSubmit">Send reset link</button>
+          <button type="submit" class="btn-primary w-full justify-center py-2.5">Send reset link</button>
         </form>
-      </div>
-
-      <!-- Reset (token in URL) -->
-      <div id="paneReset" class="hidden">
-        <h1 class="text-2xl font-bold text-navy-900">Set a new password</h1>
-        <p class="text-slate-500 text-sm mt-1">Choose a strong password you don't use elsewhere.</p>
-        <form id="formReset" class="mt-7 space-y-4">
-          <div>
-            <label class="label" for="resetPassword">New password</label>
-            <input id="resetPassword" type="password" required minlength="8" class="input">
-          </div>
-          <div>
-            <label class="label" for="resetPassword2">Confirm password</label>
-            <input id="resetPassword2" type="password" required minlength="8" class="input">
-          </div>
-          <div id="resetError" class="hidden rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2"></div>
-          <button type="submit" class="btn-primary w-full justify-center py-2.5" id="resetSubmit">Update password</button>
-        </form>
+        <button id="linkBackLogin" class="text-sm text-slate-500 hover:text-navy-900 mt-4">← Back to sign in</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════ APP SHELL ══════════════ -->
+<!-- APP SHELL -->
 <div id="app" class="hidden min-h-screen">
-  <!-- Sidebar (desktop) -->
-  <aside id="sidebar" class="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-navy-900 text-white z-40">
-    <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
+  <aside class="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-navy-900 text-white z-40">
+    <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10">
       <div class="w-9 h-9 rounded-lg bg-brand-600 grid place-items-center font-extrabold text-sm">SF</div>
-      <div class="min-w-0">
-        <div class="font-bold leading-tight">StoreFlow</div>
-        <div class="text-[11px] text-slate-400 truncate" id="sideStoreName">—</div>
-      </div>
+      <div class="min-w-0"><div class="font-bold leading-tight">StoreFlow</div><div class="text-[11px] text-slate-400 truncate" id="sideStoreName">—</div></div>
     </div>
     <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1" id="navDesktop"></nav>
-    <div class="p-3 border-t border-white/10 shrink-0">
+    <div class="p-3 border-t border-white/10">
       <div class="rounded-xl bg-white/5 p-3 text-xs">
-        <div class="flex items-center gap-2 text-slate-300"><span id="licDot" class="w-2 h-2 rounded-full bg-emerald-400"></span><span id="licLabel">Licensed</span></div>
+        <div class="flex items-center gap-2 text-slate-300">
+          <span id="licDot" class="w-2 h-2 rounded-full bg-emerald-400"></span><span id="licLabel">Licensed</span>
+        </div>
         <div class="text-slate-500 mt-1" id="licExpiry">—</div>
       </div>
     </div>
   </aside>
-
-  <!-- Main -->
   <div class="lg:pl-64">
-    <!-- Topbar -->
     <header class="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur border-b border-slate-200">
       <div class="h-full px-4 sm:px-6 flex items-center gap-3">
-        <button id="btnMobileNav" class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100" aria-label="Open menu">
-          <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
+        <button id="btnMobileNav" class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100"><i data-lucide="menu" class="w-5 h-5"></i></button>
         <div class="min-w-0 flex-1">
           <h1 id="pageTitle" class="font-bold text-navy-900 truncate">Dashboard</h1>
-          <p id="pageSubtitle" class="text-xs text-slate-500 truncate hidden sm:block">Overview of your store</p>
+          <p id="pageSubtitle" class="text-xs text-slate-500 truncate hidden sm:block">Overview</p>
         </div>
-
-        <div class="hidden md:flex items-center gap-2">
-          <button id="storeSwitcher" class="btn-ghost text-sm max-w-[200px]">
-            <i data-lucide="store" class="w-4 h-4"></i>
-            <span class="truncate" id="activeStoreLabel">Main Branch</span>
-            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
-          </button>
-        </div>
-
         <div id="netPill" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span id="netPillText">Online</span>
         </div>
-
-        <button id="btnNotifications" class="relative p-2 rounded-lg hover:bg-slate-100" aria-label="Notifications">
-          <i data-lucide="bell" class="w-5 h-5 text-slate-600"></i>
-          <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold grid place-items-center">0</span>
-        </button>
-
         <button id="btnUserMenu" class="flex items-center gap-2 p-1 pr-2 rounded-full hover:bg-slate-100">
           <span id="userAvatar" class="w-8 h-8 rounded-full bg-brand-600 text-white grid place-items-center text-xs font-bold">U</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500 hidden sm:block"></i>
         </button>
       </div>
     </header>
-
     <main id="view" class="p-4 sm:p-6 pb-28 lg:pb-10 max-w-[1600px] mx-auto"></main>
   </div>
-
-  <!-- Bottom nav (mobile) -->
-  <nav id="navMobile" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 border-t border-white/10 pb-[env(safe-area-inset-bottom)]"></nav>
-
-  <!-- Mobile drawer -->
+  <nav id="navMobile" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-navy-900 border-t border-white/10"></nav>
   <div id="drawer" class="lg:hidden fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/50" data-drawer-close></div>
     <div class="absolute inset-y-0 left-0 w-72 bg-navy-900 text-white flex flex-col">
@@ -265,27 +196,785 @@ tailwind.config = {
   </div>
 </div>
 
-<!-- ══════════════ GLOBAL OVERLAYS ══════════════ -->
 <div id="toasts" class="fixed top-4 right-4 z-[110] space-y-2 w-[min(92vw,360px)] pointer-events-none"></div>
-
 <div id="modalRoot" class="hidden fixed inset-0 z-[90]">
   <div class="absolute inset-0 bg-navy-950/50 backdrop-blur-sm" data-modal-close></div>
   <div class="relative h-full overflow-y-auto p-4 flex items-start sm:items-center justify-center">
     <div id="modalBox" class="w-full max-w-lg bg-white rounded-2xl shadow-2xl my-auto"></div>
   </div>
 </div>
-
-<div id="dropdownRoot" class="hidden fixed z-[80]"></div>
-
-<!-- Hidden receipt print surface -->
 <div id="printArea" class="hidden"></div>
 
-<script src="/js/api.js"></script>
-<script src="/js/offline.js"></script>
-<script src="/js/license.js"></script>
-<script src="/js/ui.js"></script>
-<script src="/js/pos.js"></script>
-<script src="/js/views.js"></script>
-<script src="/js/app.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════
+   StoreFlow — All-in-one script
+   ⚠️ CHANGE THIS URL to your own Worker URL after deploying
+   ══════════════════════════════════════════════════════ */
+const API_BASE = 'https://storeflow.YOUR-SUBDOMAIN.workers.dev';
+/* Example: 'https://storeflow.juan.workers.dev' */
+
+/* ─────────── API client ─────────── */
+const API = (() => {
+  let storeId = null;
+  let deviceUid = localStorage.getItem('sf_device_uid') || null;
+  if (!deviceUid) { deviceUid = 'dev-' + crypto.randomUUID(); localStorage.setItem('sf_device_uid', deviceUid); }
+
+  async function request(method, path, body = null) {
+    const headers = { 'content-type': 'application/json', 'x-device-id': deviceUid };
+    if (storeId) headers['x-store-id'] = storeId;
+    const opts = { method, headers, credentials: 'include' };
+    if (body) opts.body = JSON.stringify(body);
+    let res;
+    try { res = await fetch(API_BASE + path, opts); }
+    catch (err) { const e = new Error('Network error'); e.offline = true; throw e; }
+    let data = null;
+    try { data = await res.json(); } catch { data = {}; }
+    if (!res.ok || data.ok === false) {
+      const e = new Error(data.error || `HTTP ${res.status}`);
+      e.status = res.status; e.code = data.code; throw e;
+    }
+    return data;
+  }
+  const get = (p) => request('GET', p);
+  const post = (p, b) => request('POST', p, b);
+  const put = (p, b) => request('PUT', p, b);
+  const del = (p) => request('DELETE', p);
+
+  return {
+    deviceUid, setStore(id) { storeId = id; },
+    register: (b) => post('/api/auth/register', b),
+    login: (b) => post('/api/auth/login', b),
+    logout: () => post('/api/auth/logout'),
+    logoutAll: () => post('/api/auth/logout-all'),
+    me: () => get('/api/auth/me'),
+    changePassword: (b) => post('/api/auth/change-password', b),
+    forgotPassword: (b) => post('/api/auth/forgot-password', b),
+    resetPassword: (b) => post('/api/auth/reset-password', b),
+    subStatus: () => get('/api/subscription/status'),
+    subVerify: (b) => post('/api/subscription/verify', b),
+    devices: () => get('/api/devices'),
+    revokeDevice: (b) => post('/api/devices/revoke', b),
+    products: (q = '') => get('/api/products' + (q ? `?q=${encodeURIComponent(q)}` : '')),
+    createProduct: (b) => post('/api/products', b),
+    updateProduct: (id, b) => put(`/api/products/${id}`, b),
+    deleteProduct: (id) => del(`/api/products/${id}`),
+    categories: () => get('/api/categories'),
+    createCategory: (b) => post('/api/categories', b),
+    inventory: () => get('/api/inventory'),
+    adjustStock: (b) => post('/api/inventory/adjust', b),
+    customers: (q = '') => get('/api/customers' + (q ? `?q=${encodeURIComponent(q)}` : '')),
+    createCustomer: (b) => post('/api/customers', b),
+    createTransaction: (b) => post('/api/transactions', b),
+    syncTransactions: (b) => post('/api/transactions/sync', b),
+    transactions: (params = {}) => { const q = new URLSearchParams(params).toString(); return get('/api/transactions' + (q ? `?${q}` : '')); },
+    heldList: () => get('/api/held-transactions'),
+    holdCreate: (b) => post('/api/held-transactions', b),
+    holdResume: (id) => post(`/api/held-transactions/${id}/resume`),
+    holdCancel: (id, reason) => post(`/api/held-transactions/${id}/cancel`, { reason }),
+    cashflow: () => get('/api/cashflow'),
+    addCashflow: (b) => post('/api/cashflow', b),
+    currentShift: () => get('/api/shifts/current'),
+    openShift: (b) => post('/api/shifts/open', b),
+    closeShift: (id, b) => post(`/api/shifts/${id}/close`, b),
+    dashboard: (range = 'today') => get(`/api/reports/dashboard?range=${range}`),
+    staff: () => get('/api/staff'),
+    addStaff: (b) => post('/api/staff', b),
+    removeStaff: (id) => del(`/api/staff/${id}`),
+  };
+})();
+
+/* ─────────── Offline (IndexedDB) ─────────── */
+const Offline = (() => {
+  let db = null;
+  async function open() {
+    if (db) return db;
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('storeflow-db', 1);
+      req.onupgradeneeded = (e) => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains('products')) d.createObjectStore('products', { keyPath: 'id' });
+        if (!d.objectStoreNames.contains('customers')) d.createObjectStore('customers', { keyPath: 'id' });
+        if (!d.objectStoreNames.contains('sync_queue')) d.createObjectStore('sync_queue', { keyPath: 'clientOpId' });
+        if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'key' });
+      };
+      req.onsuccess = () => { db = req.result; resolve(db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+  const tx = async (s, m) => (await open()).transaction(s, m).objectStore(s);
+  const put = async (s, v) => new Promise((r, j) => { const x = tx(s, 'readwrite').put(v); x.onsuccess = () => r(x.result); x.onerror = () => j(x.error); });
+  const getAll = async (s) => new Promise((r, j) => { const x = tx(s, 'readonly').getAll(); x.onsuccess = () => r(x.result || []); x.onerror = () => j(x.error); });
+  const getOne = async (s, k) => new Promise((r, j) => { const x = tx(s, 'readonly').get(k); x.onsuccess = () => r(x.result); x.onerror = () => j(x.error); });
+  const clear = async (s) => new Promise((r, j) => { const x = tx(s, 'readwrite').clear(); x.onsuccess = () => r(); x.onerror = () => j(x.error); });
+  const del = async (s, k) => new Promise((r, j) => { const x = tx(s, 'readwrite').delete(k); x.onsuccess = () => r(); x.onerror = () => j(x.error); });
+  return {
+    cacheProducts: async (arr) => { await clear('products'); for (const p of arr) await put('products', p); },
+    cacheCustomers: async (arr) => { await clear('customers'); for (const c of arr) await put('customers', c); },
+    getProducts: () => getAll('products'),
+    getCustomers: () => getAll('customers'),
+    queueOp: async (op) => { const id = op.clientOpId || crypto.randomUUID(); await put('sync_queue', { ...op, clientOpId: id }); return id; },
+    getQueue: () => getAll('sync_queue'),
+    removeFromQueue: (id) => del('sync_queue', id),
+    saveSetting: (k, v) => put('settings', { key: k, value: v }),
+    getSetting: async (k) => (await getOne('settings', k))?.value,
+  };
+})();
+
+/* ─────────── License / 24h verification ─────────── */
+const License = (() => {
+  const GRACE = 24;
+  let lastVerified = null, status = 'unknown';
+  async function load() {
+    lastVerified = await Offline.getSetting('last_verified');
+    status = await Offline.getSetting('sub_status') || 'unknown';
+  }
+  function hoursSince(ts) { return ts ? (Date.now() - new Date(ts).getTime()) / 3600000 : Infinity; }
+  function showLock(reason) {
+    const el = document.getElementById('lockScreen');
+    const title = document.getElementById('lockTitle');
+    const msg = document.getElementById('lockMessage');
+    if (reason === 'expired') { title.textContent = 'Subscription expired'; msg.textContent = 'Your monthly subscription has expired.'; }
+    else if (reason === 'offline_too_long') { title.textContent = 'Verification required'; msg.textContent = 'Internet connection required to verify your StoreFlow subscription.'; }
+    else if (reason === 'device_revoked') { title.textContent = 'Device revoked'; msg.textContent = 'This device has been revoked by the store owner.'; }
+    el.classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('authScreen').classList.add('hidden');
+  }
+  function hideLock() { document.getElementById('lockScreen').classList.add('hidden'); }
+  async function verify() {
+    try {
+      const res = await API.subVerify({ deviceUid: API.deviceUid });
+      lastVerified = new Date().toISOString();
+      status = res.subscription.status;
+      await Offline.saveSetting('last_verified', lastVerified);
+      await Offline.saveSetting('sub_status', status);
+      await Offline.saveSetting('sub_expires', res.subscription.expiresAt);
+      hideLock();
+      updateIndicator();
+      return { ok: true };
+    } catch (err) {
+      if (err.code === 'DEVICE_REVOKED') { showLock('device_revoked'); return { ok: false }; }
+      if (['SUBSCRIPTION_EXPIRED','SUBSCRIPTION_SUSPENDED','SUBSCRIPTION_CANCELLED'].includes(err.code)) { showLock('expired'); return { ok: false }; }
+      if (err.offline || err.status === undefined) {
+        if (hoursSince(lastVerified) < GRACE) return { ok: true, offline: true };
+        showLock('offline_too_long'); return { ok: false };
+      }
+      showLock('unknown'); return { ok: false };
+    }
+  }
+  function updateIndicator() {
+    const dot = document.getElementById('licDot');
+    const label = document.getElementById('licLabel');
+    const expiry = document.getElementById('licExpiry');
+    if (!dot) return;
+    if (status === 'active' || status === 'trialing') { dot.className = 'w-2 h-2 rounded-full bg-emerald-400'; label.textContent = status === 'trialing' ? 'Trial' : 'Licensed'; }
+    else if (status === 'past_due') { dot.className = 'w-2 h-2 rounded-full bg-amber-400'; label.textContent = 'Past due'; }
+    else { dot.className = 'w-2 h-2 rounded-full bg-red-400'; label.textContent = 'Locked'; }
+    Offline.getSetting('sub_expires').then((exp) => { if (exp) expiry.textContent = 'Expires ' + new Date(exp).toLocaleDateString(); });
+  }
+  function startAutoVerify() { setInterval(() => { if (navigator.onLine) verify(); }, 5 * 60 * 1000); }
+  return { load, verify, startAutoVerify, updateIndicator };
+})();
+
+/* ─────────── UI helpers ─────────── */
+const UI = (() => {
+  function toast(msg, type = 'info') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<div class="flex-1 text-sm text-slate-700">${escapeHtml(msg)}</div>`;
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3500);
+  }
+  function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function modal({ title, body, footer, size = 'max-w-lg' }) {
+    const root = document.getElementById('modalRoot');
+    const box = document.getElementById('modalBox');
+    box.className = `w-full ${size} bg-white rounded-2xl shadow-2xl my-auto`;
+    box.innerHTML = `
+      ${title ? `<div class="px-6 pt-5 pb-3 border-b border-slate-100"><h3 class="font-bold text-navy-900">${escapeHtml(title)}</h3></div>` : ''}
+      <div class="p-6">${body}</div>
+      ${footer ? `<div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">${footer}</div>` : ''}
+    `;
+    root.classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+    return { close() { root.classList.add('hidden'); box.innerHTML = ''; }, box };
+  }
+  function confirm({ title = 'Are you sure?', message, confirmText = 'Confirm', danger = true }) {
+    return new Promise((resolve) => {
+      const m = modal({ title, body: `<p class="text-sm text-slate-600">${escapeHtml(message || '')}</p>`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="${danger?'btn-danger':'btn-primary'}" data-ok>${escapeHtml(confirmText)}</button>` });
+      m.box.querySelector('[data-c]').onclick = () => { m.close(); resolve(false); };
+      m.box.querySelector('[data-ok]').onclick = () => { m.close(); resolve(true); };
+    });
+  }
+  function prompt({ title, label, defaultValue = '', type = 'text' }) {
+    return new Promise((resolve) => {
+      const m = modal({ title, body: `<label class="label">${escapeHtml(label)}</label><input id="pi" type="${type}" class="input" value="${escapeHtml(defaultValue)}">`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>OK</button>` });
+      const inp = m.box.querySelector('#pi'); setTimeout(() => inp.focus(), 50);
+      m.box.querySelector('[data-c]').onclick = () => { m.close(); resolve(null); };
+      m.box.querySelector('[data-ok]').onclick = () => { const v = inp.value; m.close(); resolve(v); };
+    });
+  }
+  function loading(target) {
+    if (typeof target === 'string') target = document.querySelector(target);
+    if (target) target.innerHTML = `<div class="flex items-center justify-center py-20"><div class="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div></div>`;
+  }
+  function emptyState({ icon = 'inbox', title, message, action }) {
+    return `<div class="flex flex-col items-center justify-center py-16 text-center">
+      <div class="w-14 h-14 rounded-2xl bg-slate-100 grid place-items-center mb-4"><i data-lucide="${icon}" class="w-7 h-7 text-slate-400"></i></div>
+      <h3 class="font-semibold text-navy-900">${escapeHtml(title)}</h3>
+      <p class="text-sm text-slate-500 mt-1 max-w-sm">${escapeHtml(message || '')}</p>
+      ${action ? `<div class="mt-5">${action}</div>` : ''}</div>`;
+  }
+  function money(a, c = '₱') { return c + (Number(a) || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function date(iso) { if (!iso) return '—'; const d = new Date(iso.replace(' ', 'T') + (iso.endsWith('Z') ? '' : 'Z')); return d.toLocaleString(); }
+  return { toast, modal, confirm, prompt, loading, emptyState, money, date, escapeHtml };
+})();
+
+/* ─────────── POS ─────────── */
+const POS = (() => {
+  let products = [], categories = [], cart = [], currentCustomer = null, currentCategory = null, held = [], shift = null, discount = 0, dType = 'amount';
+  function calc() { const sub = cart.reduce((s,i)=>s+i.price*i.quantity,0); let d = Number(discount)||0; if (dType==='percent') d = sub*(d/100); return { sub, discount: d, total: Math.max(0, sub - d) }; }
+
+  function renderCart() {
+    const el = document.getElementById('posCart'), tot = document.getElementById('posTotals');
+    if (!cart.length) el.innerHTML = UI.emptyState({ icon: 'shopping-cart', title: 'Cart empty', message: 'Tap products to add.' });
+    else el.innerHTML = cart.map((it, i) => `
+      <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
+        <div class="flex-1 min-w-0"><div class="font-medium text-sm truncate">${UI.escapeHtml(it.name)}</div>
+        <div class="text-xs text-slate-500">${UI.money(it.price)} × ${it.quantity}</div></div>
+        <div class="flex items-center gap-1">
+          <button class="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-50" data-minus="${i}">−</button>
+          <span class="w-7 text-center font-semibold text-sm">${it.quantity}</span>
+          <button class="w-7 h-7 rounded-lg border border-slate-200 hover:bg-slate-50" data-plus="${i}">+</button>
+        </div>
+        <div class="w-20 text-right font-semibold text-sm">${UI.money(it.price*it.quantity)}</div>
+        <button class="p-1 text-red-500" data-rm="${i}"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </div>`).join('');
+    const { sub, discount: d, total } = calc();
+    tot.innerHTML = `
+      <div class="flex justify-between text-sm text-slate-600"><span>Subtotal</span><span>${UI.money(sub)}</span></div>
+      ${d>0?`<div class="flex justify-between text-sm text-red-600"><span>Discount</span><span>-${UI.money(d)}</span></div>`:''}
+      <div class="flex justify-between text-lg font-bold border-t pt-2 mt-2"><span>Total</span><span>${UI.money(total)}</span></div>`;
+    if (window.lucide) lucide.createIcons();
+    el.querySelectorAll('[data-minus]').forEach(b => b.onclick = () => { const i=+b.dataset.minus; cart[i].quantity = Math.max(1, cart[i].quantity-1); renderCart(); });
+    el.querySelectorAll('[data-plus]').forEach(b => b.onclick = () => { const i=+b.dataset.plus; cart[i].quantity++; renderCart(); });
+    el.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { cart.splice(+b.dataset.rm,1); renderCart(); });
+  }
+
+  function renderProducts() {
+    const grid = document.getElementById('posProducts');
+    const list = currentCategory ? products.filter(p => p.category_id === currentCategory) : products;
+    if (!list.length) { grid.innerHTML = UI.emptyState({ icon: 'package', title: 'No products', message: 'Add products in Inventory.' }); return; }
+    grid.innerHTML = list.map(p => {
+      const st = Number(p.stock)||0;
+      return `<button class="product-tile" data-p="${p.id}">
+        <div class="name">${UI.escapeHtml(p.name)}</div>
+        <div class="price">${UI.money(p.price)}</div>
+        <div class="stock ${st<=0?'text-red-500':st<=(p.reorder_level||5)?'text-amber-600':''}">${p.track_stock?`Stock: ${st}`:'Unlimited'}</div></button>`;
+    }).join('');
+    if (window.lucide) lucide.createIcons();
+    grid.querySelectorAll('[data-p]').forEach(b => b.onclick = () => addProduct(b.dataset.p));
+  }
+
+  function renderCats() {
+    const el = document.getElementById('posCategories');
+    el.innerHTML = `<button class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${!currentCategory?'bg-brand-600 text-white':'bg-white border border-slate-200 text-slate-700'}" data-c="">All</button>` +
+      categories.map(c => `<button class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${currentCategory===c.id?'bg-brand-600 text-white':'bg-white border border-slate-200 text-slate-700'}" data-c="${c.id}">${UI.escapeHtml(c.name)}</button>`).join('');
+    el.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { currentCategory = b.dataset.c || null; renderCats(); renderProducts(); });
+  }
+
+  function addProduct(id) {
+    const p = products.find(x => x.id === id); if (!p) return;
+    const ex = cart.find(i => i.id === id);
+    if (ex) { if (p.track_stock && ex.quantity >= p.stock) return UI.toast('Not enough stock','warn'); ex.quantity++; }
+    else cart.push({ id: p.id, name: p.name, price: Number(p.price), quantity: 1 });
+    renderCart();
+  }
+
+  async function checkout() {
+    if (!cart.length) return UI.toast('Cart empty','warn');
+    const { total } = calc();
+    const m = UI.modal({
+      title: 'Payment',
+      body: `<div class="space-y-4">
+        <div class="text-center"><div class="text-sm text-slate-500">Total</div><div class="text-3xl font-extrabold text-brand-600">${UI.money(total)}</div></div>
+        <div><label class="label">Method</label><select id="pm" class="input"><option value="cash">Cash</option><option value="gcash">GCash</option><option value="maya">Maya</option><option value="card">Card</option><option value="other">Other</option></select></div>
+        <div id="cf"><label class="label">Cash tendered</label><input id="ct" type="number" step="0.01" class="input text-2xl font-bold text-center"><div id="cd" class="mt-3 text-center text-sm text-slate-500">Change: —</div></div>
+        <div id="pe" class="hidden text-sm text-red-600 text-center"></div></div>`,
+      footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>Complete Sale</button>`
+    });
+    const pm = m.box.querySelector('#pm'), ct = m.box.querySelector('#ct'), cf = m.box.querySelector('#cf'), cd = m.box.querySelector('#cd'), pe = m.box.querySelector('#pe');
+    setTimeout(()=>ct.focus(),50);
+    ct.oninput = () => { const t=Number(ct.value)||0; const ch=t-total; cd.textContent = ch>=0?`Change: ${UI.money(ch)}`:'Insufficient payment'; cd.className = ch>=0?'mt-3 text-center text-sm text-emerald-600 font-semibold':'mt-3 text-center text-sm text-red-600 font-semibold'; };
+    pm.onchange = () => cf.style.display = pm.value==='cash'?'':'none';
+    m.box.querySelector('[data-c]').onclick = () => m.close();
+    m.box.querySelector('[data-ok]').onclick = async () => {
+      const method = pm.value;
+      let payments;
+      if (method==='cash') { const t=Number(ct.value)||0; if (t<total) { pe.textContent='Insufficient payment'; pe.classList.remove('hidden'); return; } payments=[{method:'cash',amount:t,tendered:t}]; }
+      else payments=[{method,amount:total}];
+      const payload = { id: crypto.randomUUID(), number: `TXN-${Date.now().toString(36).toUpperCase()}`, customerId: currentCustomer?.id || null, customerName: currentCustomer?.name || null, items: cart.map(i=>({productId:i.id, quantity:i.quantity, unitPrice:i.price})), payments, discount: Number(discount)||0, discountType: dType, paymentMethod: method, shiftId: shift?.id || null, createdAt: new Date().toISOString() };
+      try {
+        if (navigator.onLine) { const r = await API.createTransaction(payload); showReceipt(r.transaction); }
+        else { await Offline.queueOp({ type:'transaction', payload, clientOpId: payload.id }); payload.createdOffline = true; showReceipt(payload); UI.toast('Saved offline','warn'); }
+        cart = []; currentCustomer = null; discount = 0; renderCart(); m.close(); loadData();
+        UI.toast('Sale completed','success');
+      } catch (e) { pe.textContent = e.message; pe.classList.remove('hidden'); }
+    };
+  }
+
+  function showReceipt(txn) {
+    const html = `<div class="receipt"><h2>Receipt</h2><hr>
+      <div class="row"><span>${txn.number||'TXN'}</span><span>${new Date().toLocaleString()}</span></div><hr>
+      ${(txn.items||cart).map(i=>`<div class="row"><span>${i.quantity}× ${UI.escapeHtml(i.name||i.product_name)}</span><span>${UI.money((i.unitPrice||i.unit_price)*i.quantity)}</span></div>`).join('')}
+      <hr><div class="row" style="font-weight:bold;font-size:14px"><span>TOTAL</span><span>${UI.money(txn.total||0)}</span></div>
+      <div class="row"><span>Paid</span><span>${UI.money(txn.paid||0)}</span></div>
+      <div class="row"><span>Change</span><span>${UI.money(txn.changeDue||0)}</span></div><hr><p class="center">Thank you!</p></div>`;
+    document.getElementById('printArea').innerHTML = html;
+    document.getElementById('printArea').classList.remove('hidden');
+    const m = UI.modal({ title: 'Receipt', body: html, footer: `<button class="btn-ghost" data-c>Close</button><button class="btn-primary" data-p>Print</button>`, size: 'max-w-md' });
+    m.box.querySelector('[data-c]').onclick = () => { m.close(); document.getElementById('printArea').classList.add('hidden'); };
+    m.box.querySelector('[data-p]').onclick = () => window.print();
+  }
+
+  async function loadData() {
+    try { const [p,c] = await Promise.all([API.products(), API.categories()]); products = p.products||[]; categories = c.categories||[]; await Offline.cacheProducts(products); }
+    catch { products = await Offline.getProducts(); }
+    renderProducts(); renderCats();
+  }
+
+  async function renderView() {
+    const view = document.getElementById('view');
+    await loadData();
+    try { shift = (await API.currentShift()).shift; } catch {}
+    view.innerHTML = `
+      <div class="grid lg:grid-cols-[1fr_400px] gap-4">
+        <div class="card p-4">
+          <div class="flex gap-2 mb-3">
+            <input id="ps" class="input" placeholder="Search products / SKU / barcode">
+            <button id="ph" class="btn-ghost"><i data-lucide="pause-circle" class="w-4 h-4"></i> Hold</button>
+            <button id="pl" class="btn-ghost"><i data-lucide="list" class="w-4 h-4"></i> Held</button>
+          </div>
+          <div id="posCategories" class="flex gap-2 overflow-x-auto pb-1 mb-3"></div>
+          <div id="posProducts" class="pos-grid"></div>
+        </div>
+        <div class="card p-4">
+          <div class="flex items-center justify-between mb-3"><h3 class="font-bold">Cart</h3><button id="pc" class="text-xs text-red-600">Clear</button></div>
+          <div id="posCart" class="space-y-2 max-h-[300px] overflow-y-auto mb-4"></div>
+          <div id="posTotals" class="space-y-2 mb-4"></div>
+          <div class="flex gap-2 mb-2">
+            <button id="pd" class="btn-ghost flex-1 justify-center text-sm">Discount</button>
+            <button id="pu" class="btn-ghost flex-1 justify-center text-sm">Customer</button>
+          </div>
+          <button id="pk" class="btn-primary w-full justify-center py-3">Checkout</button>
+        </div>
+      </div>`;
+    if (window.lucide) lucide.createIcons();
+    renderCart(); renderProducts(); renderCats();
+    document.getElementById('ps').oninput = e => {
+      const q = e.target.value.toLowerCase();
+      const f = products.filter(p => (!currentCategory||p.category_id===currentCategory) && (p.name.toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)));
+      document.getElementById('posProducts').innerHTML = f.map(p => `<button class="product-tile" data-p="${p.id}"><div class="name">${UI.escapeHtml(p.name)}</div><div class="price">${UI.money(p.price)}</div><div class="stock">Stock: ${p.stock||0}</div></button>`).join('');
+      document.querySelectorAll('#posProducts [data-p]').forEach(b => b.onclick = () => addProduct(b.dataset.p));
+    };
+    document.getElementById('ph').onclick = async () => {
+      if (!cart.length) return UI.toast('Cart empty','warn');
+      const label = await UI.prompt({ title:'Hold transaction', label:'Label (optional)', defaultValue: currentCustomer?.name||'' });
+      if (label === null) return;
+      const { sub, discount: d, total } = calc();
+      const payload = { id: crypto.randomUUID(), customerId: currentCustomer?.id||null, customerName: currentCustomer?.name||null, label, cart: cart.map(i=>({productId:i.id, name:i.name, price:i.price, quantity:i.quantity})), subtotal: sub, discount: d, total, heldAt: new Date().toISOString() };
+      try { if (navigator.onLine) await API.holdCreate(payload); else await Offline.queueOp({type:'held',payload,clientOpId:payload.id}); cart=[]; renderCart(); UI.toast('Held','success'); } catch(e) { UI.toast(e.message,'error'); }
+    };
+    document.getElementById('pl').onclick = async () => {
+      try { const r = await API.heldList(); held = r.held||[]; } catch { held = []; }
+      if (!held.length) return UI.modal({ title:'Held', body: UI.emptyState({icon:'inbox', title:'No held transactions'}), footer:`<button class="btn-ghost" onclick="document.getElementById('modalRoot').classList.add('hidden')">Close</button>` });
+      const m = UI.modal({ title:'Held', body: held.map(h => `<div class="flex items-center justify-between p-3 border rounded-lg mb-2"><div><div class="font-medium text-sm">${UI.escapeHtml(h.label||h.customer_name||'Held')}</div><div class="text-xs text-slate-500">${UI.money(h.total)}</div></div><button class="btn-ghost text-xs" data-r="${h.id}">Resume</button></div>`).join(''), footer:`<button class="btn-ghost" onclick="document.getElementById('modalRoot').classList.add('hidden')">Close</button>` });
+      m.box.querySelectorAll('[data-r]').forEach(b => b.onclick = async () => {
+        try { const r = await API.holdResume(b.dataset.r); cart = (r.held.cart||[]).map(i=>({id:i.productId,name:i.name,price:i.price,quantity:i.quantity})); m.close(); renderCart(); UI.toast('Resumed','success'); } catch(e) { UI.toast(e.message,'error'); }
+      });
+    };
+    document.getElementById('pc').onclick = async () => { if (await UI.confirm({title:'Clear cart?'})) { cart=[]; renderCart(); } };
+    document.getElementById('pk').onclick = checkout;
+    document.getElementById('pd').onclick = async () => { const v = await UI.prompt({title:'Discount',label:'Amount',type:'number',defaultValue:String(discount)}); if (v!==null) { discount = Number(v)||0; dType='amount'; renderCart(); } };
+    document.getElementById('pu').onclick = async () => {
+      const q = await UI.prompt({ title:'Customer', label:'Search name/phone (blank = walk-in)' });
+      if (q === null) return;
+      if (!q) { currentCustomer = null; return; }
+      try { const r = await API.customers(q); const list = r.customers||[]; if (!list.length) return UI.toast('None found','warn');
+        const m = UI.modal({ title:'Select customer', body: list.map((c,i)=>`<button class="block w-full text-left p-2 hover:bg-slate-50 rounded" data-ci="${i}">${UI.escapeHtml(c.name)} <span class="text-xs text-slate-500">${c.phone||''}</span></button>`).join('') });
+        m.box.querySelectorAll('[data-ci]').forEach(b => b.onclick = () => { currentCustomer = list[+b.dataset.ci]; m.close(); UI.toast('Customer: '+currentCustomer.name,'success'); });
+      } catch { UI.toast('Failed','error'); }
+    };
+  }
+  return { renderView };
+})();
+
+/* ─────────── Views ─────────── */
+const Views = (() => {
+  async function dashboard() {
+    const view = document.getElementById('view'); UI.loading(view);
+    let data;
+    try { data = await API.dashboard('today'); } catch (e) { view.innerHTML = UI.emptyState({icon:'wifi-off', title:'Cannot load', message: e.message}); if(window.lucide)lucide.createIcons(); return; }
+    const m = data.metrics;
+    const c = (l, v, i, t='text-slate-900') => `<div class="card p-4"><div class="flex items-center justify-between mb-2"><span class="text-xs text-slate-500 font-medium">${l}</span><i data-lucide="${i}" class="w-4 h-4 text-slate-400"></i></div><div class="text-2xl font-bold ${t}">${v}</div></div>`;
+    view.innerHTML = `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      ${c("Today's Sales", UI.money(m.revenue), 'trending-up', 'text-emerald-600')}
+      ${c('Transactions', m.txnCount, 'receipt')}
+      ${c('Avg Transaction', UI.money(m.avgTxn), 'bar-chart')}
+      ${c('Gross Profit', UI.money(m.profit), 'dollar-sign', 'text-emerald-600')}
+      ${c('Cash In', UI.money(m.cashIn), 'arrow-down-circle', 'text-emerald-600')}
+      ${c('Cash Out', UI.money(m.cashOut), 'arrow-up-circle', 'text-red-600')}
+      ${c('Net Cash', UI.money(m.netCash), 'wallet')}
+      ${c('Low Stock', m.lowStock+' items', 'alert-triangle', m.lowStock>0?'text-amber-600':'')}
+    </div>
+    <div class="card p-5"><h3 class="font-bold mb-4">Top Products (30d)</h3>
+      ${data.topProducts.length?data.topProducts.map(p=>`<div class="flex justify-between py-2 border-b last:border-0 text-sm"><span>${UI.escapeHtml(p.name)} <span class="text-slate-500">× ${p.qty}</span></span><span class="font-semibold">${UI.money(p.revenue)}</span></div>`).join(''):UI.emptyState({icon:'package',title:'No sales yet'})}
+    </div>`;
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async function inventory() {
+    const view = document.getElementById('view'); UI.loading(view);
+    let items = [];
+    try { items = (await API.inventory()).inventory||[]; } catch {}
+    view.innerHTML = `
+      <div class="mb-4 flex gap-3"><input id="is" class="input flex-1" placeholder="Search..."><button id="ia" class="btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Add</button></div>
+      <div class="card overflow-x-auto">
+        <table class="w-full text-sm"><thead class="bg-slate-50 border-b border-slate-200"><tr>
+          <th class="text-left p-3 font-semibold">Product</th><th class="text-right p-3 font-semibold">Price</th><th class="text-right p-3 font-semibold">Stock</th><th class="p-3"></th>
+        </tr></thead><tbody id="ib"></tbody></table>
+      </div>`;
+    if (window.lucide) lucide.createIcons();
+    const render = (f='') => {
+      const q = f.toLowerCase();
+      const list = items.filter(i => i.name.toLowerCase().includes(q) || (i.sku||'').toLowerCase().includes(q));
+      document.getElementById('ib').innerHTML = list.length ? list.map(i => {
+        const st = Number(i.quantity)||0;
+        const badge = st<=0?'<span class="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700">Out</span>':st<=(i.reorder_level||5)?'<span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700">Low</span>':'<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700">In</span>';
+        return `<tr class="border-b border-slate-100"><td class="p-3 font-medium">${UI.escapeHtml(i.name)}<div class="text-xs text-slate-500">${UI.escapeHtml(i.sku||'')}</div></td><td class="p-3 text-right">${UI.money(i.price)}</td><td class="p-3 text-right font-medium">${st} ${badge}</td><td class="p-3 text-right"><button class="p-1.5 hover:bg-slate-100 rounded" data-adj="${i.product_id}"><i data-lucide="sliders" class="w-4 h-4"></i></button></td></tr>`;
+      }).join('') : `<tr><td colspan="4" class="p-8 text-center text-slate-500">No products</td></tr>`;
+      if (window.lucide) lucide.createIcons();
+      document.querySelectorAll('[data-adj]').forEach(b => b.onclick = () => adjust(b.dataset.adj));
+    };
+    const adjust = async (pid) => {
+      const it = items.find(i => i.product_id === pid); if (!it) return;
+      const q = await UI.prompt({ title: `Adjust: ${it.name}`, label:'Change (+/-)', type:'number', defaultValue:'0' });
+      if (!q || Number(q)===0) return;
+      try { await API.adjustStock({ productId: pid, type: Number(q)>0?'stock_in':'stock_out', quantity: Number(q), reason:'Manual' }); UI.toast('Adjusted','success'); inventory(); }
+      catch (e) { UI.toast(e.message,'error'); }
+    };
+    document.getElementById('is').oninput = e => render(e.target.value);
+    document.getElementById('ia').onclick = () => {
+      const m = UI.modal({ title:'Add product', body: `
+        <div class="space-y-3">
+          <div><label class="label">Name</label><input id="pn" class="input"></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="label">SKU</label><input id="ps" class="input"></div><div><label class="label">Barcode</label><input id="pb" class="input"></div></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="label">Cost</label><input id="pc" type="number" step="0.01" class="input" value="0"></div><div><label class="label">Price</label><input id="pp" type="number" step="0.01" class="input" value="0"></div></div>
+          <div class="grid grid-cols-2 gap-3"><div><label class="label">Stock</label><input id="pk" type="number" class="input" value="0"></div><div><label class="label">Reorder</label><input id="pr" type="number" class="input" value="5"></div></div>
+        </div>`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>Save</button>` });
+      m.box.querySelector('[data-c]').onclick = () => m.close();
+      m.box.querySelector('[data-ok]').onclick = async () => {
+        const b = { name: m.box.querySelector('#pn').value, sku: m.box.querySelector('#ps').value, barcode: m.box.querySelector('#pb').value, costPrice: Number(m.box.querySelector('#pc').value)||0, price: Number(m.box.querySelector('#pp').value)||0, stock: Number(m.box.querySelector('#pk').value)||0, reorderLevel: Number(m.box.querySelector('#pr').value)||5 };
+        if (!b.name) return UI.toast('Name required','warn');
+        try { await API.createProduct(b); m.close(); inventory(); UI.toast('Added','success'); } catch (e) { UI.toast(e.message,'error'); }
+      };
+    };
+    render();
+  }
+
+  async function cashflow() {
+    const view = document.getElementById('view'); UI.loading(view);
+    let d; try { d = await API.cashflow(); } catch { d = { entries: [], totals: {cashIn:0,cashOut:0,net:0} }; }
+    view.innerHTML = `
+      <div class="grid sm:grid-cols-3 gap-3 mb-6">
+        <div class="card p-4"><div class="text-xs text-slate-500">Cash In</div><div class="text-2xl font-bold text-emerald-600 mt-1">${UI.money(d.totals.cashIn)}</div></div>
+        <div class="card p-4"><div class="text-xs text-slate-500">Cash Out</div><div class="text-2xl font-bold text-red-600 mt-1">${UI.money(d.totals.cashOut)}</div></div>
+        <div class="card p-4"><div class="text-xs text-slate-500">Net</div><div class="text-2xl font-bold mt-1">${UI.money(d.totals.net)}</div></div>
+      </div>
+      <div class="flex gap-3 mb-4"><button id="ci" class="btn-primary">+ Cash In</button><button id="co" class="btn-ghost">- Cash Out</button></div>
+      <div class="card overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-50"><tr><th class="text-left p-3">Date</th><th class="text-left p-3">Category</th><th class="text-left p-3">Description</th><th class="text-right p-3">Amount</th></tr></thead><tbody>
+        ${d.entries.length ? d.entries.map(e => `<tr class="border-b"><td class="p-3 text-xs text-slate-500">${UI.date(e.occurred_at)}</td><td class="p-3">${UI.escapeHtml(e.category)}</td><td class="p-3">${UI.escapeHtml(e.description||'—')}</td><td class="p-3 text-right font-semibold ${e.direction==='in'?'text-emerald-600':'text-red-600'}">${e.direction==='in'?'+':'-'}${UI.money(e.amount)}</td></tr>`).join('') : `<tr><td colspan="4" class="p-8 text-center text-slate-500">No entries</td></tr>`}
+      </tbody></table></div>`;
+    if (window.lucide) lucide.createIcons();
+    const addFlow = (dir) => {
+      const m = UI.modal({ title: dir==='in'?'Cash In':'Cash Out', body: `
+        <div class="space-y-3">
+          <div><label class="label">Category</label><select id="fc" class="input">${dir==='in'?'<option value="owner_deposit">Owner deposit</option><option value="other_income">Other income</option>':'<option value="electricity">Electricity</option><option value="water">Water</option><option value="rent">Rent</option><option value="supplier">Supplier</option><option value="transportation">Transportation</option><option value="salary">Salary</option><option value="misc">Misc</option>'}</select></div>
+          <div><label class="label">Amount</label><input id="fa" type="number" step="0.01" class="input"></div>
+          <div><label class="label">Description</label><input id="fd" class="input"></div>
+        </div>`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>Save</button>` });
+      m.box.querySelector('[data-c]').onclick = () => m.close();
+      m.box.querySelector('[data-ok]').onclick = async () => {
+        const amt = Number(m.box.querySelector('#fa').value);
+        if (!amt) return UI.toast('Amount required','warn');
+        const payload = { id: crypto.randomUUID(), direction: dir, category: m.box.querySelector('#fc').value, amount: amt, description: m.box.querySelector('#fd').value, occurredAt: new Date().toISOString() };
+        try { if (navigator.onLine) await API.addCashflow(payload); else await Offline.queueOp({type:'cashflow',payload,clientOpId:payload.id}); m.close(); cashflow(); UI.toast('Saved','success'); } catch (e) { UI.toast(e.message,'error'); }
+      };
+    };
+    document.getElementById('ci').onclick = () => addFlow('in');
+    document.getElementById('co').onclick = () => addFlow('out');
+  }
+
+  async function customers() {
+    const view = document.getElementById('view'); UI.loading(view);
+    let list = []; try { list = (await API.customers()).customers||[]; } catch { list = await Offline.getCustomers(); }
+    view.innerHTML = `<div class="flex gap-3 mb-4"><input id="cs" class="input flex-1" placeholder="Search..."><button id="ca" class="btn-primary">+ Add</button></div><div id="cl" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>`;
+    if (window.lucide) lucide.createIcons();
+    const render = (f='') => {
+      const q = f.toLowerCase();
+      const arr = list.filter(c => c.name.toLowerCase().includes(q) || (c.phone||'').includes(q));
+      document.getElementById('cl').innerHTML = arr.length ? arr.map(c => `<div class="card p-4"><div class="flex items-center gap-3 mb-2"><div class="w-10 h-10 rounded-full bg-brand-100 text-brand-700 grid place-items-center font-bold">${UI.escapeHtml((c.name||'?')[0].toUpperCase())}</div><div class="min-w-0"><div class="font-semibold truncate">${UI.escapeHtml(c.name)}</div><div class="text-xs text-slate-500 truncate">${UI.escapeHtml(c.phone||c.email||'—')}</div></div></div><div class="text-xs text-slate-500">Spent: <b>${UI.money(c.total_spent||0)}</b> · Visits: ${c.visits||0}</div></div>`).join('') : UI.emptyState({icon:'users', title:'No customers'});
+    };
+    document.getElementById('cs').oninput = e => render(e.target.value);
+    document.getElementById('ca').onclick = () => {
+      const m = UI.modal({ title:'Add customer', body: `<div class="space-y-3"><div><label class="label">Name</label><input id="cn" class="input"></div><div><label class="label">Phone</label><input id="cp" class="input"></div><div><label class="label">Email</label><input id="ce" type="email" class="input"></div></div>`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>Save</button>` });
+      m.box.querySelector('[data-c]').onclick = () => m.close();
+      m.box.querySelector('[data-ok]').onclick = async () => {
+        const b = { name: m.box.querySelector('#cn').value, phone: m.box.querySelector('#cp').value, email: m.box.querySelector('#ce').value };
+        if (!b.name) return UI.toast('Name required','warn');
+        try { await API.createCustomer(b); m.close(); customers(); UI.toast('Added','success'); } catch (e) { UI.toast(e.message,'error'); }
+      };
+    };
+    render();
+  }
+
+  async function staff() {
+    const view = document.getElementById('view'); UI.loading(view);
+    let list = []; try { list = (await API.staff()).staff||[]; } catch (e) { view.innerHTML = UI.emptyState({icon:'users', title:'Cannot load', message: e.message}); if(window.lucide)lucide.createIcons(); return; }
+    view.innerHTML = `<div class="flex justify-between mb-4"><p class="text-sm text-slate-500">${list.length} member(s)</p><button id="as" class="btn-primary">+ Add Staff</button></div>
+      <div class="space-y-2">${list.map(s => `<div class="card p-4 flex items-center justify-between"><div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-full bg-slate-100 grid place-items-center font-bold">${UI.escapeHtml((s.name||'?')[0].toUpperCase())}</div><div><div class="font-semibold">${UI.escapeHtml(s.name)}</div><div class="text-xs text-slate-500">${UI.escapeHtml(s.email)} · <span class="capitalize">${s.role}</span></div></div></div>${s.role!=='owner'?`<button class="btn-ghost text-red-600 text-xs" data-rm="${s.id}">Remove</button>`:''}</div>`).join('')}</div>`;
+    if (window.lucide) lucide.createIcons();
+    document.getElementById('as').onclick = () => {
+      const m = UI.modal({ title:'Add staff', body: `<div class="space-y-3"><div><label class="label">Name</label><input id="sn" class="input"></div><div><label class="label">Email</label><input id="se" type="email" class="input"></div><div><label class="label">Temp password</label><input id="sp" class="input" value="${Math.random().toString(36).slice(2,10)}"></div><div><label class="label">Role</label><select id="sr" class="input"><option value="cashier">Cashier</option><option value="manager">Manager</option></select></div></div>`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>Add</button>` });
+      m.box.querySelector('[data-c]').onclick = () => m.close();
+      m.box.querySelector('[data-ok]').onclick = async () => {
+        try { await API.addStaff({ name: m.box.querySelector('#sn').value, email: m.box.querySelector('#se').value, password: m.box.querySelector('#sp').value, role: m.box.querySelector('#sr').value }); m.close(); staff(); UI.toast('Added','success'); } catch (e) { UI.toast(e.message,'error'); }
+      };
+    };
+    document.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => {
+      if (!await UI.confirm({title:'Remove staff?'})) return;
+      try { await API.removeStaff(b.dataset.rm); staff(); UI.toast('Removed','success'); } catch (e) { UI.toast(e.message,'error'); }
+    });
+  }
+
+  async function settings() {
+    const view = document.getElementById('view'); UI.loading(view);
+    const me = await API.me();
+    const store = (me.stores||[]).find(s => s.id === me.activeStoreId) || (me.stores||[])[0];
+    view.innerHTML = `<div class="grid lg:grid-cols-2 gap-4">
+      <div class="card p-5"><h3 class="font-bold mb-4">Account</h3>
+        <div class="space-y-2 text-sm"><div><span class="text-slate-500">Name:</span> ${UI.escapeHtml(me.user.name)}</div><div><span class="text-slate-500">Email:</span> ${UI.escapeHtml(me.user.email)}</div><div><span class="text-slate-500">Role:</span> <span class="capitalize">${me.role}</span></div></div>
+        <button id="cpw" class="btn-ghost mt-4">Change password</button>
+        <button id="loa" class="btn-ghost mt-2 text-red-600">Sign out all devices</button>
+      </div>
+      <div class="card p-5"><h3 class="font-bold mb-4">Store</h3>
+        <div class="space-y-2 text-sm"><div><span class="text-slate-500">Name:</span> ${UI.escapeHtml(store?.name||'—')}</div><div><span class="text-slate-500">Branch:</span> ${UI.escapeHtml(store?.branch_name||'—')}</div><div><span class="text-slate-500">Subscription:</span> <span class="capitalize">${UI.escapeHtml(store?.sub_status||'—')}</span></div><div><span class="text-slate-500">Expires:</span> ${store?.sub_expires?UI.date(store.sub_expires):'—'}</div></div>
+      </div>
+      <div class="card p-5 lg:col-span-2"><h3 class="font-bold mb-4">Devices</h3><div id="devs" class="space-y-2 text-sm"></div></div>
+    </div>`;
+    if (window.lucide) lucide.createIcons();
+    document.getElementById('cpw').onclick = () => {
+      const m = UI.modal({ title:'Change password', body: `<div class="space-y-3"><div><label class="label">Current</label><input id="c1" type="password" class="input"></div><div><label class="label">New</label><input id="c2" type="password" class="input"></div></div>`,
+        footer: `<button class="btn-ghost" data-c>Cancel</button><button class="btn-primary" data-ok>Update</button>` });
+      m.box.querySelector('[data-c]').onclick = () => m.close();
+      m.box.querySelector('[data-ok]').onclick = async () => {
+        try { await API.changePassword({ currentPassword: m.box.querySelector('#c1').value, newPassword: m.box.querySelector('#c2').value }); m.close(); UI.toast('Updated','success'); } catch (e) { UI.toast(e.message,'error'); }
+      };
+    };
+    document.getElementById('loa').onclick = async () => {
+      if (!await UI.confirm({title:'Sign out all devices?'})) return;
+      await API.logoutAll(); location.reload();
+    };
+    try {
+      const d = (await API.devices()).devices||[];
+      document.getElementById('devs').innerHTML = d.length ? d.map(x => `<div class="flex items-center justify-between p-3 border rounded-lg"><div><div class="font-medium">${UI.escapeHtml(x.name)}</div><div class="text-xs text-slate-500">Last seen: ${x.last_seen_at?UI.date(x.last_seen_at):'never'}</div></div><span class="px-2 py-0.5 rounded-full text-xs ${x.status==='authorized'?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}">${x.status}</span></div>`).join('') : '<p class="text-slate-500">No devices.</p>';
+    } catch { document.getElementById('devs').innerHTML = '<p class="text-slate-500">Cannot load.</p>'; }
+  }
+
+  async function help() {
+    const view = document.getElementById('view');
+    const online = navigator.onLine;
+    const q = await Offline.getQueue();
+    view.innerHTML = `<div class="grid lg:grid-cols-2 gap-4">
+      <div class="card p-5"><h3 class="font-bold mb-4">System status</h3>
+        <div class="space-y-3 text-sm"><div class="flex justify-between"><span class="text-slate-500">Internet</span><span class="${online?'text-emerald-600':'text-red-600'} font-medium">${online?'Online':'Offline'}</span></div><div class="flex justify-between"><span class="text-slate-500">Pending sync</span><span>${q.length}</span></div></div>
+        <button id="sn" class="btn-primary mt-4">Sync now</button>
+      </div>
+      <div class="card p-5"><h3 class="font-bold mb-4">Support</h3><p class="text-sm text-slate-600">Need help? Contact us.</p></div>
+    </div>`;
+    if (window.lucide) lucide.createIcons();
+    document.getElementById('sn').onclick = () => App.syncNow();
+  }
+
+  return { dashboard, inventory, cashflow, customers, staff, settings, help };
+})();
+
+/* ─────────── App ─────────── */
+const App = (() => {
+  let currentUser = null, currentRole = null, currentStoreId = null;
+  const NAV = [
+    { id:'dashboard', label:'Dashboard', icon:'layout-dashboard', roles:['owner','manager','cashier'] },
+    { id:'pos', label:'POS', icon:'shopping-cart', roles:['owner','manager','cashier'] },
+    { id:'inventory', label:'Inventory', icon:'package', roles:['owner','manager'] },
+    { id:'cashflow', label:'Cash Flow', icon:'wallet', roles:['owner','manager'] },
+    { id:'customers', label:'Customers', icon:'users', roles:['owner','manager','cashier'] },
+    { id:'staff', label:'Staff', icon:'user-cog', roles:['owner','manager'] },
+    { id:'help', label:'Help', icon:'life-buoy', roles:['owner','manager','cashier'] },
+    { id:'settings', label:'Settings', icon:'settings', roles:['owner','manager','cashier'] },
+  ];
+
+  function showAuth(pane='login') {
+    document.getElementById('authScreen').classList.remove('hidden');
+    ['paneLogin','paneRegister','paneForgot'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    const map = { login:'paneLogin', register:'paneRegister', forgot:'paneForgot' };
+    document.getElementById(map[pane]).classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function showApp(me) {
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('sideStoreName').textContent = me.stores?.find(s => s.id === currentStoreId)?.name || '—';
+    document.getElementById('userAvatar').textContent = (me.user.name||'U')[0].toUpperCase();
+    renderNav();
+    License.updateIndicator();
+    License.startAutoVerify();
+    navigate(location.hash.replace('#','') || 'dashboard');
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function renderNav() {
+    const allowed = NAV.filter(n => n.roles.includes(currentRole));
+    const html = allowed.map(n => `<a href="#${n.id}" class="nav-item" data-nav="${n.id}"><i data-lucide="${n.icon}"></i> ${n.label}</a>`).join('');
+    document.getElementById('navDesktop').innerHTML = html;
+    document.getElementById('navDrawer').innerHTML = html;
+    document.getElementById('navMobile').innerHTML = allowed.slice(0,5).map(n => `<a href="#${n.id}" class="nav-bottom" data-nav="${n.id}"><i data-lucide="${n.icon}"></i><span>${n.label.split(' ')[0]}</span></a>`).join('');
+    document.querySelectorAll('[data-nav]').forEach(a => a.addEventListener('click', () => setTimeout(() => document.getElementById('drawer').classList.add('hidden'), 0)));
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async function navigate(id) {
+    const nav = NAV.find(n => n.id === id);
+    if (!nav || !nav.roles.includes(currentRole)) id = 'dashboard';
+    document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === id));
+    location.hash = id;
+    const titles = { dashboard:['Dashboard','Overview'], pos:['POS Cashier','Checkout'], inventory:['Inventory','Stock'], cashflow:['Cash Flow','Cash'], customers:['Customers','Directory'], staff:['Staff','Team'], help:['Help','Support'], settings:['Settings','Account'] };
+    document.getElementById('pageTitle').textContent = titles[id][0];
+    document.getElementById('pageSubtitle').textContent = titles[id][1];
+    try {
+      if (id === 'dashboard') await Views.dashboard();
+      else if (id === 'pos') await POS.renderView();
+      else if (id === 'inventory') await Views.inventory();
+      else if (id === 'cashflow') await Views.cashflow();
+      else if (id === 'customers') await Views.customers();
+      else if (id === 'staff') await Views.staff();
+      else if (id === 'settings') await Views.settings();
+      else if (id === 'help') await Views.help();
+    } catch (e) { UI.toast(e.message,'error'); }
+    if (window.lucide) lucide.createIcons();
+  }
+
+  async function syncNow() {
+    const q = await Offline.getQueue();
+    if (!q.length) return UI.toast('Nothing to sync','info');
+    try {
+      const res = await API.syncTransactions({ operations: q });
+      for (const r of res.results) if (r.status !== 'failed') await Offline.removeFromQueue(r.clientOpId);
+      UI.toast(`${res.results.filter(r=>r.status==='processed').length} synced`,'success');
+    } catch (e) { UI.toast('Sync failed','error'); }
+  }
+
+  async function boot() {
+    document.getElementById('authYear')?.remove();
+    try {
+      const me = await API.me();
+      currentUser = me.user; currentRole = me.role; currentStoreId = me.activeStoreId;
+      API.setStore(currentStoreId);
+      await License.load();
+      const c = await License.verify();
+      if (!c.ok && !c.offline) return;
+      showApp(me);
+    } catch { showAuth(); }
+  }
+
+  function initEvents() {
+    document.getElementById('linkToRegister').onclick = () => showAuth('register');
+    document.getElementById('linkToLogin').onclick = () => showAuth('login');
+    document.getElementById('linkForgot').onclick = () => showAuth('forgot');
+    document.getElementById('linkBackLogin').onclick = () => showAuth('login');
+
+    document.getElementById('formLogin').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('loginSubmit'); const err = document.getElementById('loginError');
+      err.classList.add('hidden'); btn.disabled = true; btn.textContent = 'Signing in…';
+      try {
+        const r = await API.login({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value, deviceUid: API.deviceUid });
+        currentUser = r.user; currentStoreId = r.store?.id || null;
+        if (currentStoreId) API.setStore(currentStoreId);
+        await License.load(); await License.verify();
+        const me = await API.me(); showApp(me);
+      } catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+      finally { btn.disabled = false; btn.textContent = 'Sign in'; }
+    };
+
+    document.getElementById('formRegister').onsubmit = async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('registerError'); err.classList.add('hidden');
+      try { await API.register({ name: document.getElementById('regName').value, storeName: document.getElementById('regStore').value, email: document.getElementById('regEmail').value, password: document.getElementById('regPassword').value }); UI.toast('Created. Sign in.','success'); showAuth('login'); }
+      catch (e) { err.textContent = e.message; err.classList.remove('hidden'); }
+    };
+
+    document.getElementById('formForgot').onsubmit = async (e) => {
+      e.preventDefault();
+      const m = document.getElementById('forgotMsg');
+      try { const r = await API.forgotPassword({ email: document.getElementById('forgotEmail').value }); m.className = 'rounded-lg text-sm px-3 py-2 bg-emerald-50 text-emerald-700'; m.textContent = r.message + (r.devToken?` Token: ${r.devToken}`:''); }
+      catch (e) { m.className = 'rounded-lg text-sm px-3 py-2 bg-red-50 text-red-700'; m.textContent = e.message; }
+      m.classList.remove('hidden');
+    };
+
+    document.getElementById('btnUserMenu').onclick = async () => {
+      if (await UI.confirm({ title:'Sign out?', confirmText:'Sign out' })) { try { await API.logout(); } catch {} location.reload(); }
+    };
+    document.getElementById('btnMobileNav').onclick = () => document.getElementById('drawer').classList.remove('hidden');
+    document.querySelectorAll('[data-drawer-close]').forEach(b => b.onclick = () => document.getElementById('drawer').classList.add('hidden'));
+    document.querySelector('#modalRoot [data-modal-close]').onclick = () => document.getElementById('modalRoot').classList.add('hidden');
+    window.addEventListener('hashchange', () => { if (currentUser) navigate(location.hash.replace('#','') || 'dashboard'); });
+
+    const updateNet = () => {
+      const pill = document.getElementById('netPill'); const text = document.getElementById('netPillText');
+      if (!pill) return;
+      if (navigator.onLine) { pill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200'; text.textContent = 'Online'; }
+      else { pill.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200'; text.textContent = 'Offline'; }
+    };
+    window.addEventListener('online', () => { updateNet(); syncNow(); License.verify(); });
+    window.addEventListener('offline', () => { updateNet(); UI.toast('Offline — POS still works','warn'); });
+    updateNet();
+    setInterval(() => { if (navigator.onLine && currentUser) syncNow(); }, 30000);
+
+    document.querySelectorAll('[data-lock-action]').forEach(b => {
+      b.onclick = async () => {
+        if (b.dataset.lockAction === 'retry') await License.verify();
+        else if (b.dataset.lockAction === 'contact') location.href = 'mailto:support@storeflow.app';
+        else UI.toast('Contact support to renew','info');
+      };
+    });
+  }
+
+  return { boot, initEvents, syncNow };
+})();
+
+document.addEventListener('DOMContentLoaded', async () => {
+  App.initEvents();
+  await App.boot();
+  document.getElementById('boot').classList.add('hidden');
+  if (window.lucide) lucide.createIcons();
+});
+</script>
 </body>
 </html>
